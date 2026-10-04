@@ -1,5 +1,6 @@
 import { create } from 'zustand'
-import type { Action, Player, Role, Scenario, ScenarioSettings, SpeedKey, Team, Vec } from '../model/types'
+import { clampToField, FIELDS } from '../model/rink'
+import type { Action, Layout, Player, Role, Scenario, ScenarioSettings, SpeedKey, Team, Vec } from '../model/types'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
 
 export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'puck' | 'skate' | 'pass' | 'shoot' | 'erase'
@@ -38,6 +39,7 @@ interface EditorState {
   addAction: (a: NewAction) => void
   clearActions: (playerId: string) => void
   updateSettings: (patch: Partial<ScenarioSettings>) => void
+  setLayout: (layout: Layout) => void
   rename: (name: string) => void
   undo: () => void
   redo: () => void
@@ -122,6 +124,20 @@ export const useEditor = create<EditorState>((set, get) => {
     clearActions: (playerId) =>
       mutate((s) => ({ ...s, actions: s.actions.filter((a) => a.playerId !== playerId && !(a.kind === 'pass' && a.toPlayerId === playerId)) })),
     updateSettings: (patch) => mutate((s) => ({ ...s, settings: { ...s.settings, ...patch } })),
+    setLayout: (layout) =>
+      mutate((s) => {
+        const f = FIELDS[layout]
+        const fit = (p: Vec) => clampToField(f, p, 0.6).pos
+        return {
+          ...s,
+          settings: { ...s.settings, layout },
+          players: s.players.map((p) =>
+            p.role === 'G' ? { ...p, pos: { x: Math.sign(p.pos.x || 1) * (f.goalLineX - 1), y: 0 } } : { ...p, pos: fit(p.pos) },
+          ),
+          pucks: s.pucks.map((k) => ({ ...k, pos: fit(k.pos) })),
+          actions: s.actions.map((a) => (a.kind === 'skate' ? { ...a, path: a.path.map(fit) } : a)),
+        }
+      }),
     rename: (name) => mutate((s) => ({ ...s, name }), false),
 
     undo: () =>

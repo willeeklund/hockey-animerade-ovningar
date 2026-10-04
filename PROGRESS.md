@@ -13,7 +13,9 @@
   - Uppspelning: play/paus, tidslinje att dra i, 0.25–2×, händelsemarkeringar (pass/skott/räddning/mål/bryt) som går att klicka på, spår efter spelarna.
   - Spara/öppna i localStorage, export/import av JSON. Mallar: tom rink, 2 mot 1, 3 mot 2, 5 mot 5.
   - Kortkommandon: mellanslag = play, Delete, Cmd/Ctrl+Z, Esc.
-  - 5 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
+  - **Zonspel** (spelyta "Zonspel"): en zon där man spelar på bredden, med burarna mot varandra vid sargerna (30 × 22,5 m, burar 3 m från sargen). Mallar: Zonspel 2 mot 2 och 3 mot 3. Botarnas avstånd och korridorer skalas efter spelytan.
+  - Målvakter rör sig i sidled mot positionen mellan puck och bur (tidigare gled de ut ur målet).
+  - 7 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
 
 ## Kör
 ```

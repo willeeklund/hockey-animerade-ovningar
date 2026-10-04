@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { RINK } from '../model/rink'
+import { RINK, type Field } from '../model/rink'
 
 const R = RINK
 const RED = '#c8102e'
@@ -43,8 +43,8 @@ function FaceoffCircle({ x, y }: { x: number; y: number }) {
   )
 }
 
-function Goal({ side }: { side: -1 | 1 }) {
-  const x = side * R.goalLineX
+function Goal({ side, goalLineX }: { side: -1 | 1; goalLineX: number }) {
+  const x = side * goalLineX
   const w = R.goalHalfWidth
   return (
     <g>
@@ -55,7 +55,7 @@ function Goal({ side }: { side: -1 | 1 }) {
   )
 }
 
-function RinkLinesImpl() {
+function FullRink() {
   return (
     <g>
       <clipPath id="rink-clip">
@@ -78,12 +78,58 @@ function RinkLinesImpl() {
         {[-1, 1].flatMap((sx) =>
           [-1, 1].map((sy) => <circle key={`nd${sx}${sy}`} cx={sx * R.neutralDotX} cy={sy * R.neutralDotY} r={0.3} fill={RED} />),
         )}
-        <Goal side={-1} />
-        <Goal side={1} />
+        <Goal side={-1} goalLineX={R.goalLineX} />
+        <Goal side={1} goalLineX={R.goalLineX} />
       </g>
       <path d={outline()} fill="none" stroke="#1f2937" strokeWidth={0.3} />
     </g>
   )
+}
+
+function zoneOutline(f: Field) {
+  const hx = f.halfLength
+  const hy = f.halfWidth
+  const r = f.cornerBottom
+  return `M ${-hx} ${-hy} H ${hx} V ${hy - r} A ${r} ${r} 0 0 1 ${hx - r} ${hy} H ${-hx + r} A ${r} ${r} 0 0 1 ${-hx} ${hy - r} Z`
+}
+
+function zoneLineSpan(f: Field, y: number) {
+  const r = f.cornerBottom
+  const dy = y - (f.halfWidth - r)
+  if (dy <= 0) return f.halfLength
+  return f.halfLength - r + Math.sqrt(r * r - dy * dy)
+}
+
+function ZoneRink({ field }: { field: Field }) {
+  const hx = field.halfLength
+  const hy = field.halfWidth
+  const goalLineY = hy - R.endToGoalLine
+  const dotY = hy - R.endToDot
+  const span = zoneLineSpan(field, goalLineY)
+  const c = R.creaseR
+  return (
+    <g>
+      <clipPath id="zone-clip">
+        <path d={zoneOutline(field)} />
+      </clipPath>
+      <path d={zoneOutline(field)} fill="var(--ice)" />
+      <g clipPath="url(#zone-clip)">
+        <rect x={-hx} y={-hy} width={hx * 2} height={0.3} fill={BLUE} />
+        <line x1={-span} x2={span} y1={goalLineY} y2={goalLineY} stroke={RED} strokeWidth={0.05} opacity={0.5} />
+        <path d={`M ${-c} ${goalLineY} A ${c} ${c} 0 0 1 ${c} ${goalLineY} Z`} fill="#bfe3f7" stroke={RED} strokeWidth={0.05} opacity={0.35} />
+        {[-1, 1].map((s) => (
+          <FaceoffCircle key={`zf${s}`} x={s * R.endDotY} y={dotY} />
+        ))}
+        <Goal side={-1} goalLineX={field.goalLineX} />
+        <Goal side={1} goalLineX={field.goalLineX} />
+      </g>
+      <path d={zoneOutline(field)} fill="none" stroke="#1f2937" strokeWidth={0.3} />
+    </g>
+  )
+}
+
+function RinkLinesImpl({ field }: { field: Field }) {
+  return field.layout === 'zone' ? <ZoneRink field={field} /> : <FullRink />
 }
 
 export const RinkLines = memo(RinkLinesImpl)

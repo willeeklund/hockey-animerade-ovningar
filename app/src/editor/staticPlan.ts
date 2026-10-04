@@ -1,4 +1,4 @@
-import { goalCenter } from '../model/rink'
+import { fieldOf, goalCenter } from '../model/rink'
 import type { Scenario, Vec } from '../model/types'
 import { dist } from '../engine/vec'
 
@@ -45,7 +45,7 @@ export function staticPlan(s: Scenario): StaticPlan {
       carriers.delete(a.playerId)
       carriers.add(a.toPlayerId)
     } else if (a.kind === 'shoot') {
-      geom[a.id] = { from, to: goalCenter(a.goal), withPuck }
+      geom[a.id] = { from, to: goalCenter(fieldOf(s.settings), a.goal), withPuck }
       carriers.delete(a.playerId)
     } else {
       geom[a.id] = { from, withPuck }

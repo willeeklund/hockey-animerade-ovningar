@@ -2,13 +2,15 @@ import type { Player, Role, Scenario, Team } from '../model/types'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
-export type TemplateKey = 'empty' | '2v1' | '3v2' | '5v5'
+export type TemplateKey = 'empty' | '2v1' | '3v2' | '5v5' | 'zone2v2' | 'zone3v3'
 
 export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   empty: 'Tom rink',
   '2v1': '2 mot 1',
   '3v2': '3 mot 2',
   '5v5': '5 mot 5 (anfall)',
+  zone2v2: 'Zonspel 2 mot 2',
+  zone3v3: 'Zonspel 3 mot 3',
 }
 
 function pl(id: string, team: Team, role: Role, label: string, x: number, y: number): Player {
@@ -60,6 +62,20 @@ export function template(key: TemplateKey): Scenario {
       awayG,
     ]
     s.pucks = [{ id: 'k1', pos: { x: 10.7, y: 0 } }]
+  } else if (key === 'zone2v2' || key === 'zone3v3') {
+    s.settings.layout = 'zone'
+    s.players = [
+      pl('h1', 'home', 'F', '1', -5, -3),
+      pl('h2', 'home', 'F', '2', -4, 5),
+      pl('a1', 'away', 'F', '1', 5, -3),
+      pl('a2', 'away', 'F', '2', 4, 5),
+      pl('hg', 'home', 'G', 'G', -11, 0),
+      pl('ag', 'away', 'G', 'G', 11, 0),
+    ]
+    if (key === 'zone3v3') {
+      s.players.push(pl('h3', 'home', 'D', '3', -8, -7), pl('a3', 'away', 'D', '3', 8, -7))
+    }
+    s.pucks = [{ id: 'k1', pos: { x: -4.3, y: -3 } }]
   }
   return s
 }

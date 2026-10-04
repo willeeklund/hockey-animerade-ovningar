@@ -1,4 +1,4 @@
-import { attackSide, clampToRink, defendSide, goalCenter, RINK } from '../model/rink'
+import { attackSide, clampToField, defendSide, fieldOf, goalCenter, RINK } from '../model/rink'
 import type { Action, Frame, Scenario, SimEvent } from '../model/types'
 import { botDecision, goalieIntent, focusPuck, type BotAct } from './ai'
 import { separate, stepPlayer } from './kinematics'
@@ -89,7 +89,7 @@ export function createWorld(s: Scenario): World {
       scripted: false,
     }
   })
-  return { t: 0, players, pucks, rng: mulberry32(s.settings.seed), events: [], scenario: s }
+  return { t: 0, players, pucks, rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -99,7 +99,7 @@ function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = fa
     const t = (dist(from, aim) / PASS_SPEED) * 1.08
     aim = add(to.pos, mul(to.vel, t))
   }
-  aim = clampToRink(aim, 1).pos
+  aim = clampToField(w.field, aim, 1).pos
   puck.carrierId = null
   puck.pos = from
   puck.vel = mul(norm(sub(aim, from)), PASS_SPEED)
@@ -114,7 +114,7 @@ function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = fa
 
 function doShot(w: World, p: PlayerRt, puck: PuckRt, side: 'left' | 'right', scripted = false) {
   const from = stickPos(p)
-  const g = goalCenter(side)
+  const g = goalCenter(w.field, side)
   const goalie = w.players.find((q) => q.role === 'G' && defendSide(q.team, w.scenario.settings) === side)
   const gy = goalie ? goalie.pos.y : 0
   const ty = (gy > 0 ? -1 : 1) * (0.55 + w.rng() * 0.25)
@@ -234,7 +234,7 @@ function stepPuck(w: World, puck: PuckRt) {
   }
   let next = add(prev, mul(puck.vel, DT))
 
-  const gl = RINK.goalLineX
+  const gl = w.field.goalLineX
   if (Math.abs(prev.x) < gl && Math.abs(next.x) >= gl && Math.sign(next.x) === Math.sign(puck.vel.x)) {
     const t = (Math.sign(next.x) * gl - prev.x) / (next.x - prev.x)
     const y = prev.y + (next.y - prev.y) * t
@@ -252,7 +252,7 @@ function stepPuck(w: World, puck: PuckRt) {
     next = prev
   }
 
-  const c = clampToRink(next, 0.1)
+  const c = clampToField(w.field, next, 0.1)
   if (c.normal) {
     const into = dot(puck.vel, c.normal)
     if (into > 0) puck.vel = sub(puck.vel, mul(c.normal, (1 + PUCK_RESTITUTION) * into))
@@ -268,7 +268,7 @@ function stepPuck(w: World, puck: PuckRt) {
     if (puckCarriedBy(w, p.id)) continue
     const d = distToSegment(p.pos, prev, puck.pos)
     if (p.role === 'G') {
-      if (d < 0.6 && d < bestD) {
+      if (d < 0.72 && d < bestD) {
         best = p
         bestD = d
       }
@@ -329,7 +329,7 @@ export function step(w: World) {
   w.players.forEach((p, i) => {
     const it = intents[i]
     const target = it.speed > 0 ? separate(p, w.players, it.target) : it.target
-    stepPlayer(p, { ...it, target }, DT)
+    stepPlayer(p, { ...it, target }, DT, w.field)
   })
   for (const k of w.pucks) stepPuck(w, k)
   steals(w)

@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type PointerEvent } from 'react'
 import { chaikin, simplify, wavy } from '../engine/path'
 import type { SimResult } from '../engine/simulate'
 import { dist, wrapAngle } from '../engine/vec'
-import { clampToRink, RINK } from '../model/rink'
+import { clampToField, fieldOf } from '../model/rink'
 import type { Action, Frame, Player, Vec } from '../model/types'
 import { staticPlan } from '../editor/staticPlan'
 import { useEditor } from '../editor/store'
@@ -10,7 +10,6 @@ import { RinkLines } from './RinkLines'
 
 const TEAM_COLOR = { home: 'var(--home)', away: 'var(--away)' }
 const PAD = 1.5
-const VIEW = `${-RINK.halfLength - PAD} ${-RINK.halfWidth - PAD} ${2 * (RINK.halfLength + PAD)} ${2 * (RINK.halfWidth + PAD)}`
 
 type Drag = { kind: 'move'; id: string } | { kind: 'draw'; playerId: string; pts: Vec[] } | null
 
@@ -89,6 +88,8 @@ export function Board({ sim }: { sim: SimResult }) {
   const st = useEditor()
   const { scenario, tool, time, playing, selectedId, pending, showPaths, showTrails } = st
   const editing = time === 0 && !playing
+  const field = fieldOf(scenario.settings)
+  const view = `${-field.halfLength - PAD} ${-field.halfWidth - PAD} ${2 * (field.halfLength + PAD)} ${2 * (field.halfWidth + PAD)}`
   const plan = useMemo(() => staticPlan(scenario), [scenario])
   const frame = useMemo(() => (editing ? null : frameAt(sim, time)), [editing, sim, time])
 
@@ -126,7 +127,7 @@ export function Board({ sim }: { sim: SimResult }) {
     }
     const p = toM(e)
     const capture = () => (e.target as Element).setPointerCapture?.(e.pointerId)
-    const inside = clampToRink(p, 0.6).pos
+    const inside = clampToField(field, p, 0.6).pos
 
     if (tool === 'select' || tool === 'home' || tool === 'away' || tool === 'goalie' || tool === 'puck') {
       const hp = hitPlayer(p)
@@ -144,7 +145,7 @@ export function Board({ sim }: { sim: SimResult }) {
       if (tool === 'goalie') {
         const rightIsAway = scenario.settings.homeAttacks === 'right'
         const team = p.x > 0 === rightIsAway ? 'away' : 'home'
-        const gx = Math.sign(p.x || 1) * (RINK.goalLineX - 1)
+        const gx = Math.sign(p.x || 1) * (field.goalLineX - 1)
         return st.addPlayer(team, 'G', { x: gx, y: 0 })
       }
       return st.addPlayer(tool, 'F', inside)
@@ -192,10 +193,10 @@ export function Board({ sim }: { sim: SimResult }) {
     if (!drag) return
     const p = toM(e)
     if (drag.kind === 'move') {
-      st.moveObject(drag.id, clampToRink(p, 0.6).pos)
+      st.moveObject(drag.id, clampToField(field, p, 0.6).pos)
     } else {
       const last = drag.pts[drag.pts.length - 1]
-      if (dist(last, p) > 0.3) setDrag({ ...drag, pts: [...drag.pts, clampToRink(p, 0.6).pos] })
+      if (dist(last, p) > 0.3) setDrag({ ...drag, pts: [...drag.pts, clampToField(field, p, 0.6).pos] })
     }
   }
 
@@ -231,7 +232,7 @@ export function Board({ sim }: { sim: SimResult }) {
     <svg
       ref={svgRef}
       className={`board tool-${tool}`}
-      viewBox={VIEW}
+      viewBox={view}
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
@@ -242,7 +243,7 @@ export function Board({ sim }: { sim: SimResult }) {
           <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
         </marker>
       </defs>
-      <RinkLines />
+      <RinkLines field={field} />
 
       {showPaths && (
         <g opacity={editing ? 0.9 : 0.25} style={{ pointerEvents: 'none' }}>

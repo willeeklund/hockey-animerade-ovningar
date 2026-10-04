@@ -109,6 +109,19 @@ export function Sidebar() {
       <SelectedPanel />
 
       <section className="panel">
+        <h3>Spelyta</h3>
+        <div className="seg">
+          <button className={(scenario.settings.layout ?? 'full') === 'full' ? 'on' : ''} onClick={() => st.setLayout('full')}>
+            Hel rink
+          </button>
+          <button className={scenario.settings.layout === 'zone' ? 'on' : ''} onClick={() => st.setLayout('zone')}>
+            Zonspel
+          </button>
+        </div>
+        {scenario.settings.layout === 'zone' && <p className="hint small">En zon, spel på bredden. Målen står mot varandra vid sargerna.</p>}
+      </section>
+
+      <section className="panel">
         <h3>Simulering</h3>
         <label className="check">
           <input type="checkbox" checked={scenario.settings.autonomous} onChange={(e) => st.updateSettings({ autonomous: e.target.checked })} />

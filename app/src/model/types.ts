@@ -4,6 +4,7 @@ export type Team = 'home' | 'away'
 export type Role = 'F' | 'D' | 'G'
 export type Side = 'left' | 'right'
 export type SpeedKey = 'slow' | 'normal' | 'fast'
+export type Layout = 'full' | 'zone'
 
 export interface Player {
   id: string
@@ -30,6 +31,7 @@ export interface ScenarioSettings {
   seed: number
   autonomous: boolean
   homeAttacks: Side
+  layout?: Layout
 }
 
 export interface Scenario {
