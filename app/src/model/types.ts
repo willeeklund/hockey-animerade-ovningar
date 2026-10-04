@@ -20,11 +20,22 @@ export interface Puck {
   pos: Vec
 }
 
+export interface Cone {
+  id: string
+  pos: Vec
+}
+
 export type Action =
   | { id: string; kind: 'skate'; playerId: string; path: Vec[]; speed: SpeedKey }
   | { id: string; kind: 'pass'; playerId: string; toPlayerId: string }
   | { id: string; kind: 'shoot'; playerId: string; goal: Side }
   | { id: string; kind: 'wait'; playerId: string; seconds: number }
+
+export interface Round {
+  id: string
+  startT: number
+  actions: Action[]
+}
 
 export interface ScenarioSettings {
   durationSec: number
@@ -40,7 +51,9 @@ export interface Scenario {
   updatedAt: string
   players: Player[]
   pucks: Puck[]
+  cones?: Cone[]
   actions: Action[]
+  rounds?: Round[]
   settings: ScenarioSettings
 }
 

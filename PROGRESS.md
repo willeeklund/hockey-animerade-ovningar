@@ -10,12 +10,15 @@
   - Simuleringsmotor (`src/engine`): deterministisk, 30 Hz, förberäknar alla frames. Skridskokinematik (acceleration, svängradie beroende på fart, hockeystopp, sarg), puckfysik (friktion, studs, mål, målvaktsräddning/retur, passningsbrytning).
   - Autonoma botar (`src/engine/ai.ts`): puckförare (åk mot slottet, skjut, passa till bättre placerad medspelare med fri passningsväg), stödspelare (yttre korridorer, framför mål eller vid bortre stolpen), backar (släpar efter), försvar (närmaste spelare pressar med avstånd, övriga täcker spelare på målsidan), målvakt (står på linjen mellan puck och mål), jakt på lös puck, puckbrytningar.
   - Ritade händelser skyddas: botarna bryter inte tränarens ritade pass och tar inte pucken från en spelare som följer ritade rörelser. När de ritade rörelserna är slut tar boten över.
-  - Uppspelning: play/paus, tidslinje att dra i, 0.25–2×, händelsemarkeringar (pass/skott/räddning/mål/bryt) som går att klicka på, spår efter spelarna.
+  - Uppspelning: play/paus, tidslinje att dra i, 0.25–2×, händelsemarkeringar (pass/skott/räddning/mål/bryt) som går att klicka på, spår efter spelarna (längd styrs av `trailSeconds` i `app/src/config.ts`, nu 2 s).
   - Spara/öppna i localStorage, export/import av JSON. Mallar: tom rink, 2 mot 1, 3 mot 2, 5 mot 5.
-  - Kortkommandon: mellanslag = play, Delete, Cmd/Ctrl+Z, Esc.
+  - **Koner** (verktyget Kon, tangent K): fasta punkter som spelarna åker runt. Alla spelare, både ritade och botar, tittar 5 m framåt och styr runt en kon i vägen med ca 1,1 m marginal; ett kollisionsskydd hindrar att någon åker igenom. Puckar påverkas inte av koner. Mall: Konslalom + skott.
+  - Kortkommandon: mellanslag = start/paus, V/A/P/S/K = verktyg, Delete, Cmd/Ctrl+Z, Esc.
   - **Zonspel** (spelyta "Zonspel"): en zon där man spelar på bredden, med burarna mot varandra vid sargerna (30 × 22,5 m, burar 3 m från sargen). Mallar: Zonspel 2 mot 2 och 3 mot 3. Botarnas avstånd och korridorer skalas efter spelytan.
+  - **Rundor**: kör ett startscenario, pausa (mellanslag) och ge nästa rundas instruktioner utifrån läget just då. Att rita med Åk/Passa/Skjut medan det är pausat skapar en ny runda vid den tidpunkten (eller knappen "Nästa runda härifrån"). Spelarna behåller position, fart och puckinnehav; de nya instruktionerna ersätter de gamla och spelare utan instruktioner fortsätter som botar. Rundorna visas som flikar ovanför tidslinjen och kan redigeras eller tas bort. Tidigare rundor påverkas inte.
+  - Ritade spelare väjer bara i sidled för motståndare (tidigare kunde en pressande back stoppa en ritad åkväg), och raka åkvägar åks i normal fart (tidigare kröp spelaren fram).
   - Målvakter rör sig i sidled mot positionen mellan puck och bur (tidigare gled de ut ur målet).
-  - 7 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
+  - 11 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
 
 ## Kör
 ```

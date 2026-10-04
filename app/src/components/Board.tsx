@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState, type PointerEvent } from 'react'
+import { CONFIG } from '../config'
 import { chaikin, simplify, wavy } from '../engine/path'
 import type { SimResult } from '../engine/simulate'
 import { dist, wrapAngle } from '../engine/vec'
 import { clampToField, fieldOf } from '../model/rink'
 import type { Action, Frame, Player, Vec } from '../model/types'
-import { staticPlan } from '../editor/staticPlan'
+import { editContext, roundAt, type EditContext } from '../editor/staticPlan'
 import { useEditor } from '../editor/store'
 import { RinkLines } from './RinkLines'
 
@@ -86,12 +87,14 @@ export function Board({ sim }: { sim: SimResult }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [drag, setDrag] = useState<Drag>(null)
   const st = useEditor()
-  const { scenario, tool, time, playing, selectedId, pending, showPaths, showTrails } = st
-  const editing = time === 0 && !playing
+  const { scenario, tool, time, playing, selectedId, pending, showPaths, showTrails, activeRound } = st
+  const editing = st.editing && !playing
   const field = fieldOf(scenario.settings)
   const view = `${-field.halfLength - PAD} ${-field.halfWidth - PAD} ${2 * (field.halfLength + PAD)} ${2 * (field.halfWidth + PAD)}`
-  const plan = useMemo(() => staticPlan(scenario), [scenario])
+  const shownRound = editing ? activeRound : roundAt(scenario, time)
+  const ctx = useMemo(() => editContext(scenario, shownRound, sim), [scenario, shownRound, sim])
   const frame = useMemo(() => (editing ? null : frameAt(sim, time)), [editing, sim, time])
+  const firstRound = ctx.round === 0
 
   const toM = (e: PointerEvent): Vec => {
     const svg = svgRef.current!
@@ -102,13 +105,14 @@ export function Board({ sim }: { sim: SimResult }) {
     return { x: r.x, y: r.y }
   }
 
-  const hitPlayer = (p: Vec, useEnd = false) => {
+  const hitPlayer = (c: EditContext, p: Vec, useEnd = false) => {
     let best: Player | undefined
     let bestD = 1.3
     for (const pl of scenario.players) {
-      const cands = useEnd ? [plan.endPos[pl.id], pl.pos] : [pl.pos]
-      for (const c of cands) {
-        const d = dist(c, p)
+      const cands = useEnd ? [c.plan.endPos[pl.id], c.pos[pl.id]] : [c.pos[pl.id]]
+      for (const q of cands) {
+        if (!q) continue
+        const d = dist(q, p)
         if (d < bestD) {
           bestD = d
           best = pl
@@ -118,30 +122,47 @@ export function Board({ sim }: { sim: SimResult }) {
     return best
   }
   const hitPuck = (p: Vec) => scenario.pucks.find((k) => dist(k.pos, p) < 0.8)
+  const hitCone = (p: Vec) => scenario.cones?.find((c) => dist(c.pos, p) < 0.8)
+
+  const currentContext = (): EditContext => {
+    const now = useEditor.getState()
+    return editContext(now.scenario, now.activeRound, sim)
+  }
 
   const onDown = (e: PointerEvent) => {
-    if (!editing) {
-      st.setPlaying(false)
-      st.setTime(0)
-      return
-    }
     const p = toM(e)
     const capture = () => (e.target as Element).setPointerCapture?.(e.pointerId)
     const inside = clampToField(field, p, 0.6).pos
+    if (playing) return st.setPlaying(false)
 
-    if (tool === 'select' || tool === 'home' || tool === 'away' || tool === 'goalie' || tool === 'puck') {
-      const hp = hitPlayer(p)
-      const hk = hp ? undefined : hitPuck(p)
+    if (!editing) {
+      if (tool === 'skate' || tool === 'pass' || tool === 'shoot') {
+        st.beginEditHere()
+      } else {
+        const hp = scenario.players.find((pl) => frame?.players[pl.id] && dist(frame.players[pl.id], p) < 1.3)
+        st.select(hp?.id ?? null)
+        if (tool !== 'select') st.setMessage('Pausat. Välj Åk, Passa eller Skjut för att ge nästa runda instruktioner härifrån.')
+        return
+      }
+    }
+    const c = editing ? ctx : currentContext()
+
+    if (tool === 'select' || tool === 'home' || tool === 'away' || tool === 'goalie' || tool === 'puck' || tool === 'cone') {
+      const hp = hitPlayer(c, p)
+      const hk = hp || !firstRound ? undefined : (hitPuck(p) ?? hitCone(p))
       if (hp || hk) {
         const id = (hp ?? hk)!.id
         st.select(hp ? id : null)
+        if (!firstRound) return
         st.checkpoint()
         setDrag({ kind: 'move', id })
         capture()
         return
       }
       if (tool === 'select') return st.select(null)
+      if (!firstRound) return st.setMessage('Spelare och puckar läggs ut i runda 1.')
       if (tool === 'puck') return st.addPuck(inside)
+      if (tool === 'cone') return st.addCone(inside)
       if (tool === 'goalie') {
         const rightIsAway = scenario.settings.homeAttacks === 'right'
         const team = p.x > 0 === rightIsAway ? 'away' : 'home'
@@ -152,27 +173,27 @@ export function Board({ sim }: { sim: SimResult }) {
     }
 
     if (tool === 'skate') {
-      const hp = hitPlayer(p, true) ?? scenario.players.find((x) => x.id === selectedId)
+      const hp = hitPlayer(c, p, true) ?? scenario.players.find((x) => x.id === selectedId)
       if (!hp) return st.setMessage('Börja dra från en spelare')
       st.select(hp.id)
       st.setMessage(null)
-      setDrag({ kind: 'draw', playerId: hp.id, pts: [plan.endPos[hp.id]] })
+      setDrag({ kind: 'draw', playerId: hp.id, pts: [c.plan.endPos[hp.id]] })
       capture()
       return
     }
 
     if (tool === 'pass' || tool === 'shoot') {
       if (!pending) {
-        const hp = hitPlayer(p, true)
+        const hp = hitPlayer(c, p, true)
         if (!hp) return
-        if (!plan.carriers.has(hp.id)) return st.setMessage(`${hp.label} har inte pucken. Lägg pucken intill en spelare eller passa först.`)
+        if (!c.plan.carriers.has(hp.id)) return st.setMessage(`${hp.label} har inte pucken. Lägg pucken intill en spelare eller passa först.`)
         st.setPending({ kind: tool, fromId: hp.id })
         st.select(hp.id)
         st.setMessage(tool === 'pass' ? 'Klicka på mottagaren' : 'Klicka på målet att skjuta mot')
         return
       }
       if (pending.kind === 'pass') {
-        const hp = hitPlayer(p, true)
+        const hp = hitPlayer(c, p, true)
         if (!hp || hp.id === pending.fromId) return
         st.addAction({ kind: 'pass', playerId: pending.fromId, toPlayerId: hp.id })
       } else {
@@ -184,7 +205,8 @@ export function Board({ sim }: { sim: SimResult }) {
     }
 
     if (tool === 'erase') {
-      const hit = hitPlayer(p) ?? hitPuck(p)
+      if (!firstRound) return st.setMessage('Spelare och puckar tas bort i runda 1.')
+      const hit = hitPlayer(c, p) ?? hitPuck(p) ?? hitCone(p)
       if (hit) st.removeObject(hit.id)
     }
   }
@@ -217,7 +239,7 @@ export function Board({ sim }: { sim: SimResult }) {
   const trails = useMemo(() => {
     if (editing || !showTrails) return []
     const end = Math.floor(time / sim.dt)
-    const start = Math.max(0, end - Math.round(1.6 / sim.dt))
+    const start = Math.max(0, end - Math.round(CONFIG.trailSeconds / sim.dt))
     return scenario.players.map((p) => {
       const pts: Vec[] = []
       for (let i = start; i <= end; i += 2) {
@@ -227,6 +249,13 @@ export function Board({ sim }: { sim: SimResult }) {
       return { id: p.id, team: p.team, pts }
     })
   }, [editing, showTrails, time, sim, scenario.players])
+
+  const posOf = (p: Player) => {
+    const f = frame?.players[p.id]
+    if (f) return f
+    const q = ctx.pos[p.id] ?? p.pos
+    return { x: q.x, y: q.y, h: ctx.heading[p.id] ?? p.heading }
+  }
 
   return (
     <svg
@@ -247,8 +276,8 @@ export function Board({ sim }: { sim: SimResult }) {
 
       {showPaths && (
         <g opacity={editing ? 0.9 : 0.25} style={{ pointerEvents: 'none' }}>
-          {scenario.actions.map((a) => {
-            const g = plan.geom[a.id]
+          {ctx.actions.map((a) => {
+            const g = ctx.plan.geom[a.id]
             if (!g) return null
             return <ActionShape key={a.id} a={a} from={g.from} to={g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
           })}
@@ -259,28 +288,25 @@ export function Board({ sim }: { sim: SimResult }) {
         <polyline points={pts2(drag.pts)} fill="none" stroke={TEAM_COLOR[teamOf(drag.playerId)]} strokeWidth={0.15} strokeDasharray="0.3 0.2" />
       )}
 
+      {scenario.cones?.map((c) => (
+        <g key={c.id} transform={`translate(${c.pos.x} ${c.pos.y})`} style={{ cursor: 'pointer' }}>
+          <circle r={0.55} fill="#fb923c" stroke="#c2410c" strokeWidth={0.1} />
+          <circle r={0.2} fill="#fff7ed" />
+        </g>
+      ))}
+
       {trails.map((tr) => (
         <polyline key={tr.id} points={pts2(tr.pts)} fill="none" stroke={TEAM_COLOR[tr.team]} strokeOpacity={0.35} strokeWidth={0.35} strokeLinecap="round" />
       ))}
 
       {scenario.players.map((p) => {
-        const f = frame?.players[p.id]
-        return (
-          <PlayerGlyph
-            key={p.id}
-            p={p}
-            x={f ? f.x : p.pos.x}
-            y={f ? f.y : p.pos.y}
-            h={f ? f.h : p.heading}
-            selected={p.id === selectedId}
-            pending={pending?.fromId === p.id}
-          />
-        )
+        const q = posOf(p)
+        return <PlayerGlyph key={p.id} p={p} x={q.x} y={q.y} h={q.h} selected={p.id === selectedId} pending={pending?.fromId === p.id} />
       })}
 
       {scenario.pucks.map((k) => {
-        const f = frame?.pucks[k.id]
-        return <circle key={k.id} cx={f ? f.x : k.pos.x} cy={f ? f.y : k.pos.y} r={0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} />
+        const q = frame?.pucks[k.id] ?? ctx.pucks[k.id] ?? k.pos
+        return <circle key={k.id} cx={q.x} cy={q.y} r={0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} />
       })}
     </svg>
   )

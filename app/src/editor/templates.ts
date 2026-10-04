@@ -2,7 +2,7 @@ import type { Player, Role, Scenario, Team } from '../model/types'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
-export type TemplateKey = 'empty' | '2v1' | '3v2' | '5v5' | 'zone2v2' | 'zone3v3'
+export type TemplateKey = 'empty' | '2v1' | '3v2' | '5v5' | 'zone2v2' | 'zone3v3' | 'slalom'
 
 export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   empty: 'Tom rink',
@@ -11,6 +11,7 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   '5v5': '5 mot 5 (anfall)',
   zone2v2: 'Zonspel 2 mot 2',
   zone3v3: 'Zonspel 3 mot 3',
+  slalom: 'Konslalom + skott',
 }
 
 function pl(id: string, team: Team, role: Role, label: string, x: number, y: number): Player {
@@ -76,6 +77,14 @@ export function template(key: TemplateKey): Scenario {
       s.players.push(pl('h3', 'home', 'D', '3', -8, -7), pl('a3', 'away', 'D', '3', 8, -7))
     }
     s.pucks = [{ id: 'k1', pos: { x: -4.3, y: -3 } }]
+  } else if (key === 'slalom') {
+    s.players = [pl('h1', 'home', 'F', '9', -6, 0), awayG]
+    s.pucks = [{ id: 'k1', pos: { x: -5.3, y: 0 } }]
+    s.cones = [-1, 5, 11].map((x, i) => ({ id: `c${i + 1}`, pos: { x, y: 0 } }))
+    s.actions = [
+      { id: 'a1', kind: 'skate', playerId: 'h1', speed: 'normal', path: [{ x: -1, y: 1.8 }, { x: 5, y: -1.8 }, { x: 11, y: 1.8 }, { x: 17, y: 0 }] },
+      { id: 'a2', kind: 'shoot', playerId: 'h1', goal: 'right' },
+    ]
   }
   return s
 }

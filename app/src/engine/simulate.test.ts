@@ -71,4 +71,54 @@ describe('simulate', () => {
       expect(r.events.some((e) => e.kind === 'shot')).toBe(true)
     }
   })
+
+  it('a new round keeps everything before it and then follows the new instructions', () => {
+    const s = template('3v2')
+    s.settings.durationSec = 6
+    const before = simulate(s)
+    const startT = 2
+    const idx = Math.round(startT / before.dt)
+    const at = before.frames[idx].players.h2
+    const target = { x: at.x + 6, y: at.y + 6 }
+    s.rounds = [{ id: 'r2', startT, actions: [{ id: 'k', kind: 'skate', playerId: 'h2', speed: 'fast', path: [{ x: at.x + 3, y: at.y + 3 }, target] }] }]
+    const after = simulate(s)
+    expect(after.duration).toBeCloseTo(startT + 6, 5)
+    expect(JSON.stringify(after.frames.slice(0, idx + 1))).toBe(JSON.stringify(before.frames.slice(0, idx + 1)))
+    const reached = after.frames.slice(idx).some((f) => dist(f.players.h2, target) < 1)
+    expect(reached).toBe(true)
+  })
+
+  it('skates at full speed along a straight one-point path', () => {
+    const s = base()
+    s.actions.push({ id: 's1', kind: 'skate', playerId: 'a', speed: 'normal', path: [{ x: 20, y: 0 }] })
+    const r = simulate(s)
+    expect(r.frames[Math.round(3 / r.dt)].players.a.x).toBeGreaterThan(10)
+  })
+
+  it('skates around a cone placed on the drawn path and still reaches the end', () => {
+    const s = base()
+    s.cones = [{ id: 'c1', pos: { x: 8, y: 0 } }]
+    s.actions.push({ id: 's1', kind: 'skate', playerId: 'a', speed: 'normal', path: [{ x: 16, y: 0 }] })
+    const r = simulate(s)
+    let closest = Infinity
+    for (const f of r.frames) closest = Math.min(closest, dist(f.players.a, { x: 8, y: 0 }))
+    expect(closest).toBeGreaterThan(0.7)
+    expect(dist(r.frames[r.frames.length - 1].players.a, { x: 16, y: 0 })).toBeLessThan(1.5)
+  })
+
+  it('bots steer around cones on their way to goal', () => {
+    const s = template('2v1')
+    s.cones = [6, 9, 12, 15].map((x, i) => ({ id: `c${i}`, pos: { x, y: -4 + (i % 2) * 2 } }))
+    const r = simulate(s)
+    for (const f of r.frames)
+      for (const p of Object.values(f.players)) for (const c of s.cones) expect(dist(p, c.pos)).toBeGreaterThan(0.7)
+    expect(r.events.some((e) => e.kind === 'shot')).toBe(true)
+  })
+
+  it('cone slalom template weaves around every cone and ends with a shot', () => {
+    const s = template('slalom')
+    const r = simulate(s)
+    for (const c of s.cones!) expect(Math.min(...r.frames.map((f) => dist(f.players.h1, c.pos)))).toBeGreaterThan(1)
+    expect(r.events.some((e) => e.kind === 'shot' && e.playerId === 'h1')).toBe(true)
+  })
 })
