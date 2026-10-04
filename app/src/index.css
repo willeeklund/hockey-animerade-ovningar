@@ -166,3 +166,5 @@ button.danger { color: #b91c1c; width: 100%; }
   white-space: nowrap;
 }
 .source-link:hover { background: #1b3a5c; border-color: #4f6f94; }
+button.focus { width: 100%; }
+button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }

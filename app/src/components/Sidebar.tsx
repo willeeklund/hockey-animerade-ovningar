@@ -12,6 +12,7 @@ const TOOLS: { id: Tool; label: string; icon: string; hint: string; key?: string
   { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg', key: 'A' },
   { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka puckföraren, sedan mottagaren', key: 'P' },
   { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka puckföraren, sedan målet', key: 'S' },
+  { id: 'mark', label: 'Markera', icon: '⇄', hint: 'Klicka på den som ska markera, sedan på motståndaren', key: 'M' },
   { id: 'erase', label: 'Ta bort', icon: '✕', hint: 'Klicka på spelare eller puck' },
 ]
 
@@ -28,7 +29,7 @@ const ROLES: { id: Role; label: string }[] = [
 ]
 
 function SelectedPanel() {
-  const { scenario, selectedId, activeRound, editing, updatePlayer, addAction, clearActions, removeObject, beginEditHere } = useEditor()
+  const { scenario, selectedId, activeRound, editing, updatePlayer, addAction, clearActions, removeObject, beginEditHere, setFocus } = useEditor()
   const p = scenario.players.find((x) => x.id === selectedId)
   if (!p) return null
   const roundActions = editing ? (activeRound === 0 ? scenario.actions : (scenario.rounds?.[activeRound - 1]?.actions ?? [])) : []
@@ -69,6 +70,13 @@ function SelectedPanel() {
           Rensa rörelser ({count})
         </button>
       </div>
+      <button
+        className={`focus ${scenario.focusId === p.id ? 'on' : ''}`}
+        onClick={() => setFocus(scenario.focusId === p.id ? null : p.id)}
+        title="Spotlight på spelaren när övningen spelas upp"
+      >
+        ★ {scenario.focusId === p.id ? 'Huvudperson (vald)' : 'Gör till huvudperson'}
+      </button>
       <button className="danger" onClick={() => removeObject(p.id)}>
         Ta bort spelare
       </button>

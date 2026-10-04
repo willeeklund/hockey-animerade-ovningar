@@ -83,6 +83,19 @@ function PlayerGlyph({ p, x, y, h, selected, pending }: { p: Player; x: number; 
   )
 }
 
+const FOCUS_COLOR = '#facc15'
+
+function FocusRing({ x, y }: { x: number; y: number }) {
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      <circle cx={x} cy={y} r={1.35} fill="none" stroke={FOCUS_COLOR} strokeWidth={0.18} />
+      <text x={x} y={y - 1.7} textAnchor="middle" fontSize={0.9} fill={FOCUS_COLOR} stroke="#1f2937" strokeWidth={0.08} paintOrder="stroke">
+        ★
+      </text>
+    </g>
+  )
+}
+
 export function Board({ sim }: { sim: SimResult }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [drag, setDrag] = useState<Drag>(null)
@@ -136,7 +149,7 @@ export function Board({ sim }: { sim: SimResult }) {
     if (playing) return st.setPlaying(false)
 
     if (!editing) {
-      if (tool === 'skate' || tool === 'pass' || tool === 'shoot') {
+      if (tool === 'skate' || tool === 'pass' || tool === 'shoot' || tool === 'mark') {
         st.beginEditHere()
       } else {
         const hp = scenario.players.find((pl) => frame?.players[pl.id] && dist(frame.players[pl.id], p) < 1.3)
@@ -204,6 +217,25 @@ export function Board({ sim }: { sim: SimResult }) {
       return
     }
 
+    if (tool === 'mark') {
+      const hp = hitPlayer(c, p, true)
+      if (!hp) return
+      if (!pending) {
+        if (hp.role === 'G') return st.setMessage('Målvakten kan inte markera.')
+        st.setPending({ kind: 'mark', fromId: hp.id })
+        st.select(hp.id)
+        st.setMessage(`Klicka på motståndaren som ${hp.label} ska markera`)
+        return
+      }
+      const from = scenario.players.find((x) => x.id === pending.fromId)
+      if (hp.id === pending.fromId || !from) return
+      if (hp.team === from.team || hp.role === 'G') return st.setMessage('Välj en utespelare i motståndarlaget.')
+      st.addMark(from.id, hp.id)
+      st.setPending(null)
+      st.setMessage(null)
+      return
+    }
+
     if (tool === 'erase') {
       if (!firstRound) return st.setMessage('Spelare och puckar tas bort i runda 1.')
       const hit = hitPlayer(c, p) ?? hitPuck(p) ?? hitCone(p)
@@ -250,6 +282,7 @@ export function Board({ sim }: { sim: SimResult }) {
     })
   }, [editing, showTrails, time, sim, scenario.players])
 
+  const focus = scenario.players.find((p) => p.id === scenario.focusId)
   const posOf = (p: Player) => {
     const f = frame?.players[p.id]
     if (f) return f
@@ -295,8 +328,32 @@ export function Board({ sim }: { sim: SimResult }) {
         </g>
       ))}
 
+      {showPaths &&
+        ctx.actions.map((a) => {
+          if (a.kind !== 'mark') return null
+          const marker = scenario.players.find((p) => p.id === a.playerId)
+          const man = scenario.players.find((p) => p.id === a.targetId)
+          if (!marker || !man) return null
+          const q1 = posOf(marker)
+          const q2 = posOf(man)
+          return (
+            <g key={a.id} style={{ pointerEvents: 'none' }} opacity={editing ? 0.9 : 0.6}>
+              <line x1={q1.x} y1={q1.y} x2={q2.x} y2={q2.y} stroke={TEAM_COLOR[marker.team]} strokeWidth={0.12} strokeDasharray="0.25 0.2" />
+              <circle cx={q2.x} cy={q2.y} r={1.25} fill="none" stroke={TEAM_COLOR[marker.team]} strokeWidth={0.1} strokeDasharray="0.3 0.2" />
+            </g>
+          )
+        })}
+
       {trails.map((tr) => (
-        <polyline key={tr.id} points={pts2(tr.pts)} fill="none" stroke={TEAM_COLOR[tr.team]} strokeOpacity={0.35} strokeWidth={0.35} strokeLinecap="round" />
+        <polyline
+          key={tr.id}
+          points={pts2(tr.pts)}
+          fill="none"
+          stroke={tr.id === scenario.focusId ? FOCUS_COLOR : TEAM_COLOR[tr.team]}
+          strokeOpacity={tr.id === scenario.focusId ? 0.9 : 0.35}
+          strokeWidth={0.35}
+          strokeLinecap="round"
+        />
       ))}
 
       {scenario.players.map((p) => {
@@ -308,6 +365,8 @@ export function Board({ sim }: { sim: SimResult }) {
         const q = frame?.pucks[k.id] ?? ctx.pucks[k.id] ?? k.pos
         return <circle key={k.id} cx={q.x} cy={q.y} r={0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} />
       })}
+
+      {focus && <FocusRing {...posOf(focus)} />}
     </svg>
   )
 }

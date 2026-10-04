@@ -30,6 +30,7 @@ export type Action =
   | { id: string; kind: 'pass'; playerId: string; toPlayerId: string }
   | { id: string; kind: 'shoot'; playerId: string; goal: Side }
   | { id: string; kind: 'wait'; playerId: string; seconds: number }
+  | { id: string; kind: 'mark'; playerId: string; targetId: string }
 
 export interface Round {
   id: string
@@ -54,6 +55,7 @@ export interface Scenario {
   cones?: Cone[]
   actions: Action[]
   rounds?: Round[]
+  focusId?: string
   settings: ScenarioSettings
 }
 
