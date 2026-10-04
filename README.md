@@ -4,6 +4,8 @@ Hockey Vision är ett verktyg för att skapa animerade hockeyövningar. Tränare
 
 Spelarna kan antingen följa de rörelser tränaren ritar eller agera själva som autonoma botar. Botarna följer rimliga hockeyregler utifrån medspelare, motståndare och var pucken är.
 
+https://willeeklund.github.io/hockey-animerade-ovningar/
+
 ## Funktioner
 
 - **Spelyta:** hel rink i IIHF-mått (60 × 30 m) eller zonspel, där man spelar på bredden i en zon med burarna mot varandra.
@@ -34,24 +36,69 @@ Spelarna kan antingen följa de rörelser tränaren ritar eller agera själva so
 | Cmd/Ctrl + Z | Ångra (Shift för gör om) |
 | Esc | Avbryt och gå tillbaka till Välj |
 
-## Kom igång
+## Lokal utvecklingsmiljö
 
-Kräver Node.js 20 eller senare.
+### Förutsättningar
+
+- **Node.js 20** eller senare, med npm. Versionen står i [`.nvmrc`](.nvmrc). Med [nvm](https://github.com/nvm-sh/nvm) räcker det att köra `nvm use` i projektroten.
+- **Git**.
+
+Kontrollera versionen:
 
 ```bash
-cd app
-npm install
+node --version
+```
+
+### Första gången
+
+Klona repot och installera beroendena:
+
+```bash
+git clone git@github.com:willeeklund/hockey-animerade-ovningar.git
+```
+
+```bash
+cd hockey-animerade-ovningar/app
+```
+
+```bash
+npm ci
+```
+
+`npm ci` installerar exakt de versioner som står i `package-lock.json`. Använd `npm install` när du vill lägga till eller uppdatera ett paket.
+
+### Starta appen
+
+```bash
 npm run dev
 ```
 
-Öppna sedan adressen som visas i terminalen, normalt http://localhost:5173.
+Öppna adressen som visas i terminalen, normalt http://localhost:5173. Sidan laddas om automatiskt när du sparar en fil.
+
+### Kommandon
+
+Alla kommandon körs i mappen `app/`.
 
 | Kommando | Beskrivning |
 |---|---|
-| `npm run dev` | Startar utvecklingsservern |
-| `npm test` | Kör testerna för simuleringsmotorn |
-| `npm run lint` | Kör lint |
-| `npm run build` | Bygger en produktionsversion till `app/dist` |
+| `npm run dev` | Startar utvecklingsservern med automatisk omladdning |
+| `npm test` | Kör testerna för simuleringsmotorn (Vitest) |
+| `npm run lint` | Kör lint (oxlint) |
+| `npm run build` | Typkontrollerar och bygger en produktionsversion till `app/dist` |
+| `npm run preview` | Visar det byggda resultatet lokalt, så som det kommer att se ut publicerat |
+
+Kör gärna `npm run lint`, `npm test` och `npm run build` innan du pushar. Det är samma steg som körs i GitHub Actions.
+
+## Publicering på GitHub Pages
+
+Appen byggs och publiceras automatiskt på GitHub Pages vid varje push till `main`. Arbetsflödet finns i [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml) och gör följande:
+
+1. installerar beroenden med `npm ci`
+2. kör lint och tester
+3. bygger appen
+4. publicerar `app/dist`
+
+Misslyckas lint, tester eller bygget publiceras ingenting.
 
 ## Inställningar
 
