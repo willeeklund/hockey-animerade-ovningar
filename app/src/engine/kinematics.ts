@@ -1,4 +1,4 @@
-import { clampToRink } from '../model/rink'
+import { clampToField, type Field } from '../model/rink'
 import type { Vec } from '../model/types'
 import { add, angleOf, dist, dot, fromAngle, len, mul, norm, sub, wrapAngle } from './vec'
 import type { Intent, PlayerRt } from './world'
@@ -21,7 +21,29 @@ export function separate(p: PlayerRt, others: PlayerRt[], target: Vec): Vec {
   return add(target, push)
 }
 
-export function stepPlayer(p: PlayerRt, intent: Intent, dt: number) {
+const GOALIE_ACCEL = 14
+
+function turnToward(p: PlayerRt, dir: Vec | null, dt: number) {
+  if (!dir || len(dir) < 1e-6) return
+  const a = wrapAngle(angleOf(dir) - p.heading)
+  const m = STAND_TURN_RATE * dt
+  p.heading = wrapAngle(p.heading + Math.max(-m, Math.min(m, a)))
+}
+
+function stepGoalie(p: PlayerRt, intent: Intent, dt: number, field: Field) {
+  const toT = sub(intent.target, p.pos)
+  const d = len(toT)
+  const speed = Math.min(intent.speed, Math.sqrt(2 * GOALIE_ACCEL * 0.5 * d))
+  const want = d > 0.05 ? mul(toT, speed / d) : { x: 0, y: 0 }
+  const dv = sub(want, p.vel)
+  const maxDv = GOALIE_ACCEL * dt
+  p.vel = len(dv) > maxDv ? add(p.vel, mul(norm(dv), maxDv)) : want
+  p.pos = clampToField(field, add(p.pos, mul(p.vel, dt)), PLAYER_RADIUS).pos
+  turnToward(p, intent.face ? sub(intent.face, p.pos) : null, dt)
+}
+
+export function stepPlayer(p: PlayerRt, intent: Intent, dt: number, field: Field) {
+  if (p.role === 'G') return stepGoalie(p, intent, dt, field)
   const toT = sub(intent.target, p.pos)
   const d = len(toT)
   let desired = d < 0.15 ? 0 : intent.speed
@@ -44,7 +66,7 @@ export function stepPlayer(p: PlayerRt, intent: Intent, dt: number) {
   }
 
   p.vel = mul(newDir, newSpeed)
-  const moved = clampToRink(add(p.pos, mul(p.vel, dt)), PLAYER_RADIUS)
+  const moved = clampToField(field, add(p.pos, mul(p.vel, dt)), PLAYER_RADIUS)
   p.pos = moved.pos
   if (moved.normal) {
     const into = dot(p.vel, moved.normal)
@@ -54,11 +76,6 @@ export function stepPlayer(p: PlayerRt, intent: Intent, dt: number) {
   if (newSpeed > 0.6) {
     p.heading = angleOf(newDir)
   } else {
-    const faceDir = intent.face ? sub(intent.face, p.pos) : d > 0.3 ? toT : null
-    if (faceDir && len(faceDir) > 1e-6) {
-      const a = wrapAngle(angleOf(faceDir) - p.heading)
-      const m = STAND_TURN_RATE * dt
-      p.heading = wrapAngle(p.heading + Math.max(-m, Math.min(m, a)))
-    }
+    turnToward(p, intent.face ? sub(intent.face, p.pos) : d > 0.3 ? toT : null, dt)
   }
 }

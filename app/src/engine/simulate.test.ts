@@ -3,6 +3,7 @@ import type { Scenario } from '../model/types'
 import { simulate } from './simulate'
 import { dist } from './vec'
 import { template } from '../editor/templates'
+import { clampToField, FIELDS } from '../model/rink'
 
 function base(): Scenario {
   return {
@@ -56,6 +57,18 @@ describe('simulate', () => {
     for (const f of r.frames) for (const p of Object.values(f.players)) {
       expect(Math.abs(p.x)).toBeLessThanOrEqual(30)
       expect(Math.abs(p.y)).toBeLessThanOrEqual(15)
+    }
+  })
+
+  it('zone play keeps everyone inside the zone and produces shots', () => {
+    for (const key of ['zone2v2', 'zone3v3'] as const) {
+      const s = template(key)
+      s.settings.durationSec = 15
+      const r = simulate(s)
+      for (const f of r.frames) for (const p of Object.values(f.players)) {
+        expect(clampToField(FIELDS.zone, p, 0.4).normal).toBeNull()
+      }
+      expect(r.events.some((e) => e.kind === 'shot')).toBe(true)
     }
   })
 })

@@ -1,4 +1,4 @@
-import { attackSide, defendSide, goalCenter, RINK } from '../model/rink'
+import { attackSide, defendSide, goalCenter } from '../model/rink'
 import type { Team, Vec } from '../model/types'
 import { add, clamp, dist, distToSegment, lerp, mul, norm, sub } from './vec'
 import { hold, playerById, SPEEDS, type Intent, type PlayerRt, type PuckRt, type World } from './world'
@@ -14,11 +14,11 @@ const skaters = (w: World, team: Team) => w.players.filter((p) => p.team === tea
 const opponentsOf = (w: World, team: Team) => w.players.filter((p) => p.team !== team)
 
 function attackGoal(w: World, team: Team) {
-  return goalCenter(attackSide(team, w.scenario.settings))
+  return goalCenter(w.field, attackSide(team, w.scenario.settings))
 }
 
 function ownGoal(w: World, team: Team) {
-  return goalCenter(defendSide(team, w.scenario.settings))
+  return goalCenter(w.field, defendSide(team, w.scenario.settings))
 }
 
 function arrive(p: PlayerRt, target: Vec, max: number) {
@@ -74,7 +74,7 @@ function carrierDecision(w: World, p: PlayerRt): BotDecision {
 
   if (canAct && depthToLine > 0.8) {
     const angleOk = Math.abs(p.pos.y) < depthToLine * 1.6 + 1
-    if (angleOk && (dGoal < 7 || (dGoal < 14 && laneOpen(p.pos, goal, opps, 1.0)))) {
+    if (angleOk && (dGoal < 7 || (dGoal < Math.min(14, w.field.goalLineX * 0.7) && laneOpen(p.pos, goal, opps, 1.0)))) {
       return { intent: { target: goal, speed: SPEEDS.normal }, act: { kind: 'shoot' } }
     }
   }
@@ -108,7 +108,7 @@ function carrierDecision(w: World, p: PlayerRt): BotDecision {
       .sort((a, b) => dist(a.pos, p.pos) - dist(b.pos, p.pos))[0]
     if (ahead) {
       const side = p.pos.y >= ahead.pos.y ? 1 : -1
-      target = { x: p.pos.x + dirX * 4, y: clamp(ahead.pos.y + side * 3.5, -12, 12) }
+      target = { x: p.pos.x + dirX * 4, y: clamp(ahead.pos.y + side * 3.5, -w.field.halfWidth * 0.8, w.field.halfWidth * 0.8) }
     }
   } else {
     target = { x: goal.x - dirX * 7, y: p.pos.y > 0 ? 3 : -3 }
@@ -127,13 +127,19 @@ function supportIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string
   if (p.role === 'D') {
     const sorted = [...ds].sort((a, b) => a.pos.y - b.pos.y || a.id.localeCompare(b.id))
     const i = sorted.findIndex((q) => q.id === p.id)
-    const y = sorted.length === 1 ? (carrierPos.y > 0 ? -4 : 4) : i === 0 ? -7 : 7
-    const offBlue = dirX * (RINK.blueLineX + 1.5)
+    const wide = w.field.halfWidth * 0.47
+    const y = sorted.length === 1 ? (carrierPos.y > 0 ? -4 : 4) : i === 0 ? -wide : wide
     let x = carrierPos.x - dirX * 9
-    if ((carrierPos.x - offBlue) * dirX > 0) x = dirX > 0 ? Math.max(x, offBlue) : Math.min(x, offBlue)
+    const blue = w.field.blueLineX
+    if (blue !== null) {
+      const offBlue = dirX * (blue + 1.5)
+      if ((carrierPos.x - offBlue) * dirX > 0) x = dirX > 0 ? Math.max(x, offBlue) : Math.min(x, offBlue)
+    } else {
+      x = clamp(x, -(w.field.goalLineX - 3), w.field.goalLineX - 3)
+    }
     target = { x, y }
   } else {
-    const nearGoal = Math.abs(carrierPos.x - goal.x) < 13
+    const nearGoal = Math.abs(carrierPos.x - goal.x) < Math.min(13, w.field.goalLineX * 0.6)
     if (nearGoal) {
       const spots: Vec[] = [
         { x: goal.x - dirX * 2.3, y: carrierPos.y > 0 ? -0.6 : 0.6 },
@@ -144,13 +150,14 @@ function supportIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string
       const i = Math.max(0, order.findIndex((q) => q.id === p.id))
       target = spots[Math.min(i, spots.length - 1)]
     } else {
-      const lanes = [-9, 0, 9]
+      const laneW = w.field.halfWidth * 0.6
+      const lanes = [-laneW, 0, laneW]
       const carrierLane = lanes.reduce((a, b) => (Math.abs(b - carrierPos.y) < Math.abs(a - carrierPos.y) ? b : a))
       const free = lanes.filter((l) => l !== carrierLane)
       const order = [...fs].sort((a, b) => a.pos.y - b.pos.y || a.id.localeCompare(b.id))
       const i = Math.max(0, order.findIndex((q) => q.id === p.id))
       const lane = order.length === 1 ? free.reduce((a, b) => (Math.abs(b - p.pos.y) < Math.abs(a - p.pos.y) ? b : a)) : free[Math.min(i, free.length - 1)]
-      const x = clamp(carrierPos.x + dirX * 3, -(RINK.goalLineX - 5), RINK.goalLineX - 5)
+      const x = clamp(carrierPos.x + dirX * 3, -(w.field.goalLineX - 5), w.field.goalLineX - 5)
       target = { x, y: lane }
     }
   }

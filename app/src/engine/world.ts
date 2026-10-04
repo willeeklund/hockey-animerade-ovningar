@@ -1,3 +1,4 @@
+import type { Field } from '../model/rink'
 import type { Action, Role, Scenario, SimEvent, Team, Vec } from '../model/types'
 
 export const DT = 1 / 30
@@ -47,6 +48,7 @@ export interface World {
   rng: () => number
   events: SimEvent[]
   scenario: Scenario
+  field: Field
 }
 
 export function playerById(w: World, id: string | null) {
