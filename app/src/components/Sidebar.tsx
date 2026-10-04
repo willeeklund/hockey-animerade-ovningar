@@ -2,15 +2,16 @@ import { useEditor, type Tool } from '../editor/store'
 import { TEMPLATE_NAMES, type TemplateKey } from '../editor/templates'
 import type { Role, SpeedKey } from '../model/types'
 
-const TOOLS: { id: Tool; label: string; icon: string; hint: string }[] = [
-  { id: 'select', label: 'Välj / flytta', icon: '↖', hint: 'Klicka för att markera, dra för att flytta' },
+const TOOLS: { id: Tool; label: string; icon: string; hint: string; key?: string }[] = [
+  { id: 'select', label: 'Välj / flytta', icon: '↖', hint: 'Klicka för att markera, dra för att flytta', key: 'V' },
   { id: 'home', label: 'Lag A (röd)', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
   { id: 'away', label: 'Lag B (blå)', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
   { id: 'goalie', label: 'Målvakt', icon: 'G', hint: 'Klicka på den halva där målvakten ska stå' },
   { id: 'puck', label: 'Puck', icon: '•', hint: 'Lägg pucken intill en spelare så har han den' },
-  { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg' },
-  { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka puckföraren, sedan mottagaren' },
-  { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka puckföraren, sedan målet' },
+  { id: 'cone', label: 'Kon', icon: '▲', hint: 'Klicka för att placera en kon. Spelarna åker runt den.', key: 'K' },
+  { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg', key: 'A' },
+  { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka puckföraren, sedan mottagaren', key: 'P' },
+  { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka puckföraren, sedan målet', key: 'S' },
   { id: 'erase', label: 'Ta bort', icon: '✕', hint: 'Klicka på spelare eller puck' },
 ]
 
@@ -27,10 +28,15 @@ const ROLES: { id: Role; label: string }[] = [
 ]
 
 function SelectedPanel() {
-  const { scenario, selectedId, updatePlayer, addAction, clearActions, removeObject } = useEditor()
+  const { scenario, selectedId, activeRound, editing, updatePlayer, addAction, clearActions, removeObject, beginEditHere } = useEditor()
   const p = scenario.players.find((x) => x.id === selectedId)
   if (!p) return null
-  const count = scenario.actions.filter((a) => a.playerId === p.id).length
+  const roundActions = editing ? (activeRound === 0 ? scenario.actions : (scenario.rounds?.[activeRound - 1]?.actions ?? [])) : []
+  const count = roundActions.filter((a) => a.playerId === p.id).length
+  const inRound = (fn: () => void) => () => {
+    beginEditHere()
+    fn()
+  }
   return (
     <section className="panel">
       <h3>Markerad spelare</h3>
@@ -58,8 +64,8 @@ function SelectedPanel() {
         <button onClick={() => updatePlayer(p.id, { heading: p.heading + Math.PI / 4 })}>Vrid ⟳</button>
       </div>
       <div className="seg">
-        <button onClick={() => addAction({ kind: 'wait', playerId: p.id, seconds: 1 })}>+ Vänta 1 s</button>
-        <button disabled={!count} onClick={() => clearActions(p.id)}>
+        <button onClick={inRound(() => addAction({ kind: 'wait', playerId: p.id, seconds: 1 }))}>+ Vänta 1 s</button>
+        <button disabled={!count} onClick={inRound(() => clearActions(p.id))}>
           Rensa rörelser ({count})
         </button>
       </div>
@@ -80,9 +86,10 @@ export function Sidebar() {
         <h3>Verktyg</h3>
         <div className="tools">
           {TOOLS.map((t) => (
-            <button key={t.id} className={`tool ${tool === t.id ? 'on' : ''} t-${t.id}`} onClick={() => st.setTool(t.id)} title={t.hint}>
+            <button key={t.id} className={`tool ${tool === t.id ? 'on' : ''} t-${t.id}`} onClick={() => st.setTool(t.id)} title={t.key ? `${t.hint} (${t.key})` : t.hint}>
               <span className="icon">{t.icon}</span>
               {t.label}
+              {t.key && <kbd>{t.key}</kbd>}
             </button>
           ))}
         </div>
@@ -133,7 +140,7 @@ export function Sidebar() {
             : 'Bara ritade rörelser spelas upp. Målvakter följer pucken.'}
         </p>
         <label className="row">
-          Längd
+          {scenario.rounds?.length ? 'Längd efter sista rundan' : 'Längd'}
           <select value={scenario.settings.durationSec} onChange={(e) => st.updateSettings({ durationSec: Number(e.target.value) })}>
             {[5, 8, 10, 15, 20, 30].map((d) => (
               <option key={d} value={d}>

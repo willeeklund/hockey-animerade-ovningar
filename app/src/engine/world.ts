@@ -39,12 +39,14 @@ export interface Intent {
   target: Vec
   speed: number
   face?: Vec
+  scripted?: boolean
 }
 
 export interface World {
   t: number
   players: PlayerRt[]
   pucks: PuckRt[]
+  cones: Vec[]
   rng: () => number
   events: SimEvent[]
   scenario: Scenario

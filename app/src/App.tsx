@@ -4,7 +4,9 @@ import { Library } from './components/Library'
 import { Sidebar } from './components/Sidebar'
 import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
-import { useEditor } from './editor/store'
+import { useEditor, type Tool } from './editor/store'
+
+const TOOL_KEYS: Record<string, Tool> = { v: 'select', a: 'skate', p: 'pass', s: 'shoot', k: 'cone' }
 
 export default function App() {
   const scenario = useEditor((s) => s.scenario)
@@ -23,8 +25,9 @@ export default function App() {
         st.removeObject(st.selectedId)
       } else if (e.key === ' ') {
         e.preventDefault()
-        if (!st.playing && (st.time === 0 || st.time >= sim.duration - 0.01)) st.setTime(0.0001)
-        st.setPlaying(!st.playing)
+        st.togglePlay(sim.duration)
+      } else if (!e.metaKey && !e.ctrlKey && !e.altKey && TOOL_KEYS[e.key.toLowerCase()]) {
+        st.setTool(TOOL_KEYS[e.key.toLowerCase()])
       } else if (e.key === 'Escape') {
         st.setPending(null)
         st.setMessage(null)

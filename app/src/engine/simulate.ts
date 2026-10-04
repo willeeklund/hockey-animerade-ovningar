@@ -1,7 +1,7 @@
 import { attackSide, clampToField, defendSide, fieldOf, goalCenter, RINK } from '../model/rink'
 import type { Action, Frame, Scenario, SimEvent } from '../model/types'
 import { botDecision, goalieIntent, focusPuck, type BotAct } from './ai'
-import { separate, stepPlayer } from './kinematics'
+import { avoidCones, separate, stepPlayer } from './kinematics'
 import { pathInfo, pointAt, project } from './path'
 import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, sub } from './vec'
 import {
@@ -89,7 +89,7 @@ export function createWorld(s: Scenario): World {
       scripted: false,
     }
   })
-  return { t: 0, players, pucks, rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
+  return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -154,8 +154,8 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
       const info = pathInfo(a.path)
       p.pathS = project(info, p.pos, p.pathS, p.pathS + 3)
       const end = a.path[a.path.length - 1]
-      const remaining = info.total - p.pathS
       const dEnd = dist(p.pos, end)
+      const remaining = Math.max(info.total - p.pathS, dEnd)
       if (remaining < 0.6 && dEnd < 0.9) {
         advance(w, p)
         continue
@@ -164,7 +164,7 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
       let speed = SPEEDS[a.speed] * (puckCarriedBy(w, p.id) ? 0.93 : 1)
       const nk = nextKind(p)
       if (nk !== 'skate' && nk !== 'pass' && nk !== 'shoot') speed = Math.min(speed, Math.sqrt(2 * 4.5 * remaining) + 0.4)
-      return { target, speed }
+      return { target, speed, scripted: true }
     }
     const puck = puckCarriedBy(w, p.id)
     if (puck) {
@@ -328,19 +328,34 @@ export function step(w: World) {
   const intents = w.players.map((p) => playerIntent(w, p))
   w.players.forEach((p, i) => {
     const it = intents[i]
-    const target = it.speed > 0 ? separate(p, w.players, it.target) : it.target
-    stepPlayer(p, { ...it, target }, DT, w.field)
+    const spaced = it.speed > 0 ? separate(p, w.players, it.target, it.scripted) : it.target
+    const target = it.speed > 0 ? avoidCones(p, spaced, w.cones) : spaced
+    stepPlayer(p, { ...it, target }, DT, w.field, w.cones)
   })
   for (const k of w.pucks) stepPuck(w, k)
   steals(w)
   w.t += DT
 }
 
+export const frameIndex = (t: number) => Math.round(t / DT)
+
+function startRound(w: World, actions: Action[]) {
+  for (const p of w.players) {
+    p.actions = actions.filter((a) => a.playerId === p.id)
+    p.idx = 0
+    p.idxStart = w.t
+    p.pathS = 0
+  }
+}
+
 export function simulate(s: Scenario): SimResult {
   const w = createWorld(s)
   const frames: Frame[] = [snapshot(w)]
-  const n = Math.round(s.settings.durationSec / DT)
+  const rounds = s.rounds ?? []
+  const lastStart = rounds.length ? rounds[rounds.length - 1].startT : 0
+  const n = frameIndex(lastStart + s.settings.durationSec)
   for (let i = 0; i < n; i++) {
+    for (const r of rounds) if (frameIndex(r.startT) === i) startRound(w, r.actions)
     step(w)
     frames.push(snapshot(w))
   }

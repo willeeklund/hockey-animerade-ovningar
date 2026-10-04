@@ -126,3 +126,28 @@ button.danger { color: #b91c1c; width: 100%; }
   .board { min-height: 50vw; }
   .sidebar { border-right: none; }
 }
+
+.tool kbd {
+  margin-left: auto;
+  font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 2px 5px;
+  background: #f8fafc;
+}
+.tool.on kbd { color: var(--accent); }
+
+.rounds { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 30px; }
+.round { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.round > button { border: none; border-radius: 0; padding: 5px 9px; font-size: 13px; }
+.round > button.x { color: var(--muted); padding: 5px 7px; border-left: 1px solid var(--line); }
+.round.on { border-color: var(--accent); }
+.round.on > button:first-child { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.round.editing > button:first-child { background: var(--accent); color: #fff; }
+.next-round { background: #f97316; border-color: #f97316; color: #fff; font-weight: 600; }
+.next-round:hover:not(:disabled) { border-color: #c2410c; }
+.round-hint { font-size: 12px; color: var(--muted); }
+.m-round { background: var(--accent); width: 3px; height: 14px; top: -4px; }
+.t-cone .icon { color: #f97316; }
