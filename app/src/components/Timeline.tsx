@@ -10,6 +10,7 @@ const EVENT_LABEL: Record<string, string> = {
   save: 'Räddning',
   rebound: 'Retur',
   steal: 'Bryt',
+  offside: 'Offside',
 }
 
 export function Timeline({ sim }: { sim: SimResult }) {

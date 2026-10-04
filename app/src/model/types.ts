@@ -77,7 +77,7 @@ export interface Frame {
   pucks: Record<string, FramePuck>
 }
 
-export type SimEventKind = 'pass' | 'shot' | 'goal' | 'save' | 'rebound' | 'steal' | 'pickup'
+export type SimEventKind = 'pass' | 'shot' | 'goal' | 'save' | 'rebound' | 'steal' | 'pickup' | 'offside'
 
 export interface SimEvent {
   t: number

@@ -33,6 +33,7 @@ export interface PuckRt {
   inGoal: boolean
   lastTeam: Team | null
   scripted: boolean
+  wasInZone: Partial<Record<Team, boolean>>
 }
 
 export interface Intent {
