@@ -156,4 +156,34 @@ describe('simulate', () => {
     expect(dist(after, { x: 8, y: -11 })).toBeLessThan(3.6)
     expect(dist(after, { x: 26, y: 0 })).toBeLessThan(dist({ x: 8, y: -11 }, { x: 26, y: 0 }))
   })
+
+  it('attackers without the puck stay onside until the puck crosses the offensive blue line', () => {
+    for (const key of ['2v1', '3v2', '5v5'] as const) {
+      const s = template(key)
+      const r = simulate(s)
+      expect(r.events.filter((e) => e.kind === 'offside')).toEqual([])
+      for (const f of r.frames) {
+        const puck = f.pucks.k1
+        if (!puck.c?.startsWith('h') || puck.x > 7.5) continue
+        for (const [id, p] of Object.entries(f.players)) {
+          if (id.startsWith('h') && id !== puck.c && id !== 'hg') expect(p.x).toBeLessThan(7.8)
+        }
+      }
+    }
+  })
+
+  it('a drawn winger racing ahead waits at the blue line and continues once the puck is in', () => {
+    const s = base()
+    s.players[1].pos = { x: 0, y: 8 }
+    s.actions.push(
+      { id: 'c', kind: 'skate', playerId: 'a', speed: 'slow', path: [{ x: 15, y: 0 }] },
+      { id: 'w', kind: 'skate', playerId: 'b', speed: 'fast', path: [{ x: 18, y: 8 }] },
+    )
+    const r = simulate(s)
+    const entered = r.frames.findIndex((f) => f.pucks.k.x > 7.5)
+    expect(entered).toBeGreaterThan(0)
+    for (const f of r.frames.slice(0, entered)) expect(f.players.b.x).toBeLessThan(7.5)
+    expect(r.frames.some((f) => f.players.b.x > 15)).toBe(true)
+    expect(r.events.filter((e) => e.kind === 'offside')).toEqual([])
+  })
 })

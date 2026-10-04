@@ -168,3 +168,5 @@ button.danger { color: #b91c1c; width: 100%; }
 .source-link:hover { background: #1b3a5c; border-color: #4f6f94; }
 button.focus { width: 100%; }
 button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }
+.m-offside { background: #7c3aed; height: 12px; }
+.ev-offside { background: #ede9fe; color: #5b21b6; font-weight: 600; }

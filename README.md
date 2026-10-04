@@ -17,6 +17,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
   - Försvararna pressar och täcker.
   - Målvakten följer pucken.
   - Alla åker runt koner.
+  - Alla följer offsideregeln: spelare utan puck väntar vid offensiv blålinje och anpassar farten efter puckföraren tills pucken har passerat linjen. Hamnar någon ändå offside visas det på tidslinjen.
 - **Markering:** ange att en spelare ska markera en motståndare. Markeraren följer sin spelare på målsidan med lagom avstånd (gap control), både när du flyttar motståndaren i ritläget och när övningen spelas upp. Principerna beskrivs i [MARKERING.md](MARKERING.md).
 - **Huvudperson:** välj en spelare som scenens huvudperson. Den får en guldring och en guldfärgad svans, så att genomgången kan följa just den spelarens resa.
 - **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då.

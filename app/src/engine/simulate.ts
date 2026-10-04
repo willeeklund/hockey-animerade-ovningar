@@ -2,6 +2,7 @@ import { attackSide, clampToField, defendSide, fieldOf, goalCenter, RINK } from 
 import type { Action, Frame, Scenario, SimEvent } from '../model/types'
 import { botDecision, goalieIntent, focusPuck, type BotAct } from './ai'
 import { markPosition } from './marking'
+import { detectOffside, keepOnside } from './offside'
 import { avoidCones, separate, stepPlayer } from './kinematics'
 import { pathInfo, pointAt, project } from './path'
 import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, sub } from './vec'
@@ -88,6 +89,7 @@ export function createWorld(s: Scenario): World {
       inGoal: false,
       lastTeam: carrier?.team ?? null,
       scripted: false,
+      wasInZone: {},
     }
   })
   return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
@@ -349,7 +351,7 @@ function snapshot(w: World): Frame {
 }
 
 export function step(w: World) {
-  const intents = w.players.map((p) => playerIntent(w, p))
+  const intents = w.players.map((p) => keepOnside(w, p, playerIntent(w, p)))
   w.players.forEach((p, i) => {
     const it = intents[i]
     const spaced = it.speed > 0 ? separate(p, w.players, it.target, it.scripted) : it.target
@@ -358,6 +360,7 @@ export function step(w: World) {
   })
   for (const k of w.pucks) stepPuck(w, k)
   steals(w)
+  for (const k of w.pucks) detectOffside(w, k, k.wasInZone)
   w.t += DT
 }
 
