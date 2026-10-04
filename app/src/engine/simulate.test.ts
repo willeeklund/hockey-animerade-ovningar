@@ -4,6 +4,7 @@ import { simulate } from './simulate'
 import { dist } from './vec'
 import { template } from '../editor/templates'
 import { clampToField, FIELDS } from '../model/rink'
+import { applyMarks } from '../editor/marks'
 
 function base(): Scenario {
   return {
@@ -120,5 +121,39 @@ describe('simulate', () => {
     const r = simulate(s)
     for (const c of s.cones!) expect(Math.min(...r.frames.map((f) => dist(f.players.h1, c.pos)))).toBeGreaterThan(1)
     expect(r.events.some((e) => e.kind === 'shot' && e.playerId === 'h1')).toBe(true)
+  })
+
+  it('markers stay goal-side of their man at a sensible gap while the opponents have the puck', () => {
+    const s = applyMarks(template('mark3v3'))
+    const r = simulate(s)
+    const goal = { x: 26, y: 0 }
+    const pairs = [['a1', 'h1'], ['a2', 'h2'], ['a3', 'h3']]
+    let checked = 0
+    let goalSide = 0
+    for (const f of r.frames.slice(15)) {
+      const carrier = f.pucks.k1.c
+      if (!carrier?.startsWith('h')) continue
+      for (const [m, t] of pairs) {
+        const gap = dist(f.players[m], f.players[t])
+        expect(gap).toBeGreaterThan(0.5)
+        expect(gap).toBeLessThan(5.5)
+        checked++
+        const man = f.players[t]
+        const toGoal = { x: goal.x - man.x, y: goal.y - man.y }
+        if ((f.players[m].x - man.x) * toGoal.x + (f.players[m].y - man.y) * toGoal.y > 0) goalSide++
+      }
+    }
+    expect(checked).toBeGreaterThan(60)
+    expect(goalSide / checked).toBeGreaterThan(0.9)
+  })
+
+  it('a marking player follows when the coach moves the opponent in edit mode', () => {
+    const s = applyMarks(template('mark3v3'))
+    const before = s.players.find((p) => p.id === 'a2')!.pos
+    const moved = applyMarks({ ...s, players: s.players.map((p) => (p.id === 'h2' ? { ...p, pos: { x: 8, y: -11 } } : p)) })
+    const after = moved.players.find((p) => p.id === 'a2')!.pos
+    expect(dist(before, after)).toBeGreaterThan(3)
+    expect(dist(after, { x: 8, y: -11 })).toBeLessThan(3.6)
+    expect(dist(after, { x: 26, y: 0 })).toBeLessThan(dist({ x: 8, y: -11 }, { x: 26, y: 0 }))
   })
 })

@@ -2,14 +2,15 @@ import { create } from 'zustand'
 import { DT } from '../engine/world'
 import { clampToField, FIELDS } from '../model/rink'
 import type { Action, Layout, Player, Role, Scenario, ScenarioSettings, SpeedKey, Team, Vec } from '../model/types'
+import { applyMarks } from './marks'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
 
-export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'puck' | 'cone' | 'skate' | 'pass' | 'shoot' | 'erase'
+export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'puck' | 'cone' | 'mark' | 'skate' | 'pass' | 'shoot' | 'erase'
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 export type NewAction = DistributiveOmit<Action, 'id'>
 
-export type Pending = { kind: 'pass' | 'shoot'; fromId: string } | null
+export type Pending = { kind: 'pass' | 'shoot' | 'mark'; fromId: string } | null
 
 interface EditorState {
   scenario: Scenario
@@ -41,6 +42,8 @@ interface EditorState {
   updatePlayer: (id: string, patch: Partial<Player>) => void
   removeObject: (id: string) => void
   addAction: (a: NewAction) => void
+  addMark: (markerId: string, targetId: string) => void
+  setFocus: (id: string | null) => void
   clearActions: (playerId: string) => void
   updateSettings: (patch: Partial<ScenarioSettings>) => void
   setLayout: (layout: Layout) => void
@@ -83,12 +86,15 @@ function mapAllActions(s: Scenario, fn: (a: Action[]) => Action[]): Scenario {
   return { ...s, actions: fn(s.actions), rounds: s.rounds?.map((r) => ({ ...r, actions: fn(r.actions) })) }
 }
 
-const notInvolving = (id: string) => (as: Action[]) => as.filter((a) => a.playerId !== id && !(a.kind === 'pass' && a.toPlayerId === id))
+const notInvolving = (id: string) => (as: Action[]) =>
+  as.filter((a) => a.playerId !== id && !(a.kind === 'pass' && a.toPlayerId === id) && !(a.kind === 'mark' && a.targetId === id))
+
+const notBy = (id: string) => (as: Action[]) => as.filter((a) => a.playerId !== id && !(a.kind === 'pass' && a.toPlayerId === id))
 
 export const useEditor = create<EditorState>((set, get) => {
   const mutate = (fn: (s: Scenario) => Scenario, checkpoint = true) =>
     set((st) => {
-      const scenario = { ...fn(st.scenario), updatedAt: new Date().toISOString() }
+      const scenario = applyMarks({ ...fn(st.scenario), updatedAt: new Date().toISOString() })
       const activeRound = clampRound(scenario, st.activeRound)
       return {
         scenario,
@@ -160,11 +166,19 @@ export const useEditor = create<EditorState>((set, get) => {
         players: s.players.filter((p) => p.id !== id),
         pucks: s.pucks.filter((k) => k.id !== id),
         cones: s.cones?.filter((c) => c.id !== id),
+        focusId: s.focusId === id ? undefined : s.focusId,
       }))
       if (get().selectedId === id) set({ selectedId: null })
     },
     addAction: (a) => mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, { ...a, id: uid() } as Action])),
-    clearActions: (playerId) => mutate((s) => mapRoundActions(s, get().activeRound, notInvolving(playerId))),
+    clearActions: (playerId) => mutate((s) => mapRoundActions(s, get().activeRound, notBy(playerId))),
+    addMark: (markerId, targetId) =>
+      mutate((s) =>
+        mapRoundActions(s, get().activeRound, (as) => [
+          ...as.filter((a) => !(a.kind === 'mark' && a.playerId === markerId)),
+          { id: uid(), kind: 'mark', playerId: markerId, targetId },
+        ]),
+      ),
     updateSettings: (patch) => mutate((s) => ({ ...s, settings: { ...s.settings, ...patch } })),
     setLayout: (layout) =>
       mutate((s) => {
@@ -194,7 +208,7 @@ export const useEditor = create<EditorState>((set, get) => {
         if (!next) return {}
         return { ...restore(next, st.activeRound), past: [...st.past, st.scenario], future: st.future.slice(1) }
       }),
-    load: (scenario) => set({ ...restore(scenario, 0), past: [], future: [], selectedId: null }),
+    load: (scenario) => set({ ...restore(applyMarks(scenario), 0), past: [], future: [], selectedId: null }),
     loadTemplate: (k) => get().load(k === 'empty' ? emptyScenario() : template(k)),
     setTime: (time) => set({ time }),
     setPlaying: (playing) => set((st) => ({ playing, editing: playing ? false : st.editing })),
@@ -224,6 +238,12 @@ export const useEditor = create<EditorState>((set, get) => {
       mutate((s) => ({ ...s, rounds: [...kept, { id: uid(), startT: t, actions: [] }] }))
     },
     setRate: (rate) => set({ rate }),
+    setFocus: (id) =>
+      set((st) => ({
+        scenario: { ...st.scenario, focusId: id ?? undefined, updatedAt: new Date().toISOString() },
+        past: [...st.past.slice(-80), st.scenario],
+        future: [],
+      })),
     toggle: (k) => set((st) => ({ [k]: !st[k] }) as Partial<EditorState>),
   }
 })

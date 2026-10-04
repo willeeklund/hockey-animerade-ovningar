@@ -1,6 +1,7 @@
 import { attackSide, clampToField, defendSide, fieldOf, goalCenter, RINK } from '../model/rink'
 import type { Action, Frame, Scenario, SimEvent } from '../model/types'
 import { botDecision, goalieIntent, focusPuck, type BotAct } from './ai'
+import { markPosition } from './marking'
 import { avoidCones, separate, stepPlayer } from './kinematics'
 import { pathInfo, pointAt, project } from './path'
 import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, sub } from './vec'
@@ -130,6 +131,10 @@ function doShot(w: World, p: PlayerRt, puck: PuckRt, side: 'left' | 'right', scr
   w.events.push({ t: w.t, kind: 'shot', playerId: p.id })
 }
 
+function teamHasPuck(w: World, team: PlayerRt['team']) {
+  return w.pucks.some((k) => k.carrierId !== null && playerById(w, k.carrierId)?.team === team)
+}
+
 function nextKind(p: PlayerRt) {
   return p.actions[p.idx + 1]?.kind
 }
@@ -163,8 +168,27 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
       const target = pointAt(info, Math.min(info.total, p.pathS + 1.6))
       let speed = SPEEDS[a.speed] * (puckCarriedBy(w, p.id) ? 0.93 : 1)
       const nk = nextKind(p)
-      if (nk !== 'skate' && nk !== 'pass' && nk !== 'shoot') speed = Math.min(speed, Math.sqrt(2 * 4.5 * remaining) + 0.4)
+      if (nk !== 'skate' && nk !== 'pass' && nk !== 'shoot' && nk !== 'mark') speed = Math.min(speed, Math.sqrt(2 * 4.5 * remaining) + 0.4)
       return { target, speed, scripted: true }
+    }
+    if (a.kind === 'mark') {
+      const man = playerById(w, a.targetId)
+      if (!man) {
+        advance(w, p)
+        continue
+      }
+      if (teamHasPuck(w, p.team)) return null
+      const puck = focusPuck(w, man)
+      const mark = markPosition({
+        field: w.field,
+        ownGoal: goalCenter(w.field, defendSide(p.team, w.scenario.settings)),
+        man: man.pos,
+        manVel: man.vel,
+        puck: puck?.pos ?? null,
+        manHasPuck: puck?.carrierId === man.id,
+      })
+      const speed = Math.min(SPEEDS.fast, len(man.vel) + 2.5 * dist(p.pos, mark.pos))
+      return { target: mark.pos, speed, face: mark.face, scripted: true }
     }
     const puck = puckCarriedBy(w, p.id)
     if (puck) {

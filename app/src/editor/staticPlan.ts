@@ -42,7 +42,7 @@ export function roundAt(s: Scenario, t: number): number {
   return idx
 }
 
-function initialCarriers(s: Scenario): Set<string> {
+export function initialCarriers(s: Scenario): Set<string> {
   const carriers = new Set<string>()
   for (const k of s.pucks) {
     let best: string | null = null
@@ -75,6 +75,8 @@ export function staticPlan(actions: Action[], start: Record<string, Vec>, startC
       geom[a.id] = { from, to: endPos[a.toPlayerId], withPuck }
       carriers.delete(a.playerId)
       carriers.add(a.toPlayerId)
+    } else if (a.kind === 'mark') {
+      geom[a.id] = { from, to: endPos[a.targetId], withPuck }
     } else if (a.kind === 'shoot') {
       geom[a.id] = { from, to: goalCenter(field, a.goal), withPuck }
       carriers.delete(a.playerId)

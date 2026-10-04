@@ -7,7 +7,7 @@ import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
 import { useEditor, type Tool } from './editor/store'
 
-const TOOL_KEYS: Record<string, Tool> = { v: 'select', a: 'skate', p: 'pass', s: 'shoot', k: 'cone' }
+const TOOL_KEYS: Record<string, Tool> = { v: 'select', a: 'skate', p: 'pass', s: 'shoot', k: 'cone', m: 'mark' }
 
 export default function App() {
   const scenario = useEditor((s) => s.scenario)

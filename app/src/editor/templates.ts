@@ -2,7 +2,7 @@ import type { Player, Role, Scenario, Team } from '../model/types'
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
-export type TemplateKey = 'empty' | '2v1' | '3v2' | '5v5' | 'zone2v2' | 'zone3v3' | 'slalom'
+export type TemplateKey = 'empty' | '2v1' | '3v2' | '5v5' | 'zone2v2' | 'zone3v3' | 'slalom' | 'mark3v3'
 
 export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   empty: 'Tom rink',
@@ -12,6 +12,7 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   zone2v2: 'Zonspel 2 mot 2',
   zone3v3: 'Zonspel 3 mot 3',
   slalom: 'Konslalom + skott',
+  mark3v3: 'Markering 3 mot 3',
 }
 
 function pl(id: string, team: Team, role: Role, label: string, x: number, y: number): Player {
@@ -77,6 +78,24 @@ export function template(key: TemplateKey): Scenario {
       s.players.push(pl('h3', 'home', 'D', '3', -8, -7), pl('a3', 'away', 'D', '3', 8, -7))
     }
     s.pucks = [{ id: 'k1', pos: { x: -4.3, y: -3 } }]
+  } else if (key === 'mark3v3') {
+    s.players = [
+      pl('h1', 'home', 'F', 'C', 12, 7),
+      pl('h2', 'home', 'F', 'LW', 17, -8),
+      pl('h3', 'home', 'D', 'D', 10, -2),
+      pl('a1', 'away', 'F', 'C', 16, 5),
+      pl('a2', 'away', 'D', 'LD', 20, -6),
+      pl('a3', 'away', 'D', 'RD', 14, -1),
+      awayG,
+    ]
+    s.pucks = [{ id: 'k1', pos: { x: 12.7, y: 7 } }]
+    s.actions = [
+      { id: 'm1', kind: 'mark', playerId: 'a1', targetId: 'h1' },
+      { id: 'm2', kind: 'mark', playerId: 'a2', targetId: 'h2' },
+      { id: 'm3', kind: 'mark', playerId: 'a3', targetId: 'h3' },
+      { id: 's1', kind: 'skate', playerId: 'h1', speed: 'normal', path: [{ x: 17, y: 9 }, { x: 21, y: 6 }, { x: 20, y: 2 }] },
+      { id: 'p1', kind: 'pass', playerId: 'h1', toPlayerId: 'h3' },
+    ]
   } else if (key === 'slalom') {
     s.players = [pl('h1', 'home', 'F', '9', -6, 0), awayG]
     s.pucks = [{ id: 'k1', pos: { x: -5.3, y: 0 } }]

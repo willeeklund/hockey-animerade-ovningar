@@ -17,10 +17,12 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
   - Försvararna pressar och täcker.
   - Målvakten följer pucken.
   - Alla åker runt koner.
+- **Markering:** ange att en spelare ska markera en motståndare. Markeraren följer sin spelare på målsidan med lagom avstånd (gap control), både när du flyttar motståndaren i ritläget och när övningen spelas upp. Principerna beskrivs i [MARKERING.md](MARKERING.md).
+- **Huvudperson:** välj en spelare som scenens huvudperson. Den får en guldring och en guldfärgad svans, så att genomgången kan följa just den spelarens resa.
 - **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då.
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
-- **Mallar:** 2 mot 1, 3 mot 2, 5 mot 5, zonspel och konslalom.
+- **Mallar:** 2 mot 1, 3 mot 2, 5 mot 5, zonspel, konslalom och markering.
 
 ## Kortkommandon
 
@@ -32,6 +34,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 | P | Passa |
 | S | Skjut |
 | K | Kon |
+| M | Markera |
 | Delete | Ta bort markerad spelare |
 | Cmd/Ctrl + Z | Ångra (Shift för gör om) |
 | Esc | Avbryt och gå tillbaka till Välj |
