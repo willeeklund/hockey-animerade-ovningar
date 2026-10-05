@@ -1,0 +1,245 @@
+{
+  "name": "1 mot 1 med angling",
+  "scenarios": [
+    {
+      "id": "zon-1v1",
+      "name": "Zonspel 1 mot 1",
+      "updatedAt": "2026-10-05T21:40:33.120Z",
+      "players": [
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -4,
+            "y": -2
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 4.24,
+            "y": -1.45
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -11,
+            "y": 0.25
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 11,
+            "y": 0.25
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -3.3,
+            "y": -2
+          }
+        }
+      ],
+      "actions": [],
+      "settings": {
+        "durationSec": 4.4,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "zone"
+      },
+      "notes": "Zonspel 1 mot 1 på tvären. Anfallaren går rakt på mål och försvararen spelar som bot."
+    },
+    {
+      "id": "zon-1v1-angling",
+      "name": "Zonspel 1 mot 1 - angling",
+      "updatedAt": "2026-10-05T21:41:52.386Z",
+      "players": [
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -4,
+            "y": -2
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 4,
+            "y": 2
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -11,
+            "y": 0.25
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 11,
+            "y": 0.25
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -3.3,
+            "y": -2
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "5doyu9vq",
+          "kind": "skate",
+          "playerId": "a1",
+          "path": [
+            {
+              "x": 3.89,
+              "y": 1.99
+            },
+            {
+              "x": 3.66,
+              "y": 1.97
+            },
+            {
+              "x": 3.33,
+              "y": 1.95
+            },
+            {
+              "x": 2.88,
+              "y": 1.92
+            },
+            {
+              "x": 2.53,
+              "y": 1.88
+            },
+            {
+              "x": 2.27,
+              "y": 1.85
+            },
+            {
+              "x": 2.11,
+              "y": 1.81
+            },
+            {
+              "x": 2.04,
+              "y": 1.78
+            },
+            {
+              "x": 1.99,
+              "y": 1.72
+            },
+            {
+              "x": 1.94,
+              "y": 1.62
+            },
+            {
+              "x": 1.9,
+              "y": 1.49
+            },
+            {
+              "x": 1.87,
+              "y": 1.33
+            },
+            {
+              "x": 1.87,
+              "y": 1.13
+            },
+            {
+              "x": 1.88,
+              "y": 0.91
+            },
+            {
+              "x": 1.92,
+              "y": 0.65
+            },
+            {
+              "x": 1.98,
+              "y": 0.36
+            },
+            {
+              "x": 2.13,
+              "y": 0.05
+            },
+            {
+              "x": 2.37,
+              "y": -0.28
+            },
+            {
+              "x": 2.71,
+              "y": -0.63
+            },
+            {
+              "x": 3.13,
+              "y": -1.0
+            },
+            {
+              "x": 3.45,
+              "y": -1.28
+            },
+            {
+              "x": 3.66,
+              "y": -1.46
+            },
+            {
+              "x": 3.76,
+              "y": -1.56
+            }
+          ],
+          "speed": "normal"
+        }
+      ],
+      "settings": {
+        "durationSec": 4.2,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "zone"
+      },
+      "notes": "Zonspel 1 mot 1 där försvararen anglar anfallaren mot sargen och stänger vägen till mål."
+    }
+  ],
+  "notes": "Två zonspelsövningar 1 mot 1: först rakt på mål, sedan med angling."
+}
