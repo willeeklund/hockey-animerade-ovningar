@@ -1,4 +1,5 @@
 import { PLACE_TOOLS, placementAllowed, useEditor, type Tool } from '../editor/store'
+import { PlaylistPanel } from './PlaylistPanel'
 import { TEMPLATE_GROUPS, TEMPLATE_NAMES } from '../editor/templates'
 import type { Role, SpeedKey } from '../model/types'
 
@@ -183,6 +184,8 @@ export function Sidebar() {
           ))}
         </div>
       </section>
+
+      <PlaylistPanel />
 
       <details className="panel collapsible">
         <summary>Simulering</summary>

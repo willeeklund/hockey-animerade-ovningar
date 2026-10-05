@@ -3,6 +3,8 @@ import { CONFIG } from './config'
 import { Board } from './components/Board'
 import { Library } from './components/Library'
 import { Sidebar } from './components/Sidebar'
+import { StageCorner } from './components/StageCorner'
+import { playlistItems } from './editor/storage'
 import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
 import { placementAllowed, useEditor, type Tool } from './editor/store'
@@ -11,13 +13,39 @@ const TOOL_KEYS: Record<string, Tool> = { v: 'select', a: 'skate', p: 'pass', s:
 
 export default function App() {
   const scenario = useEditor((s) => s.scenario)
+  const presenting = useEditor((s) => s.presenting)
   const sim = useMemo(() => simulate(scenario), [scenario])
+
+  useEffect(() => {
+    if (presenting && !document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {})
+    if (!presenting && document.fullscreenElement) document.exitFullscreen?.().catch(() => {})
+  }, [presenting])
+
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement && useEditor.getState().presenting) useEditor.getState().exitPresentation()
+    }
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const el = e.target as HTMLElement
       if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') return
       const st = useEditor.getState()
+      if (st.presenting) {
+        const ids = playlistItems(st.playlist, st.library)
+        const i = ids.indexOf(st.scenario.id)
+        if (e.key === ' ') {
+          e.preventDefault()
+          st.togglePlay(sim.duration)
+        } else if (e.key.toLowerCase() === 'r') st.selectRound(0)
+        else if (e.key === 'Escape') st.exitPresentation()
+        else if ((e.key === 'ArrowRight' || e.key === 'PageDown') && i < ids.length - 1) st.present(ids[i + 1])
+        else if ((e.key === 'ArrowLeft' || e.key === 'PageUp') && i > 0) st.present(ids[i - 1])
+        return
+      }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault()
         if (e.shiftKey) st.redo()
@@ -41,6 +69,17 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [sim.duration])
 
+  if (presenting) {
+    return (
+      <div className="app presenting">
+        <main className="stage">
+          <Board sim={sim} corner={<StageCorner />} />
+          <Timeline sim={sim} compact />
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       <header className="top">
@@ -60,7 +99,7 @@ export default function App() {
       </header>
       <Sidebar />
       <main className="stage">
-        <Board sim={sim} />
+        <Board sim={sim} corner={<StageCorner />} />
         <Timeline sim={sim} />
       </main>
     </div>

@@ -247,3 +247,43 @@ button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }
 .subgroup-body { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .tool-group { margin: 2px 0 -2px; font-size: 11px; font-weight: 600; color: var(--muted); }
 .t-divider .icon { color: #2563eb; }
+
+.playlist-name { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
+.playlist { list-style: none; counter-reset: pl; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.playlist li { counter-increment: pl; display: flex; align-items: center; gap: 2px; }
+.playlist li::before { content: counter(pl) '.'; width: 18px; font-size: 12px; color: var(--muted); }
+.playlist li.current .pl-name { border-color: var(--accent); background: var(--accent-soft); }
+.pl-name { flex: 1; min-width: 0; text-align: left; font-size: 13px; padding: 5px 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl-icon { padding: 4px 6px; font-size: 12px; border-color: transparent; background: transparent; color: var(--muted); }
+.present-btn { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+
+.stage-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.corner-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--text);
+}
+.corner-btn.small { width: 26px; height: 28px; font-size: 18px; line-height: 1; }
+.stage-corner.presenting { opacity: 0.55; transition: opacity 0.2s; }
+.stage-corner.presenting:hover, .stage-corner.presenting:focus-within { opacity: 1; }
+.pl-picker { display: flex; align-items: center; gap: 2px; }
+.pl-picker select { max-width: 240px; font-size: 13px; padding: 5px 8px; background: rgba(255, 255, 255, 0.85); }
+
+.app.presenting { grid-template-columns: 1fr; grid-template-rows: 1fr; grid-template-areas: 'stage'; height: 100%; background: #dfe7ef; }
+.app.presenting .stage { padding: 8px; gap: 8px; }
+.app.presenting .board { border-radius: 10px; }
+.timeline.compact { padding: 6px 10px; }

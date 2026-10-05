@@ -232,4 +232,31 @@ describe('simulate', () => {
     expect(r.frames.every((f) => f.pucks.k.x < 5)).toBe(true)
     expect(r.frames.at(-1)!.pucks.k.c).not.toBe('b')
   })
+
+  it('presents a training session playlist and restores the edited scenario afterwards', async () => {
+    const { useEditor } = await import('../editor/store')
+    const get = useEditor.getState
+    get().loadTemplate('2v1')
+    get().addToPlaylist()
+    const first = get().scenario.id
+    get().loadTemplate('3v2')
+    get().addToPlaylist()
+    const second = get().scenario.id
+    get().loadTemplate('slalom')
+    get().addCone({ x: 0, y: 5 })
+    const editing = get().scenario
+    const historyLength = get().past.length
+
+    get().enterPresentation(get().playlist.ids[0])
+    expect(get().presenting).toBe(true)
+    expect(get().scenario.id).toBe(first)
+    get().present(second)
+    expect(get().scenario.name).toBe('3 mot 2')
+
+    get().exitPresentation()
+    expect(get().presenting).toBe(false)
+    expect(get().scenario).toBe(editing)
+    expect(get().past.length).toBe(historyLength)
+    expect(get().playlist.ids.slice(-2)).toEqual([first, second])
+  })
 })

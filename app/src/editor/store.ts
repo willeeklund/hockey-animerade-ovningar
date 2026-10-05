@@ -4,6 +4,7 @@ import { clampToField, FIELDS } from '../model/rink'
 import type { Action, Layout, Player, Role, Scenario, ScenarioSettings, SpeedKey, Team, Vec } from '../model/types'
 import { add, fromAngle, sub } from '../engine/vec'
 import { layoutDividers } from './dividers'
+import { readLibrary, readPlaylist, writeLibrary, writePlaylist, type Playlist } from './storage'
 import { applyMarks } from './marks'
 import { initialCarrierMap } from './staticPlan'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
@@ -37,7 +38,20 @@ interface EditorState {
   showTrails: boolean
   activeRound: number
   editing: boolean
+  library: Record<string, Scenario>
+  playlist: Playlist
+  presenting: boolean
+  stash: { scenario: Scenario; past: Scenario[]; future: Scenario[]; activeRound: number } | null
 
+  saveCurrent: () => void
+  deleteSaved: (id: string) => void
+  addToPlaylist: (id?: string) => void
+  removeFromPlaylist: (index: number) => void
+  movePlaylistItem: (index: number, delta: number) => void
+  renamePlaylist: (name: string) => void
+  enterPresentation: (startId?: string) => void
+  exitPresentation: () => void
+  present: (id: string) => void
   setTool: (t: Tool) => void
   setDrawSpeed: (s: SpeedKey) => void
   select: (id: string | null) => void
@@ -139,6 +153,84 @@ export const useEditor = create<EditorState>((set, get) => {
     showTrails: true,
     activeRound: 0,
     editing: true,
+    library: readLibrary(),
+    playlist: readPlaylist(),
+    presenting: false,
+    stash: null,
+
+    saveCurrent: () =>
+      set((st) => {
+        const library = { ...st.library, [st.scenario.id]: st.scenario }
+        writeLibrary(library)
+        return { library }
+      }),
+    deleteSaved: (id) =>
+      set((st) => {
+        const library = { ...st.library }
+        delete library[id]
+        writeLibrary(library)
+        const playlist = { ...st.playlist, ids: st.playlist.ids.filter((x) => x !== id) }
+        writePlaylist(playlist)
+        return { library, playlist }
+      }),
+    addToPlaylist: (id) => {
+      if (!id) get().saveCurrent()
+      set((st) => {
+        const playlist = { ...st.playlist, ids: [...st.playlist.ids, id ?? st.scenario.id] }
+        writePlaylist(playlist)
+        return { playlist }
+      })
+    },
+    removeFromPlaylist: (index) =>
+      set((st) => {
+        const playlist = { ...st.playlist, ids: st.playlist.ids.filter((_, i) => i !== index) }
+        writePlaylist(playlist)
+        return { playlist }
+      }),
+    movePlaylistItem: (index, delta) =>
+      set((st) => {
+        const ids = [...st.playlist.ids]
+        const to = index + delta
+        if (to < 0 || to >= ids.length) return {}
+        ;[ids[index], ids[to]] = [ids[to], ids[index]]
+        const playlist = { ...st.playlist, ids }
+        writePlaylist(playlist)
+        return { playlist }
+      }),
+    renamePlaylist: (name) =>
+      set((st) => {
+        const playlist = { ...st.playlist, name }
+        writePlaylist(playlist)
+        return { playlist }
+      }),
+    enterPresentation: (startId) => {
+      const st = get()
+      if (st.presenting) return
+      set({
+        presenting: true,
+        stash: { scenario: st.scenario, past: st.past, future: st.future, activeRound: st.activeRound },
+        selectedId: null,
+        pending: null,
+        message: null,
+        tool: 'select',
+      })
+      if (startId) get().present(startId)
+      else set((s) => restore(s.scenario, 0))
+    },
+    exitPresentation: () =>
+      set((st) => {
+        if (!st.presenting) return {}
+        const stash = st.stash
+        return {
+          presenting: false,
+          stash: null,
+          ...(stash ? { ...restore(stash.scenario, stash.activeRound), past: stash.past, future: stash.future } : {}),
+        }
+      }),
+    present: (id) => {
+      const s = get().library[id]
+      if (s) set({ ...restore(applyMarks(s), 0), selectedId: null })
+    },
 
     setTool: (tool) => set({ tool, pending: null, message: null }),
     setDrawSpeed: (drawSpeed) => set({ drawSpeed }),

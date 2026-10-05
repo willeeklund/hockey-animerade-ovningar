@@ -23,6 +23,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 - **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då.
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
+- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm syns bara planen, play/paus, börja om och tidslinjen. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna.
 - **Mallar**, ordnade efter spelyta:
   - *Hel rink:* tom rink, 2 mot 1, 3 mot 2, 1 mot 1 med gap control, uppspel mot forechecking, 5 mot 5, powerplay 5 mot 4, markering 3 mot 3 och konslalom.
   - *Zonspel:* tom zon, 1 mot 1, 2 mot 2, 3 mot 2 (överläge) och 3 mot 3.
@@ -42,6 +43,16 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 | R | Börja om från början |
 | Cmd/Ctrl + Z | Ångra (Shift för gör om) |
 | Esc | Avbryt och gå tillbaka till Välj |
+
+I helskärmsläget:
+
+| Tangent | Funktion |
+|---|---|
+| Mellanslag | Starta / pausa (eller klicka på planen) |
+| R | Börja om |
+| → / PageDown | Nästa övning i passet |
+| ← / PageUp | Föregående övning i passet |
+| Esc | Lämna helskärm |
 
 ## Lokal utvecklingsmiljö
 

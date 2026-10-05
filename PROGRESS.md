@@ -25,7 +25,8 @@
   - **Rundor**: kör ett startscenario, pausa (mellanslag) och ge nästa rundas instruktioner utifrån läget just då. Att rita med Åk/Passa/Skjut medan det är pausat skapar en ny runda vid den tidpunkten (eller knappen "Nästa runda härifrån"). Spelarna behåller position, fart och puckinnehav; de nya instruktionerna ersätter de gamla och spelare utan instruktioner fortsätter som botar. Rundorna visas som flikar ovanför tidslinjen och kan redigeras eller tas bort. Tidigare rundor påverkas inte.
   - Ritade spelare väjer bara i sidled för motståndare (tidigare kunde en pressande back stoppa en ritad åkväg), och raka åkvägar åks i normal fart (tidigare kröp spelaren fram).
   - Målvakter rör sig i sidled mot positionen mellan puck och bur (tidigare gled de ut ur målet).
-  - 18 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
+  - **Träningspass och helskärm**: panelen Träningspass bygger en lista av sparade scenarion (lägg till aktuellt, som sparas automatiskt, eller sparade; flytta upp/ner; ta bort; namnge passet). Listan sparas i webbläsaren. Helskärm startas med ikonen uppe till höger på planen eller "Visa passet i helskärm". I helskärm visas bara planen, en diskret väljare uppe till höger (‹ lista ›) och play/börja om/tidslinje. Tangenter: mellanslag, R, ←/→, PageUp/PageDown, Esc. Scenariot som redigerades, med osparade ändringar och ångra-historik, återställs när man lämnar helskärm.
+  - 19 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
 
 ## Kör
 ```
