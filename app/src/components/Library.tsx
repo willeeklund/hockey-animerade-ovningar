@@ -3,48 +3,22 @@ import { useEditor } from '../editor/store'
 import { uid } from '../editor/templates'
 import type { Scenario } from '../model/types'
 
-const KEY = 'hockey-vision.scenarios'
-
-function readAll(): Record<string, Scenario> {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '{}')
-  } catch {
-    return {}
-  }
-}
-
-function writeAll(all: Record<string, Scenario>) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(all))
-  } catch {
-    /* storage unavailable */
-  }
-}
-
 export function Library() {
-  const { scenario, rename, load, loadTemplate } = useEditor()
-  const [saved, setSaved] = useState(readAll)
+  const { scenario, rename, load, loadTemplate, library: saved, saveCurrent, deleteSaved } = useEditor()
   const [flash, setFlash] = useState<string | null>(null)
 
   const save = () => {
-    const all = { ...readAll(), [scenario.id]: scenario }
-    writeAll(all)
-    setSaved(all)
+    saveCurrent()
     setFlash('Sparat ✓')
     setTimeout(() => setFlash(null), 1500)
   }
 
   const open = (id: string) => {
-    const s = readAll()[id]
+    const s = saved[id]
     if (s) load(s)
   }
 
-  const remove = () => {
-    const all = readAll()
-    delete all[scenario.id]
-    writeAll(all)
-    setSaved(all)
-  }
+  const remove = () => deleteSaved(scenario.id)
 
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(scenario, null, 2)], { type: 'application/json' })

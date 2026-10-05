@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type PointerEvent } from 'react'
+import { useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { CONFIG } from '../config'
 import { chaikin, simplify, wavy } from '../engine/path'
 import { closestOnSegment, dividerEnds } from '../engine/walls'
@@ -118,7 +118,7 @@ function stepText(tool: string, fromLabel: string | undefined): { count: string;
   return null
 }
 
-export function Board({ sim }: { sim: SimResult }) {
+export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [drag, setDrag] = useState<Drag>(null)
   const st = useEditor()
@@ -173,6 +173,7 @@ export function Board({ sim }: { sim: SimResult }) {
     const p = toM(e)
     const capture = () => (e.target as Element).setPointerCapture?.(e.pointerId)
     const inside = clampToField(field, p, 0.6).pos
+    if (st.presenting) return st.togglePlay(sim.duration)
     if (playing) return st.setPlaying(false)
 
     if (!editing) {
@@ -336,7 +337,8 @@ export function Board({ sim }: { sim: SimResult }) {
 
   return (
     <div className="board-wrap">
-      {step && (
+      {corner}
+      {step && !st.presenting && (
         <div className="step-banner" role="status">
           <span className="step-count">{step.count}</span>
           <span>{step.text}</span>

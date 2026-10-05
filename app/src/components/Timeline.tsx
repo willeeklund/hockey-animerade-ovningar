@@ -13,7 +13,7 @@ const EVENT_LABEL: Record<string, string> = {
   offside: 'Offside',
 }
 
-export function Timeline({ sim }: { sim: SimResult }) {
+export function Timeline({ sim, compact = false }: { sim: SimResult; compact?: boolean }) {
   const st = useEditor()
   const { scenario, time, playing, rate, showPaths, showTrails, editing, activeRound } = st
   const last = useRef<number | null>(null)
@@ -45,6 +45,27 @@ export function Timeline({ sim }: { sim: SimResult }) {
   const rounds = roundsOf(scenario)
   const current = editing ? activeRound : roundAt(scenario, time)
   const paused = !playing && !editing && time > 0 && time < sim.duration - sim.dt / 2
+
+  if (compact) {
+    return (
+      <div className="timeline compact">
+        <div className="controls">
+          <button className="play" onClick={() => st.togglePlay(sim.duration)} title="Spela / pausa (mellanslag)">
+            {playing ? '⏸' : '▶'}
+          </button>
+          <button onClick={() => st.selectRound(0)} title="Börja om (R)">
+            ⏮
+          </button>
+          <div className="scrub">
+            <input type="range" min={0} max={sim.duration} step={0.01} value={time} onChange={(e) => st.scrub(Number(e.target.value))} />
+          </div>
+          <span className="clock">
+            {time.toFixed(1)} / {sim.duration.toFixed(1)} s
+          </span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="timeline">
