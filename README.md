@@ -1,6 +1,6 @@
 # Animerade hockey övningar
 
-Hockey Vision är ett verktyg för att skapa animerade hockeyövningar. Tränaren ritar upp en övning eller ett spelscenario i 2D och ser sedan hur spelarna rör sig när det spelas upp.
+Animerade hockeyövningar är ett verktyg för att skapa animerade hockeyövningar. Tränaren ritar upp en övning eller ett spelscenario i 2D och ser sedan hur spelarna rör sig när det spelas upp.
 
 Spelarna kan antingen följa de rörelser tränaren ritar eller agera själva som autonoma botar. Botarna följer rimliga hockeyregler utifrån medspelare, motståndare och var pucken är.
 
@@ -8,7 +8,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 
 ## Funktioner
 
-- **Spelyta:** hel rink i IIHF-mått (60 × 30 m) eller zonspel, där man spelar på bredden i en zon med burarna mot varandra.
+- **Spelyta:** hel rink i IIHF-mått (60 × 30 m) eller zonspel, där man spelar på bredden i en zon med burarna mot varandra. Zonspelsplanen är 30 × 20,5 m och slutar två meter före blålinjen. Burarna står i höjd med tekningscirklarnas mitt, 3 m från sargen.
 - **Objekt:** spelare för två lag, målvakter, puckar, koner, målburar och skumsarg (2 m långa bitar som delar av isen; spelarna åker runt och puckar studsar mot dem).
 - **Målburar:** ställ ut extra målburar var som helst med verktyget Målbur. Markera en målbur, även de vanliga, för att flytta den, vrida den 90° eller ta bort den (knappen eller Delete). Ett lag anfaller målburarna på sin anfallssida.
 - **Instruktioner:** rita åkvägar (lugnt, normalt eller fullt tempo), passningar och skott. Linjerna ritas enligt hockeystandard: vågig linje med puck, streckad för pass och dubbel för skott.
@@ -28,7 +28,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Trimma slutet:** dra den röda markeringen ⟧ i slutet av tidslinjen åt vänster för att korta scenen, eller förbi slutet åt höger för att förlänga den (ungefär en sekund per 20 pixlar, högst 30 s åt gången). Du kan också pausa och trycka ✂ Sluta här. Scenen stannar vid slutet och startar om från början när du trycker play igen.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
-- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm fyller planen hela skärmen, och play/paus, börja om och tidslinjen ligger i en smal genomskinlig list ovanpå. Under uppspelning tonas kontrollerna bort efter ett par sekunder, och på en telefon i liggande läge redan en halv sekund efter play. Ett tryck var som helst tar tillbaka dem utan att pausa. Syns kontrollerna pausar ett tryck på planen. Läget är anpassat för telefon i liggande läge och tar hänsyn till notch och webbläsarlister. På iPhone tillåter Safari inte äkta helskärm för webbsidor. Lägg i stället till sidan på hemskärmen (Dela → Lägg till på hemskärmen), så öppnas den utan webbläsarlister. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna. Ett helt pass kan exporteras och importeras som JSON.
+- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm fyller planen hela skärmen, och play/paus, börja om och tidslinjen ligger i en smal genomskinlig list ovanpå. Under uppspelning tonas kontrollerna bort efter ett par sekunder, och på en telefon i liggande läge redan en halv sekund efter play. Ett tryck var som helst tar tillbaka dem utan att pausa. Syns kontrollerna pausar ett tryck på planen. På telefon (smal eller låg skärm) döljs verktygen. Kvar blir en smal list med val av pass, val av övning och knappen ⛶ Helskärm. Läget är anpassat för telefon i liggande läge och tar hänsyn till notch och webbläsarlister. På iPhone tillåter Safari inte äkta helskärm för webbsidor. Lägg i stället till sidan på hemskärmen (Dela → Lägg till på hemskärmen), så öppnas den utan webbläsarlister. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna. Ett helt pass kan exporteras och importeras som JSON.
 - **Inbyggda träningspass:** i panelen Träningspass väljer man mellan sitt eget pass och inbyggda pass, till exempel gruppernas pass från BU2-kursen. Ett inbyggt pass kan visas i helskärm direkt eller kopieras till det egna passet för att ändras. Övningarna och de inskannade förlagorna finns i [`hockey-BU2-ovningar`](hockey-BU2-ovningar/README.md).
 - **Länkar och Dela:** adressen visar vilket inbyggt pass, vilken övning eller mall och om helskärm är vald. Knappen **Dela** finns i verktygsfältet och uppe till höger i helskärm. Den ger en länk till det du tittar på, och du väljer om den ska öppnas direkt i helskärm. Är övningen ändrad eller din egen packas hela övningen, eller i helskärm hela passet, in i länken, så att mottagaren ser exakt samma sak.
   - `#!/pass/bu2/grupp2` väljer passet.

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { CONFIG } from './config'
 import { Board } from './components/Board'
 import { Library } from './components/Library'
+import { MobileBar } from './components/MobileBar'
 import { Sidebar } from './components/Sidebar'
 import { StageCorner } from './components/StageCorner'
 import { Timeline } from './components/Timeline'
@@ -126,7 +127,7 @@ export default function App() {
     <div className="app">
       <header className="top">
         <h1>
-          <span className="logo">🏒</span> Hockey Vision
+          <span className="logo">🏒</span> Animerade hockeyövningar
         </h1>
         <Library />
         <a className="source-link" href={CONFIG.sourceUrl} target="_blank" rel="noopener noreferrer" title="Källkoden på GitHub">
@@ -139,6 +140,7 @@ export default function App() {
           Källkod
         </a>
       </header>
+      <MobileBar />
       <Sidebar />
       <main className="stage">
         <Board sim={sim} corner={<StageCorner />} />

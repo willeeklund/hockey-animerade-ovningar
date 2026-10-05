@@ -354,7 +354,7 @@ export const useEditor = create<EditorState>((set, get) => {
           ...mapAllActions(s, (as) => as.map((a) => (a.kind === 'skate' ? { ...a, path: a.path.map(fit) } : a))),
           settings: { ...s.settings, layout },
           players: s.players.map((p) =>
-            p.role === 'G' ? { ...p, pos: { x: Math.sign(p.pos.x || 1) * (f.goalLineX - 1), y: 0 } } : { ...p, pos: fit(p.pos) },
+            p.role === 'G' ? { ...p, pos: { x: Math.sign(p.pos.x || 1) * (f.goalLineX - 1), y: f.goalY } } : { ...p, pos: fit(p.pos) },
           ),
           pucks: s.pucks.map((k) => ({ ...k, pos: fit(k.pos) })),
           cones: s.cones?.map((c) => ({ ...c, pos: fit(c.pos) })),

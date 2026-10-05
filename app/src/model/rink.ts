@@ -14,7 +14,7 @@ export const RINK = {
   endDotY: 7,
   neutralDotX: 6,
   neutralDotY: 7,
-  zoneDepth: 22.5,
+  zoneDepth: 20.5,
   endToGoalLine: 4,
   endToDot: 10,
 }
@@ -29,17 +29,18 @@ export interface Field {
   cornerBottom: number
   goalLineX: number
   blueLineX: number | null
+  goalY: number
 }
 
 export const FIELDS: Record<Layout, Field> = {
-  full: { layout: 'full', halfLength: 30, halfWidth: 15, cornerTop: RINK.cornerR, cornerBottom: RINK.cornerR, goalLineX: RINK.goalLineX, blueLineX: RINK.blueLineX },
-  zone: { layout: 'zone', halfLength: 15, halfWidth: RINK.zoneDepth / 2, cornerTop: 0, cornerBottom: RINK.cornerR, goalLineX: 12, blueLineX: null },
+  full: { layout: 'full', halfLength: 30, halfWidth: 15, cornerTop: RINK.cornerR, cornerBottom: RINK.cornerR, goalLineX: RINK.goalLineX, blueLineX: RINK.blueLineX, goalY: 0 },
+  zone: { layout: 'zone', halfLength: 15, halfWidth: RINK.zoneDepth / 2, cornerTop: 0, cornerBottom: RINK.cornerR, goalLineX: 12, blueLineX: null, goalY: RINK.zoneDepth / 2 - RINK.endToDot },
 }
 
 export const fieldOf = (settings: Pick<ScenarioSettings, 'layout'>) => FIELDS[settings.layout ?? 'full']
 
 export function goalCenter(f: Field, side: Side): Vec {
-  return { x: side === 'left' ? -f.goalLineX : f.goalLineX, y: 0 }
+  return { x: side === 'left' ? -f.goalLineX : f.goalLineX, y: f.goalY }
 }
 
 export const DEFAULT_GOAL_IDS: Record<Side, string> = { left: 'goal-left', right: 'goal-right' }

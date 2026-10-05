@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { presentCurrentPass } from '../editor/router'
 import { useEditor } from '../editor/store'
 import { ShareButton } from './ShareButton'
 
@@ -11,13 +12,13 @@ function FullscreenIcon({ exit }: { exit: boolean }) {
 }
 
 export function StageCorner() {
-  const { presenting, deck, scenario, enterPresentation, exitPresentation, present } = useEditor()
+  const { presenting, deck, scenario, exitPresentation, present } = useEditor()
   const [showNotes, setShowNotes] = useState(false)
 
   if (!presenting) {
     return (
       <div className="stage-corner">
-        <button className="corner-btn" onClick={() => enterPresentation()} title="Helskärm: visa bara planen">
+        <button className="corner-btn" onClick={presentCurrentPass} title="Helskärm: visa bara planen">
           <FullscreenIcon exit={false} />
         </button>
       </div>
