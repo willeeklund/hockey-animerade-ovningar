@@ -11,6 +11,44 @@ function FullscreenIcon({ exit }: { exit: boolean }) {
   )
 }
 
+const HINT_KEY = 'hockey-vision.hide-home-screen-hint'
+
+function runsAsApp() {
+  const nav = navigator as Navigator & { standalone?: boolean }
+  return nav.standalone === true || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches
+}
+
+function hintDismissed() {
+  try {
+    return localStorage.getItem(HINT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function HomeScreenHint() {
+  const [hidden, setHidden] = useState(() => document.fullscreenEnabled || runsAsApp() || hintDismissed())
+  if (hidden) return null
+  const close = () => {
+    setHidden(true)
+    try {
+      localStorage.setItem(HINT_KEY, '1')
+    } catch {
+      /* storage unavailable */
+    }
+  }
+  return (
+    <div className="home-screen-hint" role="note">
+      <span>
+        Den här webbläsaren kan inte visa helskärm. Lägg till sidan på hemskärmen (Dela → Lägg till på hemskärmen) och öppna den därifrån, så försvinner adressfältet.
+      </span>
+      <button onClick={close} aria-label="Stäng tipset">
+        ✕
+      </button>
+    </div>
+  )
+}
+
 export function StageCorner() {
   const { presenting, deck, scenario, exitPresentation, present } = useEditor()
   const [showNotes, setShowNotes] = useState(false)
@@ -28,6 +66,7 @@ export function StageCorner() {
   const index = deck.findIndex((s) => s.id === scenario.id)
   return (
     <>
+      <HomeScreenHint />
       {scenario.notes && (
         <div className={`stage-notes ${showNotes ? 'open' : ''}`}>
           <button className="notes-toggle" onClick={() => setShowNotes(!showNotes)} title="Visa eller dölj beskrivningen">

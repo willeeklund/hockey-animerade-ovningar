@@ -413,3 +413,23 @@ textarea.notes { width: 100%; resize: vertical; font: inherit; font-size: 13px; 
   .share-popover { max-height: calc(100dvh - 60px); overflow: auto; }
 }
 
+.home-screen-hint {
+  position: absolute;
+  left: 50%;
+  top: max(48px, calc(env(safe-area-inset-top) + 42px));
+  transform: translateX(-50%);
+  z-index: 4;
+  width: min(520px, calc(100% - 24px));
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.35;
+  background: rgba(15, 39, 66, 0.92);
+  color: #fff;
+  border-radius: 10px;
+}
+.home-screen-hint button { flex: none; padding: 2px 8px; background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.4); }
+.app.presenting.idle .home-screen-hint { opacity: 0; pointer-events: none; }
+
