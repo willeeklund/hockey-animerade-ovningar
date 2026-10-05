@@ -1,18 +1,24 @@
 import { useMemo, useRef, useState, type PointerEvent } from 'react'
 import { CONFIG } from '../config'
 import { chaikin, simplify, wavy } from '../engine/path'
+import { closestOnSegment, dividerEnds } from '../engine/walls'
+import { layoutDividers } from '../editor/dividers'
 import type { SimResult } from '../engine/simulate'
 import { dist, wrapAngle } from '../engine/vec'
-import { clampToField, fieldOf } from '../model/rink'
+import { clampToField, DIVIDER, fieldOf } from '../model/rink'
 import type { Action, Frame, Player, Vec } from '../model/types'
-import { editContext, roundAt, type EditContext } from '../editor/staticPlan'
+import { editContext, initialCarrierMap, roundAt, type EditContext } from '../editor/staticPlan'
 import { useEditor } from '../editor/store'
 import { RinkLines } from './RinkLines'
 
 const TEAM_COLOR = { home: 'var(--home)', away: 'var(--away)' }
 const PAD = 1.5
 
-type Drag = { kind: 'move'; id: string } | { kind: 'draw'; playerId: string; pts: Vec[] } | null
+type Drag =
+  | { kind: 'move'; id: string; pucks: string[] }
+  | { kind: 'draw'; playerId: string; pts: Vec[] }
+  | { kind: 'divider'; from: Vec; to: Vec }
+  | null
 
 function frameAt(sim: SimResult, t: number): Frame {
   const i = t / sim.dt
@@ -96,6 +102,22 @@ function FocusRing({ x, y }: { x: number; y: number }) {
   )
 }
 
+function stepText(tool: string, fromLabel: string | undefined): { count: string; text: string } | null {
+  if (tool === 'mark') {
+    return fromLabel
+      ? { count: 'Steg 2 av 2', text: `Klicka på motståndaren som ${fromLabel} ska markera` }
+      : { count: 'Steg 1 av 2', text: 'Klicka på försvararen, alltså den som ska markera' }
+  }
+  if (tool === 'pass') {
+    return fromLabel ? { count: 'Steg 2 av 2', text: `Klicka på spelaren som ${fromLabel} passar till` } : { count: 'Steg 1 av 2', text: 'Klicka på puckföraren som ska passa' }
+  }
+  if (tool === 'divider') return { count: 'Sarg', text: 'Dra en linje där sargen ska stå, 2 m per bit. Ett klick lägger en bit.' }
+  if (tool === 'shoot') {
+    return fromLabel ? { count: 'Steg 2 av 2', text: `Klicka på målet som ${fromLabel} skjuter mot` } : { count: 'Steg 1 av 2', text: 'Klicka på puckföraren som ska skjuta' }
+  }
+  return null
+}
+
 export function Board({ sim }: { sim: SimResult }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [drag, setDrag] = useState<Drag>(null)
@@ -136,6 +158,11 @@ export function Board({ sim }: { sim: SimResult }) {
   }
   const hitPuck = (p: Vec) => scenario.pucks.find((k) => dist(k.pos, p) < 0.8)
   const hitCone = (p: Vec) => scenario.cones?.find((c) => dist(c.pos, p) < 0.8)
+  const hitDivider = (p: Vec) =>
+    scenario.dividers?.find((d) => {
+      const [a, b] = dividerEnds(d)
+      return dist(p, closestOnSegment(p, a, b)) < 0.6
+    })
 
   const currentContext = (): EditContext => {
     const now = useEditor.getState()
@@ -160,15 +187,24 @@ export function Board({ sim }: { sim: SimResult }) {
     }
     const c = editing ? ctx : currentContext()
 
+    if (tool === 'divider') {
+      if (!firstRound) return st.setMessage('Sarger läggs ut i runda 1.')
+      setDrag({ kind: 'divider', from: inside, to: inside })
+      capture()
+      return
+    }
+
     if (tool === 'select' || tool === 'home' || tool === 'away' || tool === 'goalie' || tool === 'puck' || tool === 'cone') {
-      const hp = hitPlayer(c, p)
-      const hk = hp || !firstRound ? undefined : (hitPuck(p) ?? hitCone(p))
+      const grabPuck = firstRound ? scenario.pucks.find((k) => dist(k.pos, p) < 0.5) : undefined
+      const hp = grabPuck ? undefined : hitPlayer(c, p)
+      const hk = grabPuck ?? (hp || !firstRound ? undefined : (hitPuck(p) ?? hitCone(p) ?? hitDivider(p)))
       if (hp || hk) {
         const id = (hp ?? hk)!.id
         st.select(hp ? id : null)
         if (!firstRound) return
         st.checkpoint()
-        setDrag({ kind: 'move', id })
+        const carried = [...initialCarrierMap(scenario)].filter(([, carrier]) => carrier === id).map(([puckId]) => puckId)
+        setDrag({ kind: 'move', id, pucks: carried })
         capture()
         return
       }
@@ -202,7 +238,7 @@ export function Board({ sim }: { sim: SimResult }) {
         if (!c.plan.carriers.has(hp.id)) return st.setMessage(`${hp.label} har inte pucken. Lägg pucken intill en spelare eller passa först.`)
         st.setPending({ kind: tool, fromId: hp.id })
         st.select(hp.id)
-        st.setMessage(tool === 'pass' ? 'Klicka på mottagaren' : 'Klicka på målet att skjuta mot')
+        st.setMessage(null)
         return
       }
       if (pending.kind === 'pass') {
@@ -224,7 +260,7 @@ export function Board({ sim }: { sim: SimResult }) {
         if (hp.role === 'G') return st.setMessage('Målvakten kan inte markera.')
         st.setPending({ kind: 'mark', fromId: hp.id })
         st.select(hp.id)
-        st.setMessage(`Klicka på motståndaren som ${hp.label} ska markera`)
+        st.setMessage(null)
         return
       }
       const from = scenario.players.find((x) => x.id === pending.fromId)
@@ -233,12 +269,13 @@ export function Board({ sim }: { sim: SimResult }) {
       st.addMark(from.id, hp.id)
       st.setPending(null)
       st.setMessage(null)
+      st.setTool('select')
       return
     }
 
     if (tool === 'erase') {
       if (!firstRound) return st.setMessage('Spelare och puckar tas bort i runda 1.')
-      const hit = hitPlayer(c, p) ?? hitPuck(p) ?? hitCone(p)
+      const hit = hitPlayer(c, p) ?? hitPuck(p) ?? hitCone(p) ?? hitDivider(p)
       if (hit) st.removeObject(hit.id)
     }
   }
@@ -247,7 +284,9 @@ export function Board({ sim }: { sim: SimResult }) {
     if (!drag) return
     const p = toM(e)
     if (drag.kind === 'move') {
-      st.moveObject(drag.id, clampToField(field, p, 0.6).pos)
+      st.moveObject(drag.id, clampToField(field, p, 0.6).pos, drag.pucks)
+    } else if (drag.kind === 'divider') {
+      setDrag({ ...drag, to: clampToField(field, p, 0.6).pos })
     } else {
       const last = drag.pts[drag.pts.length - 1]
       if (dist(last, p) > 0.3) setDrag({ ...drag, pts: [...drag.pts, clampToField(field, p, 0.6).pos] })
@@ -255,6 +294,8 @@ export function Board({ sim }: { sim: SimResult }) {
   }
 
   const onUp = () => {
+    if (drag?.kind === 'move' && scenario.pucks.some((k) => k.id === drag.id)) st.snapPuck(drag.id)
+    if (drag?.kind === 'divider') st.addDividers(drag.from, drag.to)
     if (drag?.kind === 'draw') {
       const raw = drag.pts
       const length = raw.reduce((acc, q, i) => (i ? acc + dist(raw[i - 1], q) : 0), 0)
@@ -290,83 +331,115 @@ export function Board({ sim }: { sim: SimResult }) {
     return { x: q.x, y: q.y, h: ctx.heading[p.id] ?? p.heading }
   }
 
+  const pendingFrom = scenario.players.find((p) => p.id === pending?.fromId)
+  const step = stepText(tool, pending?.kind === tool ? pendingFrom?.label : undefined)
+
   return (
-    <svg
-      ref={svgRef}
-      className={`board tool-${tool}`}
-      viewBox={view}
-      onPointerDown={onDown}
-      onPointerMove={onMove}
-      onPointerUp={onUp}
-      onPointerCancel={onUp}
-    >
-      <defs>
-        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
-        </marker>
-      </defs>
-      <RinkLines field={field} />
+    <div className="board-wrap">
+      {step && (
+        <div className="step-banner" role="status">
+          <span className="step-count">{step.count}</span>
+          <span>{step.text}</span>
+          {st.message && <span className="step-error">{st.message}</span>}
+        </div>
+      )}
+      <svg
+        ref={svgRef}
+        className={`board tool-${tool}`}
+        viewBox={view}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+      >
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+          </marker>
+        </defs>
+        <RinkLines field={field} />
 
-      {showPaths && (
-        <g opacity={editing ? 0.9 : 0.25} style={{ pointerEvents: 'none' }}>
-          {ctx.actions.map((a) => {
-            const g = ctx.plan.geom[a.id]
-            if (!g) return null
-            return <ActionShape key={a.id} a={a} from={g.from} to={g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
+        {showPaths && (
+          <g opacity={editing ? 0.9 : 0.25} style={{ pointerEvents: 'none' }}>
+            {ctx.actions.map((a) => {
+              const g = ctx.plan.geom[a.id]
+              if (!g) return null
+              return <ActionShape key={a.id} a={a} from={g.from} to={g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
+            })}
+          </g>
+        )}
+
+        {drag?.kind === 'draw' && (
+          <polyline points={pts2(drag.pts)} fill="none" stroke={TEAM_COLOR[teamOf(drag.playerId)]} strokeWidth={0.15} strokeDasharray="0.3 0.2" />
+        )}
+
+        {[
+          ...(scenario.dividers ?? []).map((d) => ({ ...d, preview: false })),
+          ...(drag?.kind === 'divider' ? layoutDividers(drag.from, drag.to).map((d, i) => ({ ...d, id: `preview-${i}`, preview: true })) : []),
+        ].map((d) => (
+          <rect
+            key={d.id}
+            x={-DIVIDER.length / 2}
+            y={-DIVIDER.thickness / 2}
+            width={DIVIDER.length}
+            height={DIVIDER.thickness}
+            rx={0.08}
+            transform={`translate(${d.pos.x} ${d.pos.y}) rotate(${(d.angle * 180) / Math.PI})`}
+            fill="#2563eb"
+            stroke="#1e3a8a"
+            strokeWidth={0.05}
+            opacity={d.preview ? 0.5 : 1}
+            style={{ cursor: 'pointer' }}
+          />
+        ))}
+
+        {scenario.cones?.map((c) => (
+          <g key={c.id} transform={`translate(${c.pos.x} ${c.pos.y})`} style={{ cursor: 'pointer' }}>
+            <circle r={0.55} fill="#fb923c" stroke="#c2410c" strokeWidth={0.1} />
+            <circle r={0.2} fill="#fff7ed" />
+          </g>
+        ))}
+
+        {showPaths &&
+          ctx.actions.map((a) => {
+            if (a.kind !== 'mark') return null
+            const marker = scenario.players.find((p) => p.id === a.playerId)
+            const man = scenario.players.find((p) => p.id === a.targetId)
+            if (!marker || !man) return null
+            const q1 = posOf(marker)
+            const q2 = posOf(man)
+            return (
+              <g key={a.id} style={{ pointerEvents: 'none' }} opacity={editing ? 0.9 : 0.6}>
+                <line x1={q1.x} y1={q1.y} x2={q2.x} y2={q2.y} stroke={TEAM_COLOR[marker.team]} strokeWidth={0.12} strokeDasharray="0.25 0.2" />
+                <circle cx={q2.x} cy={q2.y} r={1.25} fill="none" stroke={TEAM_COLOR[marker.team]} strokeWidth={0.1} strokeDasharray="0.3 0.2" />
+              </g>
+            )
           })}
-        </g>
-      )}
 
-      {drag?.kind === 'draw' && (
-        <polyline points={pts2(drag.pts)} fill="none" stroke={TEAM_COLOR[teamOf(drag.playerId)]} strokeWidth={0.15} strokeDasharray="0.3 0.2" />
-      )}
+        {trails.map((tr) => (
+          <polyline
+            key={tr.id}
+            points={pts2(tr.pts)}
+            fill="none"
+            stroke={tr.id === scenario.focusId ? FOCUS_COLOR : TEAM_COLOR[tr.team]}
+            strokeOpacity={tr.id === scenario.focusId ? 0.9 : 0.35}
+            strokeWidth={0.35}
+            strokeLinecap="round"
+          />
+        ))}
 
-      {scenario.cones?.map((c) => (
-        <g key={c.id} transform={`translate(${c.pos.x} ${c.pos.y})`} style={{ cursor: 'pointer' }}>
-          <circle r={0.55} fill="#fb923c" stroke="#c2410c" strokeWidth={0.1} />
-          <circle r={0.2} fill="#fff7ed" />
-        </g>
-      ))}
-
-      {showPaths &&
-        ctx.actions.map((a) => {
-          if (a.kind !== 'mark') return null
-          const marker = scenario.players.find((p) => p.id === a.playerId)
-          const man = scenario.players.find((p) => p.id === a.targetId)
-          if (!marker || !man) return null
-          const q1 = posOf(marker)
-          const q2 = posOf(man)
-          return (
-            <g key={a.id} style={{ pointerEvents: 'none' }} opacity={editing ? 0.9 : 0.6}>
-              <line x1={q1.x} y1={q1.y} x2={q2.x} y2={q2.y} stroke={TEAM_COLOR[marker.team]} strokeWidth={0.12} strokeDasharray="0.25 0.2" />
-              <circle cx={q2.x} cy={q2.y} r={1.25} fill="none" stroke={TEAM_COLOR[marker.team]} strokeWidth={0.1} strokeDasharray="0.3 0.2" />
-            </g>
-          )
+        {scenario.players.map((p) => {
+          const q = posOf(p)
+          return <PlayerGlyph key={p.id} p={p} x={q.x} y={q.y} h={q.h} selected={p.id === selectedId} pending={pending?.fromId === p.id} />
         })}
 
-      {trails.map((tr) => (
-        <polyline
-          key={tr.id}
-          points={pts2(tr.pts)}
-          fill="none"
-          stroke={tr.id === scenario.focusId ? FOCUS_COLOR : TEAM_COLOR[tr.team]}
-          strokeOpacity={tr.id === scenario.focusId ? 0.9 : 0.35}
-          strokeWidth={0.35}
-          strokeLinecap="round"
-        />
-      ))}
+        {scenario.pucks.map((k) => {
+          const q = frame?.pucks[k.id] ?? ctx.pucks[k.id] ?? k.pos
+          return <circle key={k.id} cx={q.x} cy={q.y} r={0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} />
+        })}
 
-      {scenario.players.map((p) => {
-        const q = posOf(p)
-        return <PlayerGlyph key={p.id} p={p} x={q.x} y={q.y} h={q.h} selected={p.id === selectedId} pending={pending?.fromId === p.id} />
-      })}
-
-      {scenario.pucks.map((k) => {
-        const q = frame?.pucks[k.id] ?? ctx.pucks[k.id] ?? k.pos
-        return <circle key={k.id} cx={q.x} cy={q.y} r={0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} />
-      })}
-
-      {focus && <FocusRing {...posOf(focus)} />}
-    </svg>
+        {focus && <FocusRing {...posOf(focus)} />}
+      </svg>
+    </div>
   )
 }

@@ -16,16 +16,18 @@ Det här dokumentet beskriver hur en spelare som har fått en markering (`Marker
 
 ## Algoritm
 
-Indata är den markerade spelarens position och fart, det egna målets position, puckens position och om den markerade spelaren har pucken. En klubblängd räknas som 1,6 m.
+Indata är den markerade spelarens position och fart, det egna målets position, puckens position och om den markerade spelaren har pucken. En klubblängd räknas som 1,6 m. Avstånden mäts mellan spelarnas mittpunkter, så det synliga mellanrummet är ungefär en meter mindre.
 
 | Situation | Avstånd på målsidan | Förskjutning |
 |---|---|---|
-| Har pucken, långt från mål (> 20 m) | 1,5 klubblängd + 0,15 s × fart | 0,4 m mot mitten (inside-out) |
-| Har pucken, i egen zon (8–20 m) | 1 klubblängd | 0,4 m mot mitten |
-| Har pucken, nära mål (< 8 m) | 0,7 klubblängd | 0,4 m mot mitten |
-| Utan puck, framför mål (< 6 m) | 0,6 klubblängd | mot pucken 0,6 m |
-| Utan puck, nära pucken (< 10 m) | 0,8 klubblängd | mot pucken 0,6 m |
-| Utan puck, långt från pucken | 1 klubblängd | mot pucken 0,3 m, sjunker sedan upp till 30 % mot slottet (max 3,5 m från spelaren) |
+| Har pucken, långt från mål (> 20 m) | 2 klubblängder + 0,2 s × fart | 0,4 m mot mitten (inside-out) |
+| Har pucken, i egen zon (8–20 m) | 1,5 klubblängd + 0,1 s × fart | 0,4 m mot mitten |
+| Har pucken, nära mål (< 8 m) | 1 klubblängd | 0,4 m mot mitten |
+| Utan puck, framför mål (< 6 m) | 0,9 klubblängd | mot pucken 0,6 m |
+| Utan puck, nära pucken (< 10 m) | 1,1 klubblängd | mot pucken 0,6 m |
+| Utan puck, långt från pucken | 1,3 klubblängd | mot pucken 0,3 m, sjunker sedan upp till 30 % mot slottet (max 3,5 m från spelaren) |
+
+Alla avstånd multipliceras med `markGapScale` i [`app/src/config.ts`](app/src/config.ts). Standardvärdet är 1. Sätt till exempel 1.2 för 20 % större gap överallt eller 0.8 för tätare markering.
 
 Positionen räknas från var den markerade spelaren är om 0,4 sekunder. Den hålls innanför sargen. Farten är motståndarens fart plus ett tillägg som stänger avståndet.
 

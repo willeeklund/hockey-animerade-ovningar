@@ -19,6 +19,8 @@ export const RINK = {
   endToDot: 10,
 }
 
+export const DIVIDER = { length: 2, thickness: 0.2 }
+
 export interface Field {
   layout: Layout
   halfLength: number

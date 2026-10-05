@@ -72,7 +72,7 @@ export function Timeline({ sim }: { sim: SimResult }) {
         <button className="play" onClick={() => st.togglePlay(sim.duration)} title="Mellanslag">
           {playing ? '⏸' : '▶'}
         </button>
-        <button onClick={() => st.selectRound(current)} title="Tillbaka till rundans start (redigera)">
+        <button onClick={() => st.selectRound(current)} title="Tillbaka till rundans start (redigera). R börjar om från början.">
           ⏮
         </button>
         <div className="scrub">

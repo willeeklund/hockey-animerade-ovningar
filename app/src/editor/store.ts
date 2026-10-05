@@ -2,13 +2,22 @@ import { create } from 'zustand'
 import { DT } from '../engine/world'
 import { clampToField, FIELDS } from '../model/rink'
 import type { Action, Layout, Player, Role, Scenario, ScenarioSettings, SpeedKey, Team, Vec } from '../model/types'
+import { add, fromAngle, sub } from '../engine/vec'
+import { layoutDividers } from './dividers'
 import { applyMarks } from './marks'
+import { initialCarrierMap } from './staticPlan'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
 
-export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'puck' | 'cone' | 'mark' | 'skate' | 'pass' | 'shoot' | 'erase'
+export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'puck' | 'cone' | 'divider' | 'mark' | 'skate' | 'pass' | 'shoot' | 'erase'
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 export type NewAction = DistributiveOmit<Action, 'id'>
+
+export const PLACE_TOOLS: ReadonlySet<Tool> = new Set<Tool>(['home', 'away', 'goalie', 'puck', 'cone', 'divider', 'erase'])
+
+export function placementAllowed(st: { editing: boolean; playing: boolean; activeRound: number }) {
+  return st.editing && !st.playing && st.activeRound === 0
+}
 
 export type Pending = { kind: 'pass' | 'shoot' | 'mark'; fromId: string } | null
 
@@ -38,7 +47,9 @@ interface EditorState {
   addPlayer: (team: Team, role: Role, pos: Vec) => void
   addPuck: (pos: Vec) => void
   addCone: (pos: Vec) => void
-  moveObject: (id: string, pos: Vec) => void
+  addDividers: (from: Vec, to: Vec) => void
+  moveObject: (id: string, pos: Vec, withPucks?: string[]) => void
+  snapPuck: (id: string) => void
   updatePlayer: (id: string, patch: Partial<Player>) => void
   removeObject: (id: string) => void
   addAction: (a: NewAction) => void
@@ -149,16 +160,27 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     addPuck: (pos) => mutate((s) => ({ ...s, pucks: [...s.pucks, { id: uid(), pos }] })),
     addCone: (pos) => mutate((s) => ({ ...s, cones: [...(s.cones ?? []), { id: uid(), pos }] })),
-    moveObject: (id, pos) =>
-      mutate(
-        (s) => ({
+    addDividers: (from, to) =>
+      mutate((s) => ({ ...s, dividers: [...(s.dividers ?? []), ...layoutDividers(from, to).map((d) => ({ id: uid(), ...d }))] })),
+    moveObject: (id, pos, withPucks = []) =>
+      mutate((s) => {
+        const mover = s.players.find((p) => p.id === id)
+        const delta = mover ? sub(pos, mover.pos) : { x: 0, y: 0 }
+        return {
           ...s,
           players: s.players.map((p) => (p.id === id ? { ...p, pos } : p)),
-          pucks: s.pucks.map((k) => (k.id === id ? { ...k, pos } : k)),
+          pucks: s.pucks.map((k) => (k.id === id ? { ...k, pos } : withPucks.includes(k.id) ? { ...k, pos: add(k.pos, delta) } : k)),
           cones: s.cones?.map((c) => (c.id === id ? { ...c, pos } : c)),
-        }),
-        false,
-      ),
+          dividers: s.dividers?.map((d) => (d.id === id ? { ...d, pos } : d)),
+        }
+      }, false),
+    snapPuck: (id) =>
+      mutate((s) => {
+        const carrier = s.players.find((p) => p.id === initialCarrierMap(s).get(id))
+        if (!carrier) return s
+        const pos = add(carrier.pos, fromAngle(carrier.heading, 0.7))
+        return { ...s, pucks: s.pucks.map((k) => (k.id === id ? { ...k, pos } : k)) }
+      }, false),
     updatePlayer: (id, patch) => mutate((s) => ({ ...s, players: s.players.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
     removeObject: (id) => {
       mutate((s) => ({
@@ -166,6 +188,7 @@ export const useEditor = create<EditorState>((set, get) => {
         players: s.players.filter((p) => p.id !== id),
         pucks: s.pucks.filter((k) => k.id !== id),
         cones: s.cones?.filter((c) => c.id !== id),
+        dividers: s.dividers?.filter((d) => d.id !== id),
         focusId: s.focusId === id ? undefined : s.focusId,
       }))
       if (get().selectedId === id) set({ selectedId: null })
@@ -192,6 +215,7 @@ export const useEditor = create<EditorState>((set, get) => {
           ),
           pucks: s.pucks.map((k) => ({ ...k, pos: fit(k.pos) })),
           cones: s.cones?.map((c) => ({ ...c, pos: fit(c.pos) })),
+          dividers: s.dividers?.map((d) => ({ ...d, pos: fit(d.pos) })),
         }
       }),
     rename: (name) => mutate((s) => ({ ...s, name }), false),
@@ -246,4 +270,8 @@ export const useEditor = create<EditorState>((set, get) => {
       })),
     toggle: (k) => set((st) => ({ [k]: !st[k] }) as Partial<EditorState>),
   }
+})
+
+useEditor.subscribe((st) => {
+  if (PLACE_TOOLS.has(st.tool) && !placementAllowed(st)) useEditor.setState({ tool: 'select' })
 })

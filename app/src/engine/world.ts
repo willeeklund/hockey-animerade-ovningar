@@ -1,4 +1,5 @@
 import type { Field } from '../model/rink'
+import type { WallSet } from './walls'
 import type { Action, Role, Scenario, SimEvent, Team, Vec } from '../model/types'
 
 export const DT = 1 / 30
@@ -48,6 +49,7 @@ export interface World {
   players: PlayerRt[]
   pucks: PuckRt[]
   cones: Vec[]
+  walls: WallSet
   rng: () => number
   events: SimEvent[]
   scenario: Scenario

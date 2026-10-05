@@ -3,6 +3,7 @@ import type { Action, Frame, Scenario, SimEvent } from '../model/types'
 import { botDecision, goalieIntent, focusPuck, type BotAct } from './ai'
 import { markPosition } from './marking'
 import { detectOffside, keepOnside } from './offside'
+import { avoidWalls, bounceOffWalls, buildWalls } from './walls'
 import { avoidCones, separate, stepPlayer } from './kinematics'
 import { pathInfo, pointAt, project } from './path'
 import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, sub } from './vec'
@@ -92,7 +93,7 @@ export function createWorld(s: Scenario): World {
       wasInZone: {},
     }
   })
-  return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
+  return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -278,6 +279,12 @@ function stepPuck(w: World, puck: PuckRt) {
     next = prev
   }
 
+  const bounced = bounceOffWalls(prev, next, puck.vel, w.walls, PUCK_RESTITUTION)
+  if (bounced) {
+    puck.vel = bounced
+    next = prev
+  }
+
   const c = clampToField(w.field, next, 0.1)
   if (c.normal) {
     const into = dot(puck.vel, c.normal)
@@ -355,8 +362,8 @@ export function step(w: World) {
   w.players.forEach((p, i) => {
     const it = intents[i]
     const spaced = it.speed > 0 ? separate(p, w.players, it.target, it.scripted) : it.target
-    const target = it.speed > 0 ? avoidCones(p, spaced, w.cones) : spaced
-    stepPlayer(p, { ...it, target }, DT, w.field, w.cones)
+    const target = it.speed > 0 ? avoidWalls(p.pos, avoidCones(p, spaced, w.cones), w.walls) : spaced
+    stepPlayer(p, { ...it, target }, DT, w.field, w.cones, w.walls)
   })
   for (const k of w.pucks) stepPuck(w, k)
   steals(w)

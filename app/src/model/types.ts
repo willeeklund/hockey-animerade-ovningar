@@ -25,6 +25,12 @@ export interface Cone {
   pos: Vec
 }
 
+export interface Divider {
+  id: string
+  pos: Vec
+  angle: number
+}
+
 export type Action =
   | { id: string; kind: 'skate'; playerId: string; path: Vec[]; speed: SpeedKey }
   | { id: string; kind: 'pass'; playerId: string; toPlayerId: string }
@@ -53,6 +59,7 @@ export interface Scenario {
   players: Player[]
   pucks: Puck[]
   cones?: Cone[]
+  dividers?: Divider[]
   actions: Action[]
   rounds?: Round[]
   focusId?: string

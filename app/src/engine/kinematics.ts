@@ -1,6 +1,7 @@
 import { clampToField, type Field } from '../model/rink'
 import type { Vec } from '../model/types'
 import { add, angleOf, dist, dot, fromAngle, len, mul, norm, sub, wrapAngle } from './vec'
+import { pushOutOfWalls, type WallSet } from './walls'
 import type { Intent, PlayerRt } from './world'
 
 const ACCEL = 3.6
@@ -76,7 +77,7 @@ function turnToward(p: PlayerRt, dir: Vec | null, dt: number) {
   p.heading = wrapAngle(p.heading + Math.max(-m, Math.min(m, a)))
 }
 
-function stepGoalie(p: PlayerRt, intent: Intent, dt: number, field: Field, cones: Vec[]) {
+function stepGoalie(p: PlayerRt, intent: Intent, dt: number, field: Field, cones: Vec[], walls?: WallSet) {
   const toT = sub(intent.target, p.pos)
   const d = len(toT)
   const speed = Math.min(intent.speed, Math.sqrt(2 * GOALIE_ACCEL * 0.5 * d))
@@ -86,11 +87,12 @@ function stepGoalie(p: PlayerRt, intent: Intent, dt: number, field: Field, cones
   p.vel = len(dv) > maxDv ? add(p.vel, mul(norm(dv), maxDv)) : want
   p.pos = clampToField(field, add(p.pos, mul(p.vel, dt)), PLAYER_RADIUS).pos
   pushOutOfCones(p, cones)
+  if (walls) Object.assign(p, pushOutOfWalls(p.pos, p.vel, walls, PLAYER_RADIUS))
   turnToward(p, intent.face ? sub(intent.face, p.pos) : null, dt)
 }
 
-export function stepPlayer(p: PlayerRt, intent: Intent, dt: number, field: Field, cones: Vec[] = []) {
-  if (p.role === 'G') return stepGoalie(p, intent, dt, field, cones)
+export function stepPlayer(p: PlayerRt, intent: Intent, dt: number, field: Field, cones: Vec[] = [], walls?: WallSet) {
+  if (p.role === 'G') return stepGoalie(p, intent, dt, field, cones, walls)
   const toT = sub(intent.target, p.pos)
   const d = len(toT)
   let desired = d < 0.15 ? 0 : intent.speed
@@ -120,6 +122,7 @@ export function stepPlayer(p: PlayerRt, intent: Intent, dt: number, field: Field
     if (into > 0) p.vel = sub(p.vel, mul(moved.normal, into))
   }
   pushOutOfCones(p, cones)
+  if (walls) Object.assign(p, pushOutOfWalls(p.pos, p.vel, walls, PLAYER_RADIUS))
 
   if (newSpeed > 0.6) {
     p.heading = angleOf(newDir)

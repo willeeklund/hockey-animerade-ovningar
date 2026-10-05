@@ -9,7 +9,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 ## Funktioner
 
 - **Spelyta:** hel rink i IIHF-mått (60 × 30 m) eller zonspel, där man spelar på bredden i en zon med burarna mot varandra.
-- **Objekt:** spelare för två lag, målvakter, puckar och koner.
+- **Objekt:** spelare för två lag, målvakter, puckar, koner och skumsarg (2 m långa bitar som delar av isen; spelarna åker runt och puckar studsar mot dem).
 - **Instruktioner:** rita åkvägar (lugnt, normalt eller fullt tempo), passningar och skott. Linjerna ritas enligt hockeystandard: vågig linje med puck, streckad för pass och dubbel för skott.
 - **Autonoma botar:**
   - Puckföraren söker mål, skjuter eller passar.
@@ -23,7 +23,9 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 - **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då.
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
-- **Mallar:** 2 mot 1, 3 mot 2, 5 mot 5, zonspel, konslalom och markering.
+- **Mallar**, ordnade efter spelyta:
+  - *Hel rink:* tom rink, 2 mot 1, 3 mot 2, 1 mot 1 med gap control, uppspel mot forechecking, 5 mot 5, powerplay 5 mot 4, markering 3 mot 3 och konslalom.
+  - *Zonspel:* tom zon, 1 mot 1, 2 mot 2, 3 mot 2 (överläge) och 3 mot 3.
 
 ## Kortkommandon
 
@@ -36,7 +38,8 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 | S | Skjut |
 | K | Kon |
 | M | Markera |
-| Delete | Ta bort markerad spelare |
+| Delete | Ta bort vald spelare (i runda 1 före start) |
+| R | Börja om från början |
 | Cmd/Ctrl + Z | Ångra (Shift för gör om) |
 | Esc | Avbryt och gå tillbaka till Välj |
 
@@ -106,7 +109,7 @@ Misslyckas lint, tester eller bygget publiceras ingenting.
 
 ## Inställningar
 
-Visningsinställningar finns i [`app/src/config.ts`](app/src/config.ts), till exempel hur många sekunder spåret efter spelarna visas (`trailSeconds`).
+Visningsinställningar finns i [`app/src/config.ts`](app/src/config.ts), till exempel hur många sekunder spåret efter spelarna visas (`trailSeconds`) och hur stort gap markerande spelare håller (`markGapScale`).
 
 ## Projektstruktur
 

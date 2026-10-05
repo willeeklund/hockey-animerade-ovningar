@@ -1,3 +1,4 @@
+import { CONFIG } from '../config'
 import { clampToField, type Field } from '../model/rink'
 import type { Vec } from '../model/types'
 import { add, clamp, dist, dot, len, lerp, mul, norm, sub } from './vec'
@@ -28,7 +29,8 @@ export function markPosition({ field, ownGoal, man, manVel, puck, manHasPuck }: 
   let face: Vec
 
   if (manHasPuck) {
-    const gap = dGoal > 20 ? 1.5 * STICK + 0.15 * len(manVel) : dGoal > 8 ? STICK : 0.7 * STICK
+    const speed = len(manVel)
+    const gap = CONFIG.markGapScale * (dGoal > 20 ? 2 * STICK + 0.2 * speed : dGoal > 8 ? 1.5 * STICK + 0.1 * speed : STICK)
     pos = add(m, mul(toGoal, gap))
     const perp = { x: -toGoal.y, y: toGoal.x }
     const towardMiddle = Math.sign(dot(perp, { x: 0, y: -m.y }))
@@ -36,7 +38,7 @@ export function markPosition({ field, ownGoal, man, manVel, puck, manHasPuck }: 
     face = m
   } else {
     const dPuck = puck ? dist(m, puck) : 15
-    const gap = dGoal < 6 ? 0.6 * STICK : dPuck < 10 ? 0.8 * STICK : STICK
+    const gap = CONFIG.markGapScale * (dGoal < 6 ? 0.9 * STICK : dPuck < 10 ? 1.1 * STICK : 1.3 * STICK)
     pos = add(m, mul(toGoal, gap))
     face = m
     if (puck) {

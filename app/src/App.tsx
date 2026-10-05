@@ -5,7 +5,7 @@ import { Library } from './components/Library'
 import { Sidebar } from './components/Sidebar'
 import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
-import { useEditor, type Tool } from './editor/store'
+import { placementAllowed, useEditor, type Tool } from './editor/store'
 
 const TOOL_KEYS: Record<string, Tool> = { v: 'select', a: 'skate', p: 'pass', s: 'shoot', k: 'cone', m: 'mark' }
 
@@ -22,11 +22,13 @@ export default function App() {
         e.preventDefault()
         if (e.shiftKey) st.redo()
         else st.undo()
-      } else if ((e.key === 'Delete' || e.key === 'Backspace') && st.selectedId) {
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && st.selectedId && placementAllowed(st)) {
         st.removeObject(st.selectedId)
       } else if (e.key === ' ') {
         e.preventDefault()
         st.togglePlay(sim.duration)
+      } else if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key.toLowerCase() === 'r') {
+        st.selectRound(0)
       } else if (!e.metaKey && !e.ctrlKey && !e.altKey && TOOL_KEYS[e.key.toLowerCase()]) {
         st.setTool(TOOL_KEYS[e.key.toLowerCase()])
       } else if (e.key === 'Escape') {
