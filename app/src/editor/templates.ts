@@ -1,4 +1,7 @@
+import { FIELDS } from '../model/rink'
 import type { Layout, Player, Role, Scenario, Team } from '../model/types'
+
+const ZONE_GOAL_Y = FIELDS.zone.goalY
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -136,7 +139,7 @@ export function template(key: TemplateKey): Scenario {
     s.settings.layout = 'zone'
   } else if (key === 'zone1v1') {
     s.settings.layout = 'zone'
-    s.players = [pl('h1', 'home', 'F', '1', -4, -2), pl('a1', 'away', 'F', '1', 4, 2), pl('hg', 'home', 'G', 'G', -11, 0), pl('ag', 'away', 'G', 'G', 11, 0)]
+    s.players = [pl('h1', 'home', 'F', '1', -4, -2), pl('a1', 'away', 'F', '1', 4, 2), pl('hg', 'home', 'G', 'G', -11, ZONE_GOAL_Y), pl('ag', 'away', 'G', 'G', 11, ZONE_GOAL_Y)]
     s.pucks = [{ id: 'k1', pos: { x: -3.3, y: -2 } }]
   } else if (key === 'zone3v2') {
     s.settings.layout = 'zone'
@@ -146,8 +149,8 @@ export function template(key: TemplateKey): Scenario {
       pl('h3', 'home', 'D', '3', -8, 0),
       pl('a1', 'away', 'F', '1', 5, -3),
       pl('a2', 'away', 'F', '2', 4, 4),
-      pl('hg', 'home', 'G', 'G', -11, 0),
-      pl('ag', 'away', 'G', 'G', 11, 0),
+      pl('hg', 'home', 'G', 'G', -11, ZONE_GOAL_Y),
+      pl('ag', 'away', 'G', 'G', 11, ZONE_GOAL_Y),
     ]
     s.pucks = [{ id: 'k1', pos: { x: -4.3, y: -4 } }]
   } else if (key === 'zone2v2' || key === 'zone3v3') {
@@ -157,8 +160,8 @@ export function template(key: TemplateKey): Scenario {
       pl('h2', 'home', 'F', '2', -4, 5),
       pl('a1', 'away', 'F', '1', 5, -3),
       pl('a2', 'away', 'F', '2', 4, 5),
-      pl('hg', 'home', 'G', 'G', -11, 0),
-      pl('ag', 'away', 'G', 'G', 11, 0),
+      pl('hg', 'home', 'G', 'G', -11, ZONE_GOAL_Y),
+      pl('ag', 'away', 'G', 'G', 11, ZONE_GOAL_Y),
     ]
     if (key === 'zone3v3') {
       s.players.push(pl('h3', 'home', 'D', '3', -8, -7), pl('a3', 'away', 'D', '3', 8, -7))

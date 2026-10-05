@@ -87,7 +87,6 @@ function zoneLineSpan(f: Field, y: number) {
 }
 
 function ZoneRink({ field }: { field: Field }) {
-  const hx = field.halfLength
   const hy = field.halfWidth
   const goalLineY = hy - R.endToGoalLine
   const dotY = hy - R.endToDot
@@ -100,7 +99,6 @@ function ZoneRink({ field }: { field: Field }) {
       </clipPath>
       <path d={zoneOutline(field)} fill="var(--ice)" />
       <g clipPath="url(#zone-clip)">
-        <rect x={-hx} y={-hy} width={hx * 2} height={0.3} fill={BLUE} />
         <line x1={-span} x2={span} y1={goalLineY} y2={goalLineY} stroke={RED} strokeWidth={0.05} opacity={0.5} />
         <path d={`M ${-c} ${goalLineY} A ${c} ${c} 0 0 1 ${c} ${goalLineY} Z`} fill="#bfe3f7" stroke={RED} strokeWidth={0.05} opacity={0.35} />
         {[-1, 1].map((s) => (

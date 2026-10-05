@@ -127,6 +127,12 @@ export function passScenarios(): Scenario[] {
   return playlistItems(st.playlist, st.library).map((id) => st.library[id])
 }
 
+export function presentCurrentPass() {
+  const st = useEditor.getState()
+  const deck = passScenarios()
+  st.enterPresentation(deck.some((s) => s.id === st.scenario.id) ? st.scenario.id : undefined, deck)
+}
+
 export async function shareLink(present: boolean, scope: ShareScope): Promise<string> {
   const st = useEditor.getState()
   const scenarios = scope === 'pass' ? passScenarios() : [st.scenario]
