@@ -8,12 +8,12 @@ export interface BuiltinPass {
 
 const bu2 = import.meta.glob<TrainingPass>('../../../hockey-BU2-ovningar/*/traningspass.json', { eager: true, import: 'default' })
 
-function passesOf(course: string, files: Record<string, TrainingPass>): BuiltinPass[] {
+function passesOf(slug: string, course: string, files: Record<string, TrainingPass>): BuiltinPass[] {
   return Object.entries(files)
-    .map(([path, pass]) => ({ id: `${course}/${path.split('/').at(-2)}`, course, pass }))
+    .map(([path, pass]) => ({ id: `${slug}/${path.split('/').at(-2)?.toLowerCase()}`, course, pass }))
     .sort((a, b) => a.id.localeCompare(b.id, 'sv', { numeric: true }))
 }
 
-export const BUILTIN_PASSES: BuiltinPass[] = passesOf('BU2-kursen', bu2)
+export const BUILTIN_PASSES: BuiltinPass[] = passesOf('bu2', 'BU2-kursen', bu2)
 
 export const builtinPass = (id: string) => BUILTIN_PASSES.find((p) => p.id === id)

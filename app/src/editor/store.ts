@@ -4,7 +4,7 @@ import { clampToField, DEFAULT_GOAL_IDS, defaultGoals, FIELDS, goalsOf } from '.
 import type { Action, Goal, Layout, Player, Role, Scenario, ScenarioSettings, Side, SpeedKey, Team, TrainingPass, Vec } from '../model/types'
 import { add, fromAngle, sub } from '../engine/vec'
 import { layoutDividers } from './dividers'
-import { MY_PASS, playlistItems, readLibrary, readPassSource, readPlaylist, writeLibrary, writePassSource, writePlaylist, type Playlist } from './storage'
+import { MY_PASS, SHARED_PASS, playlistItems, readLibrary, readPassSource, readPlaylist, writeLibrary, writePassSource, writePlaylist, type Playlist } from './storage'
 import { applyMarks } from './marks'
 import { initialCarrierMap } from './staticPlan'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
@@ -41,7 +41,10 @@ interface EditorState {
   library: Record<string, Scenario>
   playlist: Playlist
   passSource: string
+  sharedPass: TrainingPass | null
+  templateKey: TemplateKey | null
   presenting: boolean
+  idle: boolean
   deck: Scenario[]
   stash: { scenario: Scenario; past: Scenario[]; future: Scenario[]; activeRound: number } | null
 
@@ -53,7 +56,9 @@ interface EditorState {
   renamePlaylist: (name: string) => void
   enterPresentation: (startId?: string, deck?: Scenario[]) => void
   importPass: (pass: TrainingPass) => void
+  setIdle: (idle: boolean) => void
   setPassSource: (id: string) => void
+  showSharedPass: (pass: TrainingPass) => void
   exitPresentation: () => void
   present: (id: string) => void
   setTool: (t: Tool) => void
@@ -144,6 +149,7 @@ export const useEditor = create<EditorState>((set, get) => {
         time: roundStart(scenario, activeRound),
         playing: false,
         editing: true,
+        templateKey: null,
       }
     })
 
@@ -170,8 +176,11 @@ export const useEditor = create<EditorState>((set, get) => {
     editing: true,
     library: readLibrary(),
     playlist: readPlaylist(),
-    passSource: readPassSource(),
+    passSource: readPassSource() === SHARED_PASS ? MY_PASS : readPassSource(),
+    sharedPass: null,
+    templateKey: null,
     presenting: false,
+    idle: false,
     deck: [],
     stash: null,
 
@@ -230,10 +239,12 @@ export const useEditor = create<EditorState>((set, get) => {
         writePassSource(MY_PASS)
         return { library, playlist, passSource: MY_PASS }
       }),
+    setIdle: (idle) => set({ idle }),
     setPassSource: (passSource) => {
-      writePassSource(passSource)
+      if (passSource !== SHARED_PASS) writePassSource(passSource)
       set({ passSource })
     },
+    showSharedPass: (sharedPass) => set({ sharedPass, passSource: SHARED_PASS }),
     enterPresentation: (startId, deck) => {
       const st = get()
       if (st.presenting) return
@@ -369,8 +380,11 @@ export const useEditor = create<EditorState>((set, get) => {
         if (!next) return {}
         return { ...restore(next, st.activeRound), past: [...st.past, st.scenario], future: st.future.slice(1) }
       }),
-    load: (scenario) => set({ ...restore(applyMarks(scenario), 0), past: [], future: [], selectedId: null }),
-    loadTemplate: (k) => get().load(k === 'empty' ? emptyScenario() : template(k)),
+    load: (scenario) => set({ ...restore(applyMarks(scenario), 0), past: [], future: [], selectedId: null, templateKey: null }),
+    loadTemplate: (k) => {
+      get().load(k === 'empty' ? emptyScenario() : template(k))
+      set({ templateKey: k })
+    },
     setTime: (time) => set({ time }),
     setPlaying: (playing) => set((st) => ({ playing, editing: playing ? false : st.editing })),
     togglePlay: (duration) =>
@@ -412,6 +426,7 @@ export const useEditor = create<EditorState>((set, get) => {
     setFocus: (id) =>
       set((st) => ({
         scenario: { ...st.scenario, focusId: id ?? undefined, updatedAt: new Date().toISOString() },
+        templateKey: null,
         past: [...st.past.slice(-80), st.scenario],
         future: [],
       })),

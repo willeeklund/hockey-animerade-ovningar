@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { CONFIG } from './config'
 import { Board } from './components/Board'
 import { Library } from './components/Library'
@@ -8,16 +8,59 @@ import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
 import { placementAllowed, useEditor, type Tool } from './editor/store'
 
+const IDLE_MS = 2500
+const IDLE_AFTER_PLAY_SMALL_MS = 500
+const isSmallScreen = () => window.matchMedia('(max-height: 500px)').matches
+
 const TOOL_KEYS: Record<string, Tool> = { v: 'select', å: 'skate', p: 'pass', s: 'shoot', k: 'cone', m: 'mark' }
 
 export default function App() {
   const scenario = useEditor((s) => s.scenario)
   const presenting = useEditor((s) => s.presenting)
+  const playing = useEditor((s) => s.playing)
   const sim = useMemo(() => simulate(scenario), [scenario])
+  const idle = useEditor((s) => s.idle)
+  const idleTimer = useRef(0)
+
+  useEffect(() => {
+    if (!presenting) return
+    const { setIdle } = useEditor.getState()
+    const schedule = (ms: number) => {
+      window.clearTimeout(idleTimer.current)
+      idleTimer.current = window.setTimeout(() => setIdle(true), ms)
+    }
+    const wake = () => {
+      setIdle(false)
+      schedule(IDLE_MS)
+    }
+    schedule(IDLE_MS)
+    const events = ['pointermove', 'pointerdown', 'keydown'] as const
+    events.forEach((e) => window.addEventListener(e, wake))
+    return () => {
+      window.clearTimeout(idleTimer.current)
+      events.forEach((e) => window.removeEventListener(e, wake))
+      setIdle(false)
+    }
+  }, [presenting])
+
+  useEffect(() => {
+    if (!presenting || !playing) return
+    window.clearTimeout(idleTimer.current)
+    idleTimer.current = window.setTimeout(() => useEditor.getState().setIdle(true), isSmallScreen() ? IDLE_AFTER_PLAY_SMALL_MS : IDLE_MS)
+  }, [presenting, playing])
 
   useEffect(() => {
     if (presenting && !document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {})
     if (!presenting && document.fullscreenElement) document.exitFullscreen?.().catch(() => {})
+  }, [presenting])
+
+  useEffect(() => {
+    if (!presenting) return
+    const goFullscreen = () => {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {})
+    }
+    window.addEventListener('pointerdown', goFullscreen, { once: true })
+    return () => window.removeEventListener('pointerdown', goFullscreen)
   }, [presenting])
 
   useEffect(() => {
@@ -70,7 +113,7 @@ export default function App() {
 
   if (presenting) {
     return (
-      <div className="app presenting">
+      <div className={`app presenting ${idle && playing ? 'idle' : ''}`}>
         <main className="stage">
           <Board sim={sim} corner={<StageCorner />} />
           <Timeline sim={sim} compact />

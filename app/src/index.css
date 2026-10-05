@@ -284,10 +284,6 @@ button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }
 .pl-picker { display: flex; align-items: center; gap: 2px; }
 .pl-picker select { max-width: 240px; font-size: 13px; padding: 5px 8px; background: rgba(255, 255, 255, 0.85); }
 
-.app.presenting { grid-template-columns: 1fr; grid-template-rows: 1fr; grid-template-areas: 'stage'; height: 100%; background: #dfe7ef; }
-.app.presenting .stage { padding: 8px; gap: 8px; }
-.app.presenting .board { border-radius: 10px; }
-.timeline.compact { padding: 6px 10px; }
 
 textarea.notes { width: 100%; resize: vertical; font: inherit; font-size: 13px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
 
@@ -322,3 +318,76 @@ textarea.notes { width: 100%; resize: vertical; font: inherit; font-size: 13px; 
 }
 .trim-cut { position: absolute; top: 2px; bottom: 2px; right: 0; background: rgba(185, 28, 28, 0.18); border-radius: 0 6px 6px 0; pointer-events: none; }
 .trim-label { position: absolute; top: -32px; transform: translateX(-50%); font-size: 12px; color: #b91c1c; white-space: nowrap; pointer-events: none; }
+
+.share { position: relative; }
+.share-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+.share-title { margin: 0; font-weight: 600; font-size: 14px; }
+.share-url { width: 100%; font-size: 12px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; color: var(--muted); }
+.share-popover.left { left: 0; right: auto; }
+.share-panel-btn { width: 100%; }
+
+.app.presenting {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: 'stage';
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #dfe7ef;
+}
+.app.presenting .stage { position: relative; padding: 0; gap: 0; }
+.app.presenting .board-wrap, .app.presenting .board { min-height: 0; }
+.app.presenting .board { border-radius: 0; }
+.app.presenting .stage-corner { top: max(6px, env(safe-area-inset-top)); right: max(6px, env(safe-area-inset-right)); }
+.app.presenting .stage-notes { top: max(6px, env(safe-area-inset-top)); left: max(6px, env(safe-area-inset-left)); }
+
+.timeline.compact {
+  position: absolute;
+  left: 50%;
+  bottom: max(6px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(560px, calc(100% - 24px));
+  padding: 4px 8px;
+  gap: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-color: rgba(15, 23, 42, 0.08);
+  z-index: 3;
+}
+.timeline.compact .controls { gap: 6px; flex-wrap: nowrap; }
+.timeline.compact .controls button { width: 30px; height: 30px; padding: 0; border-radius: 999px; font-size: 13px; background: transparent; border-color: transparent; }
+.timeline.compact .controls .play { background: var(--accent); color: #fff; }
+.timeline.compact .scrub { min-width: 60px; }
+.timeline.compact .clock { min-width: 0; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+.app.presenting .timeline.compact, .app.presenting .stage-corner, .app.presenting .stage-notes { transition: opacity 0.25s; }
+.app.presenting.idle .timeline.compact, .app.presenting.idle .stage-corner, .app.presenting.idle .stage-notes { opacity: 0; pointer-events: none; }
+.app.presenting.idle { cursor: none; }
+
+@media (max-height: 500px) {
+  .app.presenting .corner-btn { width: 30px; height: 30px; }
+  .app.presenting .corner-btn.small { width: 24px; height: 26px; }
+  .app.presenting .pl-picker select { max-width: 170px; font-size: 12px; padding: 4px 6px; }
+  .app.presenting .stage-notes { font-size: 12px; padding: 4px 8px; max-width: 45%; }
+  .app.presenting .stage-notes .notes-toggle { font-size: 13px; }
+  .share-popover { max-height: calc(100dvh - 60px); overflow: auto; }
+}
+
