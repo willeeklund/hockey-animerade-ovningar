@@ -58,7 +58,7 @@ I helskärmsläget:
 
 ### Förutsättningar
 
-- **Node.js 20** eller senare, med npm. Versionen står i [`.nvmrc`](.nvmrc). Med [nvm](https://github.com/nvm-sh/nvm) räcker det att köra `nvm use` i projektroten.
+- **Node.js 24** eller senare, med npm. Versionen står i [`.nvmrc`](.nvmrc). Med [nvm](https://github.com/nvm-sh/nvm) räcker det att köra `nvm use` i projektroten.
 - **Git**.
 
 Kontrollera versionen:
