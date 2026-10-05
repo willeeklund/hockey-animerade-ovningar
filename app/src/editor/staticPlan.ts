@@ -1,5 +1,5 @@
-import { fieldOf, goalCenter, type Field } from '../model/rink'
-import type { Action, Scenario, Vec } from '../model/types'
+import { fieldOf, goalCenter, goalsOf, nearestGoal } from '../model/rink'
+import type { Action, Goal, Scenario, Vec } from '../model/types'
 import { frameIndex, type SimResult } from '../engine/simulate'
 import { dist } from '../engine/vec'
 
@@ -49,6 +49,7 @@ export function initialCarrierMap(s: Scenario): Map<string, string> {
     let best: string | null = null
     let bestD = 1.6
     for (const p of s.players) {
+      if (p.idle) continue
       if (taken.has(p.id)) continue
       const d = dist(p.pos, k.pos)
       if (d < bestD) {
@@ -68,7 +69,7 @@ export function initialCarriers(s: Scenario): Set<string> {
   return new Set(initialCarrierMap(s).values())
 }
 
-export function staticPlan(actions: Action[], start: Record<string, Vec>, startCarriers: Set<string>, field: Field): StaticPlan {
+export function staticPlan(actions: Action[], start: Record<string, Vec>, startCarriers: Set<string>, goals: Goal[], fallback: (a: Extract<Action, { kind: 'shoot' }>) => Vec): StaticPlan {
   const endPos: Record<string, Vec> = { ...start }
   const carriers = new Set(startCarriers)
   const geom: Record<string, ActionGeom> = {}
@@ -86,7 +87,8 @@ export function staticPlan(actions: Action[], start: Record<string, Vec>, startC
     } else if (a.kind === 'mark') {
       geom[a.id] = { from, to: endPos[a.targetId], withPuck }
     } else if (a.kind === 'shoot') {
-      geom[a.id] = { from, to: goalCenter(field, a.goal), withPuck }
+      const goal = goals.find((g) => g.id === a.goalId) ?? nearestGoal(goals, from, a.goal)
+      geom[a.id] = { from, to: goal?.pos ?? fallback(a), withPuck }
       carriers.delete(a.playerId)
     } else {
       geom[a.id] = { from, withPuck }
@@ -132,6 +134,6 @@ export function editContext(s: Scenario, round: number, sim: SimResult): EditCon
     heading,
     pucks,
     actions: info.actions,
-    plan: staticPlan(info.actions, pos, carriers, field),
+    plan: staticPlan(info.actions, pos, carriers, goalsOf(s), (a) => goalCenter(field, a.goal)),
   }
 }

@@ -259,4 +259,50 @@ describe('simulate', () => {
     expect(get().past.length).toBe(historyLength)
     expect(get().playlist.ids.slice(-2)).toEqual([first, second])
   })
+
+  it('leaves players in the queue out of the play', () => {
+    const s = base()
+    s.players[1].idle = true
+    s.actions.push({ id: 'p1', kind: 'pass', playerId: 'a', toPlayerId: 'b' })
+    const r = simulate(s)
+    expect(r.frames.at(-1)!.players.b).toBeUndefined()
+    expect(r.frames.at(-1)!.pucks.k.c).toBe('a')
+  })
+
+  it('coach only takes pucks passed to him', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players.push({ id: 'c', team: 'away', role: 'C', label: 'T', pos: { x: 6, y: 0 }, heading: Math.PI })
+    s.pucks = [{ id: 'k', pos: { x: 6, y: 0.8 } }]
+    s.players[0].pos = { x: -10, y: 0 }
+    const r = simulate(s)
+    expect(r.events.some((e) => e.kind === 'pickup' && e.playerId === 'c')).toBe(false)
+    expect(r.frames.at(-1)!.players.c).toEqual(r.frames[0].players.c)
+  })
+
+  it('a round can switch which goal the teams attack', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.rounds = [{ id: 'r1', startT: 0.5, actions: [], homeAttacks: 'left' }]
+    const r = simulate(s)
+    expect(r.frames.at(-1)!.players.a.x).toBeLessThan(-5)
+  })
+
+  it('scores in an extra goal turned 90 degrees', () => {
+    const s = base()
+    s.goals = [{ id: 'g', pos: { x: 0, y: -10 }, angle: Math.PI / 2 }]
+    s.actions.push({ id: 'sh', kind: 'shoot', playerId: 'a', goal: 'right', goalId: 'g' })
+    const r = simulate(s)
+    expect(r.events.some((e) => e.kind === 'goal')).toBe(true)
+  })
+
+  it('plays keep-away when there is no goal to attack', () => {
+    const s = template('zone3v3')
+    s.goals = []
+    s.settings.durationSec = 15
+    const r = simulate(s)
+    expect(r.events.some((e) => e.kind === 'shot')).toBe(false)
+    expect(r.events.filter((e) => e.kind === 'pass').length).toBeGreaterThan(1)
+  })
 })
+

@@ -10,6 +10,7 @@ const MAX_SAG_DISTANCE = 3.5
 export interface MarkInput {
   field: Field
   ownGoal: Vec
+  ownGoalNormal: Vec
   man: Vec
   manVel: Vec
   puck: Vec | null
@@ -21,7 +22,7 @@ export interface MarkResult {
   face: Vec
 }
 
-export function markPosition({ field, ownGoal, man, manVel, puck, manHasPuck }: MarkInput): MarkResult {
+export function markPosition({ field, ownGoal, ownGoalNormal, man, manVel, puck, manHasPuck }: MarkInput): MarkResult {
   const m = add(man, mul(manVel, LOOK_AHEAD))
   const dGoal = dist(m, ownGoal)
   const toGoal = norm(sub(ownGoal, m))
@@ -43,7 +44,7 @@ export function markPosition({ field, ownGoal, man, manVel, puck, manHasPuck }: 
     face = m
     if (puck) {
       pos = add(pos, mul(norm(sub(puck, pos)), dPuck < 10 ? 0.6 : 0.3))
-      const slot = { x: ownGoal.x - Math.sign(ownGoal.x) * 6, y: 0 }
+      const slot = add(ownGoal, mul(ownGoalNormal, 6))
       const sag = clamp((dPuck - 10) / 15, 0, 1) * 0.3
       pos = lerp(pos, slot, sag)
       if (dist(pos, m) > MAX_SAG_DISTANCE) pos = add(m, mul(norm(sub(pos, m)), MAX_SAG_DISTANCE))

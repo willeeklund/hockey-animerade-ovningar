@@ -9,10 +9,12 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 ## Funktioner
 
 - **Spelyta:** hel rink i IIHF-mått (60 × 30 m) eller zonspel, där man spelar på bredden i en zon med burarna mot varandra.
-- **Objekt:** spelare för två lag, målvakter, puckar, koner och skumsarg (2 m långa bitar som delar av isen; spelarna åker runt och puckar studsar mot dem).
+- **Objekt:** spelare för två lag, målvakter, puckar, koner, målburar och skumsarg (2 m långa bitar som delar av isen; spelarna åker runt och puckar studsar mot dem).
+- **Målburar:** ställ ut extra målburar var som helst med verktyget Målbur. Markera en målbur, även de vanliga, för att flytta den, vrida den 90° eller ta bort den (knappen eller Delete). Ett lag anfaller målburarna på sin anfallssida.
 - **Instruktioner:** rita åkvägar (lugnt, normalt eller fullt tempo), passningar och skott. Linjerna ritas enligt hockeystandard: vågig linje med puck, streckad för pass och dubbel för skott.
 - **Autonoma botar:**
   - Puckföraren söker mål, skjuter eller passar.
+  - Har laget ingen målbur att anfalla blir det passningsmatch: laget håller pucken inom laget, spelarna utan puck söker en ledig stor yta och puckföraren passar en fri lagkamrat. Motståndarna pressar puckföraren och stänger passningsvägarna.
   - Medspelarna stöttar.
   - Försvararna pressar och täcker.
   - Målvakten följer pucken.
@@ -20,10 +22,14 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
   - Alla följer offsideregeln: spelare utan puck väntar vid offensiv blålinje och anpassar farten efter puckföraren tills pucken har passerat linjen. Hamnar någon ändå offside visas det på tidslinjen.
 - **Markering:** ange att en spelare ska markera en motståndare. Markeraren följer sin spelare på målsidan med lagom avstånd (gap control), både när du flyttar motståndaren i ritläget och när övningen spelas upp. Principerna beskrivs i [MARKERING.md](MARKERING.md).
 - **Huvudperson:** välj en spelare som scenens huvudperson. Den får en guldring och en guldfärgad svans, så att genomgången kan följa just den spelarens resa.
-- **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då.
+- **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då. En runda kan byta lagens anfallsriktning, till exempel när försvararna vinner pucken och blir anfallare mot samma mål.
+- **Tränare och kö:** en tränare (T) står still, tar bara emot pass som är riktade till honom och passar när du ritar det. Spelare som står i kö syns blekta och deltar inte i förloppet.
+- **Beskrivning:** varje scenario kan ha en text om syfte och upplägg. I helskärm visas namnet uppe till vänster, och beskrivningen fälls ut med ⓘ.
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
+- **Trimma slutet:** dra den röda markeringen ⟧ i slutet av tidslinjen åt vänster för att korta scenen, eller förbi slutet åt höger för att förlänga den (ungefär en sekund per 20 pixlar, högst 30 s åt gången). Du kan också pausa och trycka ✂ Sluta här. Scenen stannar vid slutet och startar om från början när du trycker play igen.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
-- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm syns bara planen, play/paus, börja om och tidslinjen. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna.
+- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm syns bara planen, play/paus, börja om och tidslinjen. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna. Ett helt pass kan exporteras och importeras som JSON.
+- **Inbyggda träningspass:** i panelen Träningspass väljer man mellan sitt eget pass och inbyggda pass, till exempel gruppernas pass från BU2-kursen. Ett inbyggt pass kan visas i helskärm direkt eller kopieras till det egna passet för att ändras. Övningarna och de inskannade förlagorna finns i [`hockey-BU2-ovningar`](hockey-BU2-ovningar/README.md).
 - **Mallar**, ordnade efter spelyta:
   - *Hel rink:* tom rink, 2 mot 1, 3 mot 2, 1 mot 1 med gap control, uppspel mot forechecking, 5 mot 5, powerplay 5 mot 4, markering 3 mot 3 och konslalom.
   - *Zonspel:* tom zon, 1 mot 1, 2 mot 2, 3 mot 2 (överläge) och 3 mot 3.
@@ -34,7 +40,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 |---|---|
 | Mellanslag | Starta / pausa |
 | V | Välj / flytta |
-| A | Åk |
+| Å | Åk |
 | P | Passa |
 | S | Skjut |
 | K | Kon |

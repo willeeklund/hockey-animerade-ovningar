@@ -27,7 +27,7 @@ export function puckInZone(w: World, puck: PuckRt, team: Team) {
 
 export function keepOnside(w: World, p: PlayerRt, it: Intent): Intent {
   const blue = w.field.blueLineX
-  if (blue === null || p.role === 'G' || it.speed <= 0 || puckCarriedBy(w, p.id)) return it
+  if (blue === null || p.role === 'G' || p.role === 'C' || it.speed <= 0 || puckCarriedBy(w, p.id)) return it
   const puck = teamPuck(w, p)
   if (!puck || puckInZone(w, puck, p.team)) return it
 
@@ -59,7 +59,7 @@ export function detectOffside(w: World, puck: PuckRt, wasInZone: Partial<Record<
     if (!attacking) continue
     const dir = attackDir(w, team)
     for (const q of w.players) {
-      if (q.team !== team || q.role === 'G' || q.id === puck.carrierId) continue
+      if (q.team !== team || q.role === 'G' || q.role === 'C' || q.id === puck.carrierId) continue
       if ((q.pos.x - dir * blue) * dir > OFFSIDE_DEPTH) w.events.push({ t: w.t, kind: 'offside', playerId: q.id })
     }
   }

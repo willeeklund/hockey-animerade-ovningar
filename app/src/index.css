@@ -57,7 +57,7 @@ button.danger { color: #b91c1c; width: 100%; }
 }
 .top h1 { font-size: 18px; margin: 0; letter-spacing: 0.02em; white-space: nowrap; }
 .library { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.library .name { border: 1px solid #355070; background: #1b3a5c; color: #fff; border-radius: 8px; padding: 6px 10px; width: 200px; }
+.library .name { border: 1px solid #355070; background: #1b3a5c; color: #fff; border-radius: 8px; padding: 6px 10px; width: 420px; max-width: 45vw; }
 .library .ghost { color: #fff; border-color: #355070; }
 .flash { color: #a7f3d0; font-size: 13px; }
 
@@ -249,6 +249,7 @@ button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }
 .t-divider .icon { color: #2563eb; }
 
 .playlist-name { padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; }
+.pass-source { width: 100%; font-weight: 600; }
 .playlist { list-style: none; counter-reset: pl; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .playlist li { counter-increment: pl; display: flex; align-items: center; gap: 2px; }
 .playlist li::before { content: counter(pl) '.'; width: 18px; font-size: 12px; color: var(--muted); }
@@ -287,3 +288,37 @@ button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }
 .app.presenting .stage { padding: 8px; gap: 8px; }
 .app.presenting .board { border-radius: 10px; }
 .timeline.compact { padding: 6px 10px; }
+
+textarea.notes { width: 100%; resize: vertical; font: inherit; font-size: 13px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; }
+
+.stage-notes {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  max-width: min(460px, 55%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 14px;
+}
+.stage-notes .notes-toggle { border: none; background: transparent; padding: 2px 0; font-size: 15px; text-align: left; }
+.stage-notes .notes-chevron { color: var(--muted); margin-left: 4px; }
+.stage-notes p { margin: 4px 0 2px; white-space: pre-line; line-height: 1.4; }
+
+.trim-handle {
+  position: absolute;
+  top: -15px;
+  transform: translateX(-50%);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  color: #b91c1c;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+  padding: 0 4px;
+}
+.trim-cut { position: absolute; top: 2px; bottom: 2px; right: 0; background: rgba(185, 28, 28, 0.18); border-radius: 0 6px 6px 0; pointer-events: none; }
+.trim-label { position: absolute; top: -32px; transform: translateX(-50%); font-size: 12px; color: #b91c1c; white-space: nowrap; pointer-events: none; }

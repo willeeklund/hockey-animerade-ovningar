@@ -1,4 +1,4 @@
-import { playlistItems } from '../editor/storage'
+import { useState } from 'react'
 import { useEditor } from '../editor/store'
 
 function FullscreenIcon({ exit }: { exit: boolean }) {
@@ -10,7 +10,8 @@ function FullscreenIcon({ exit }: { exit: boolean }) {
 }
 
 export function StageCorner() {
-  const { presenting, playlist, library, scenario, enterPresentation, exitPresentation, present } = useEditor()
+  const { presenting, deck, scenario, enterPresentation, exitPresentation, present } = useEditor()
+  const [showNotes, setShowNotes] = useState(false)
 
   if (!presenting) {
     return (
@@ -22,31 +23,40 @@ export function StageCorner() {
     )
   }
 
-  const ids = playlistItems(playlist, library)
-  const index = ids.indexOf(scenario.id)
+  const index = deck.findIndex((s) => s.id === scenario.id)
   return (
-    <div className="stage-corner presenting">
-      {ids.length > 0 && (
-        <div className="pl-picker">
-          <button className="corner-btn small" disabled={index <= 0} onClick={() => present(ids[index - 1])} title="Föregående övning (←)">
-            ‹
+    <>
+      {scenario.notes && (
+        <div className={`stage-notes ${showNotes ? 'open' : ''}`}>
+          <button className="notes-toggle" onClick={() => setShowNotes(!showNotes)} title="Visa eller dölj beskrivningen">
+            <strong>{scenario.name}</strong> <span className="notes-chevron">{showNotes ? '▴' : 'ⓘ'}</span>
           </button>
-          <select value={index >= 0 ? scenario.id : ''} onChange={(e) => e.target.value && present(e.target.value)} aria-label="Välj övning i passet">
-            {index < 0 && <option value="">{scenario.name}</option>}
-            {ids.map((id, i) => (
-              <option key={`${id}-${i}`} value={id}>
-                {i + 1}. {library[id].name}
-              </option>
-            ))}
-          </select>
-          <button className="corner-btn small" disabled={index >= ids.length - 1} onClick={() => present(ids[index + 1])} title="Nästa övning (→)">
-            ›
-          </button>
+          {showNotes && <p>{scenario.notes}</p>}
         </div>
       )}
-      <button className="corner-btn" onClick={exitPresentation} title="Lämna helskärm (Esc)">
-        <FullscreenIcon exit />
-      </button>
-    </div>
+      <div className="stage-corner presenting">
+        {deck.length > 0 && (
+          <div className="pl-picker">
+            <button className="corner-btn small" disabled={index <= 0} onClick={() => present(deck[index - 1].id)} title="Föregående övning (←)">
+              ‹
+            </button>
+            <select value={index >= 0 ? scenario.id : ''} onChange={(e) => e.target.value && present(e.target.value)} aria-label="Välj övning i passet">
+              {index < 0 && <option value="">{scenario.name}</option>}
+              {deck.map((s, i) => (
+                <option key={`${s.id}-${i}`} value={s.id}>
+                  {i + 1}. {s.name}
+                </option>
+              ))}
+            </select>
+            <button className="corner-btn small" disabled={index < 0 || index >= deck.length - 1} onClick={() => present(deck[index + 1].id)} title="Nästa övning (→)">
+              ›
+            </button>
+          </div>
+        )}
+        <button className="corner-btn" onClick={exitPresentation} title="Lämna helskärm (Esc)">
+          <FullscreenIcon exit />
+        </button>
+      </div>
+    </>
   )
 }

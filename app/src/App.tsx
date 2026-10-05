@@ -4,12 +4,11 @@ import { Board } from './components/Board'
 import { Library } from './components/Library'
 import { Sidebar } from './components/Sidebar'
 import { StageCorner } from './components/StageCorner'
-import { playlistItems } from './editor/storage'
 import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
 import { placementAllowed, useEditor, type Tool } from './editor/store'
 
-const TOOL_KEYS: Record<string, Tool> = { v: 'select', a: 'skate', p: 'pass', s: 'shoot', k: 'cone', m: 'mark' }
+const TOOL_KEYS: Record<string, Tool> = { v: 'select', å: 'skate', p: 'pass', s: 'shoot', k: 'cone', m: 'mark' }
 
 export default function App() {
   const scenario = useEditor((s) => s.scenario)
@@ -35,7 +34,7 @@ export default function App() {
       if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') return
       const st = useEditor.getState()
       if (st.presenting) {
-        const ids = playlistItems(st.playlist, st.library)
+        const ids = st.deck.map((s) => s.id)
         const i = ids.indexOf(st.scenario.id)
         if (e.key === ' ') {
           e.preventDefault()
