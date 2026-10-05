@@ -1,6 +1,7 @@
 import { attackSide, defendSide, goalCenter } from '../model/rink'
 import type { Team, Vec } from '../model/types'
 import { add, clamp, dist, distToSegment, lerp, mul, norm, sub } from './vec'
+import { wallBlocks } from './walls'
 import { hold, playerById, SPEEDS, type Intent, type PlayerRt, type PuckRt, type World } from './world'
 
 export type BotAct = { kind: 'pass'; to: PlayerRt } | { kind: 'shoot' }
@@ -74,7 +75,7 @@ function carrierDecision(w: World, p: PlayerRt): BotDecision {
 
   if (canAct && depthToLine > 0.8) {
     const angleOk = Math.abs(p.pos.y) < depthToLine * 1.6 + 1
-    if (angleOk && (dGoal < 7 || (dGoal < Math.min(14, w.field.goalLineX * 0.7) && laneOpen(p.pos, goal, opps, 1.0)))) {
+    if (angleOk && (dGoal < 7 || (dGoal < Math.min(14, w.field.goalLineX * 0.7) && laneOpen(p.pos, goal, opps, 1.0))) && !wallBlocks(p.pos, goal, w.walls)) {
       return { intent: { target: goal, speed: SPEEDS.normal }, act: { kind: 'shoot' } }
     }
   }
@@ -88,7 +89,7 @@ function carrierDecision(w: World, p: PlayerRt): BotDecision {
     for (const q of mates) {
       const d = dist(p.pos, q.pos)
       if (d < 3 || d > 28) continue
-      if (!laneOpen(p.pos, q.pos, opps, 1.6)) continue
+      if (!laneOpen(p.pos, q.pos, opps, 1.6) || wallBlocks(p.pos, q.pos, w.walls)) continue
       const s = value(q.pos)
       if (s > bestScore) {
         bestScore = s

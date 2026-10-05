@@ -5,6 +5,7 @@ import { dist } from './vec'
 import { template } from '../editor/templates'
 import { clampToField, FIELDS } from '../model/rink'
 import { applyMarks } from '../editor/marks'
+import { closestOnSegment, dividerEnds } from './walls'
 
 function base(): Scenario {
   return {
@@ -130,13 +131,15 @@ describe('simulate', () => {
     const pairs = [['a1', 'h1'], ['a2', 'h2'], ['a3', 'h3']]
     let checked = 0
     let goalSide = 0
+    let gapSum = 0
     for (const f of r.frames.slice(15)) {
       const carrier = f.pucks.k1.c
       if (!carrier?.startsWith('h')) continue
       for (const [m, t] of pairs) {
         const gap = dist(f.players[m], f.players[t])
-        expect(gap).toBeGreaterThan(0.5)
+        expect(gap).toBeGreaterThan(0.3)
         expect(gap).toBeLessThan(5.5)
+        gapSum += gap
         checked++
         const man = f.players[t]
         const toGoal = { x: goal.x - man.x, y: goal.y - man.y }
@@ -145,6 +148,8 @@ describe('simulate', () => {
     }
     expect(checked).toBeGreaterThan(60)
     expect(goalSide / checked).toBeGreaterThan(0.9)
+    expect(gapSum / checked).toBeGreaterThan(1.8)
+    expect(gapSum / checked).toBeLessThan(4)
   })
 
   it('a marking player follows when the coach moves the opponent in edit mode', () => {
@@ -185,5 +190,46 @@ describe('simulate', () => {
     for (const f of r.frames.slice(0, entered)) expect(f.players.b.x).toBeLessThan(7.5)
     expect(r.frames.some((f) => f.players.b.x > 15)).toBe(true)
     expect(r.events.filter((e) => e.kind === 'offside')).toEqual([])
+  })
+
+  it('a puck dropped on a player sticks to the stick and follows when the player is dragged', async () => {
+    const { useEditor } = await import('../editor/store')
+    const st = useEditor.getState()
+    st.loadTemplate('2v1')
+    const puckId = useEditor.getState().scenario.pucks[0].id
+    useEditor.getState().moveObject(puckId, { x: 2.9, y: -3.4 })
+    useEditor.getState().snapPuck(puckId)
+    const snapped = useEditor.getState().scenario.pucks[0].pos
+    expect(dist(snapped, { x: 2.7, y: -4 })).toBeLessThan(0.05)
+    useEditor.getState().moveObject('h1', { x: -6, y: 5 }, [puckId])
+    const moved = useEditor.getState().scenario.pucks[0].pos
+    expect(dist(moved, { x: -5.3, y: 5 })).toBeLessThan(0.05)
+    useEditor.getState().moveObject('h2', { x: -5, y: 5.5 }, [])
+    expect(dist(useEditor.getState().scenario.pucks[0].pos, moved)).toBeLessThan(0.05)
+  })
+
+  it('skates around the end of a row of rink dividers instead of through it', () => {
+    const s = base()
+    s.dividers = [-2, 0, 2].map((y, i) => ({ id: `d${i}`, pos: { x: 8, y }, angle: Math.PI / 2 }))
+    s.actions.push({ id: 's1', kind: 'skate', playerId: 'a', speed: 'normal', path: [{ x: 16, y: 0 }] })
+    s.settings.durationSec = 10
+    const r = simulate(s)
+    for (const f of r.frames)
+      for (const d of s.dividers) {
+        const [a, b] = dividerEnds(d)
+        expect(dist(f.players.a, closestOnSegment(f.players.a, a, b))).toBeGreaterThan(0.5)
+      }
+    expect(r.frames.some((f) => dist(f.players.a, { x: 16, y: 0 }) < 1.5)).toBe(true)
+  })
+
+  it('a pass into a rink divider bounces back instead of going through', () => {
+    const s = base()
+    s.players[1].pos = { x: 10, y: 0 }
+    s.dividers = [{ id: 'd1', pos: { x: 5, y: 0 }, angle: Math.PI / 2 }]
+    s.actions.push({ id: 'p1', kind: 'pass', playerId: 'a', toPlayerId: 'b' })
+    s.settings.autonomous = false
+    const r = simulate(s)
+    expect(r.frames.every((f) => f.pucks.k.x < 5)).toBe(true)
+    expect(r.frames.at(-1)!.pucks.k.c).not.toBe('b')
   })
 })

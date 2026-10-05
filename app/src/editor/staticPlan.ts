@@ -42,22 +42,30 @@ export function roundAt(s: Scenario, t: number): number {
   return idx
 }
 
-export function initialCarriers(s: Scenario): Set<string> {
-  const carriers = new Set<string>()
+export function initialCarrierMap(s: Scenario): Map<string, string> {
+  const byPuck = new Map<string, string>()
+  const taken = new Set<string>()
   for (const k of s.pucks) {
     let best: string | null = null
     let bestD = 1.6
     for (const p of s.players) {
-      if (carriers.has(p.id)) continue
+      if (taken.has(p.id)) continue
       const d = dist(p.pos, k.pos)
       if (d < bestD) {
         bestD = d
         best = p.id
       }
     }
-    if (best) carriers.add(best)
+    if (best) {
+      byPuck.set(k.id, best)
+      taken.add(best)
+    }
   }
-  return carriers
+  return byPuck
+}
+
+export function initialCarriers(s: Scenario): Set<string> {
+  return new Set(initialCarrierMap(s).values())
 }
 
 export function staticPlan(actions: Action[], start: Record<string, Vec>, startCarriers: Set<string>, field: Field): StaticPlan {
