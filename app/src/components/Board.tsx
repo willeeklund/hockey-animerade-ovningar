@@ -5,8 +5,8 @@ import { closestOnSegment, dividerEnds } from '../engine/walls'
 import { layoutDividers } from '../editor/dividers'
 import type { SimResult } from '../engine/simulate'
 import { dist, wrapAngle } from '../engine/vec'
-import { clampToField, DIVIDER, fieldOf } from '../model/rink'
-import type { Action, Frame, Player, Vec } from '../model/types'
+import { clampToField, defendSide, DIVIDER, fieldOf, goalNormal, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
+import type { Action, Frame, Goal, Player, Vec } from '../model/types'
 import { editContext, initialCarrierMap, roundAt, type EditContext } from '../editor/staticPlan'
 import { useEditor } from '../editor/store'
 import { RinkLines } from './RinkLines'
@@ -77,11 +77,12 @@ function ActionShape({ a, from, to, withPuck, color }: { a: Action; from: Vec; t
 
 function PlayerGlyph({ p, x, y, h, selected, pending }: { p: Player; x: number; y: number; h: number; selected: boolean; pending: boolean }) {
   const goalie = p.role === 'G'
+  const fill = p.role === 'C' ? '#334155' : TEAM_COLOR[p.team]
   return (
-    <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }}>
+    <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={p.idle ? 0.45 : 1}>
       {(selected || pending) && <circle r={1.45} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
       <line x1={0} y1={0} x2={Math.cos(h) * 1.6} y2={Math.sin(h) * 1.6} stroke="#3b2a1a" strokeWidth={0.16} strokeLinecap="round" />
-      <circle r={0.95} fill={TEAM_COLOR[p.team]} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
+      <circle r={0.95} fill={fill} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
       <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill="#fff" style={{ pointerEvents: 'none' }}>
         {p.label}
       </text>
@@ -90,6 +91,20 @@ function PlayerGlyph({ p, x, y, h, selected, pending }: { p: Player; x: number; 
 }
 
 const FOCUS_COLOR = '#facc15'
+const GOAL_RED = '#c8102e'
+
+function GoalGlyph({ g, selected }: { g: Goal; selected: boolean }) {
+  const w = RINK.goalHalfWidth
+  const c = RINK.creaseR
+  return (
+    <g transform={`translate(${g.pos.x} ${g.pos.y}) rotate(${(g.angle * 180) / Math.PI})`} style={{ cursor: 'pointer' }}>
+      <path d={`M 0 ${-c} A ${c} ${c} 0 0 1 0 ${c} Z`} fill="#bfe3f7" stroke={GOAL_RED} strokeWidth={0.05} />
+      <rect x={-RINK.goalDepth} y={-w} width={RINK.goalDepth} height={w * 2} rx={0.3} fill="#fff" stroke={GOAL_RED} strokeWidth={0.12} />
+      <path d={`M 0 ${-w} V ${w}`} stroke={GOAL_RED} strokeWidth={0.15} />
+      {selected && <circle cx={0.2} r={2.3} fill="none" stroke="#facc15" strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
+    </g>
+  )
+}
 
 function FocusRing({ x, y }: { x: number; y: number }) {
   return (
@@ -157,6 +172,12 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     return best
   }
   const hitPuck = (p: Vec) => scenario.pucks.find((k) => dist(k.pos, p) < 0.8)
+  const goals = goalsOf(scenario)
+  const hitGoal = (p: Vec) =>
+    goals.find((g) => {
+      const n = goalNormal(g)
+      return dist(p, { x: g.pos.x - n.x * 0.3, y: g.pos.y - n.y * 0.3 }) < 1.4
+    })
   const hitCone = (p: Vec) => scenario.cones?.find((c) => dist(c.pos, p) < 0.8)
   const hitDivider = (p: Vec) =>
     scenario.dividers?.find((d) => {
@@ -195,13 +216,21 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       return
     }
 
-    if (tool === 'select' || tool === 'home' || tool === 'away' || tool === 'goalie' || tool === 'puck' || tool === 'cone') {
+    if (tool === 'select' || tool === 'home' || tool === 'away' || tool === 'goalie' || tool === 'coach' || tool === 'goal' || tool === 'puck' || tool === 'cone') {
       const grabPuck = firstRound ? scenario.pucks.find((k) => dist(k.pos, p) < 0.5) : undefined
       const hp = grabPuck ? undefined : hitPlayer(c, p)
-      const hk = grabPuck ?? (hp || !firstRound ? undefined : (hitPuck(p) ?? hitCone(p) ?? hitDivider(p)))
-      if (hp || hk) {
-        const id = (hp ?? hk)!.id
-        st.select(hp ? id : null)
+      const hg = grabPuck || hp || tool === 'goalie' ? undefined : hitGoal(p)
+      const hk = grabPuck ?? (hp || hg || !firstRound ? undefined : (hitPuck(p) ?? hitCone(p) ?? hitDivider(p)))
+      if (hp || hg || hk) {
+        const id = (hp ?? hg ?? hk)!.id
+        st.select(hp || hg ? id : null)
+        if (hg) {
+          if (!firstRound) return
+          st.checkpoint()
+          setDrag({ kind: 'move', id, pucks: [] })
+          capture()
+          return
+        }
         if (!firstRound) return
         st.checkpoint()
         const carried = [...initialCarrierMap(scenario)].filter(([, carrier]) => carrier === id).map(([puckId]) => puckId)
@@ -213,11 +242,14 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       if (!firstRound) return st.setMessage('Spelare och puckar läggs ut i runda 1.')
       if (tool === 'puck') return st.addPuck(inside)
       if (tool === 'cone') return st.addCone(inside)
+      if (tool === 'goal') return st.addGoal(clampToField(field, p, 1.5).pos)
+      if (tool === 'coach') return st.addPlayer('home', 'C', inside)
       if (tool === 'goalie') {
-        const rightIsAway = scenario.settings.homeAttacks === 'right'
-        const team = p.x > 0 === rightIsAway ? 'away' : 'home'
-        const gx = Math.sign(p.x || 1) * (field.goalLineX - 1)
-        return st.addPlayer(team, 'G', { x: gx, y: 0 })
+        const goal = nearestGoal(goals, p)
+        if (!goal) return st.setMessage('Lägg ut en målbur först.')
+        const team = goalSide(goal) === defendSide('away', scenario.settings) ? 'away' : 'home'
+        const n = goalNormal(goal)
+        return st.addPlayer(team, 'G', { x: goal.pos.x + n.x, y: goal.pos.y + n.y })
       }
       return st.addPlayer(tool, 'F', inside)
     }
@@ -247,7 +279,9 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
         if (!hp || hp.id === pending.fromId) return
         st.addAction({ kind: 'pass', playerId: pending.fromId, toPlayerId: hp.id })
       } else {
-        st.addAction({ kind: 'shoot', playerId: pending.fromId, goal: p.x < 0 ? 'left' : 'right' })
+        const goal = nearestGoal(goals, p)
+        if (!goal) return st.setMessage('Det finns ingen målbur att skjuta på.')
+        st.addAction({ kind: 'shoot', playerId: pending.fromId, goal: goalSide(goal), goalId: goal.id })
       }
       st.setPending(null)
       st.setMessage(null)
@@ -276,7 +310,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
     if (tool === 'erase') {
       if (!firstRound) return st.setMessage('Spelare och puckar tas bort i runda 1.')
-      const hit = hitPlayer(c, p) ?? hitPuck(p) ?? hitCone(p) ?? hitDivider(p)
+      const hit = hitPlayer(c, p) ?? hitPuck(p) ?? hitCone(p) ?? hitDivider(p) ?? hitGoal(p)
       if (hit) st.removeObject(hit.id)
     }
   }
@@ -360,6 +394,9 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
           </marker>
         </defs>
         <RinkLines field={field} />
+        {goals.map((g) => (
+          <GoalGlyph key={g.id} g={g} selected={g.id === selectedId} />
+        ))}
 
         {showPaths && (
           <g opacity={editing ? 0.9 : 0.25} style={{ pointerEvents: 'none' }}>

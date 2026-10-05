@@ -1,6 +1,6 @@
 import { markPosition } from '../engine/marking'
 import { add, angleOf, dist, mul, norm, sub } from '../engine/vec'
-import { defendSide, fieldOf, goalCenter } from '../model/rink'
+import { defendSide, fieldOf, goalCenter, goalNormal, goalsOf, nearestGoal } from '../model/rink'
 import type { Action, Player, Scenario } from '../model/types'
 import { initialCarriers } from './staticPlan'
 
@@ -29,9 +29,12 @@ export function applyMarks(s: Scenario): Scenario {
       (best, k) => (!best || dist(k.pos, man.pos) < dist(best.pos, man.pos) ? k : best),
       null,
     )
+    const side = defendSide(p.team, s.settings)
+    const own = nearestGoal(goalsOf(s), man.pos, side)
     const r = markPosition({
       field,
-      ownGoal: goalCenter(field, defendSide(p.team, s.settings)),
+      ownGoal: own?.pos ?? goalCenter(field, side),
+      ownGoalNormal: own ? goalNormal(own) : { x: side === 'left' ? 1 : -1, y: 0 },
       man: man.pos,
       manVel: { x: 0, y: 0 },
       puck: puck?.pos ?? null,

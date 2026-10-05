@@ -43,18 +43,6 @@ function FaceoffCircle({ x, y }: { x: number; y: number }) {
   )
 }
 
-function Goal({ side, goalLineX }: { side: -1 | 1; goalLineX: number }) {
-  const x = side * goalLineX
-  const w = R.goalHalfWidth
-  return (
-    <g>
-      <path d={`M ${x} ${-R.creaseR} A ${R.creaseR} ${R.creaseR} 0 0 ${side > 0 ? 0 : 1} ${x} ${R.creaseR} Z`} fill="#bfe3f7" stroke={RED} strokeWidth={0.05} />
-      <rect x={side > 0 ? x : x - R.goalDepth} y={-w} width={R.goalDepth} height={w * 2} rx={0.3} fill="#fff" stroke={RED} strokeWidth={0.12} />
-      <path d={`M ${x} ${-w} V ${w}`} stroke={RED} strokeWidth={0.15} />
-    </g>
-  )
-}
-
 function FullRink() {
   return (
     <g>
@@ -78,8 +66,6 @@ function FullRink() {
         {[-1, 1].flatMap((sx) =>
           [-1, 1].map((sy) => <circle key={`nd${sx}${sy}`} cx={sx * R.neutralDotX} cy={sy * R.neutralDotY} r={0.3} fill={RED} />),
         )}
-        <Goal side={-1} goalLineX={R.goalLineX} />
-        <Goal side={1} goalLineX={R.goalLineX} />
       </g>
       <path d={outline()} fill="none" stroke="#1f2937" strokeWidth={0.3} />
     </g>
@@ -120,8 +106,6 @@ function ZoneRink({ field }: { field: Field }) {
         {[-1, 1].map((s) => (
           <FaceoffCircle key={`zf${s}`} x={s * R.endDotY} y={dotY} />
         ))}
-        <Goal side={-1} goalLineX={field.goalLineX} />
-        <Goal side={1} goalLineX={field.goalLineX} />
       </g>
       <path d={zoneOutline(field)} fill="none" stroke="#1f2937" strokeWidth={0.3} />
     </g>

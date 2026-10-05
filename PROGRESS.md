@@ -26,7 +26,12 @@
   - Ritade spelare väjer bara i sidled för motståndare (tidigare kunde en pressande back stoppa en ritad åkväg), och raka åkvägar åks i normal fart (tidigare kröp spelaren fram).
   - Målvakter rör sig i sidled mot positionen mellan puck och bur (tidigare gled de ut ur målet).
   - **Träningspass och helskärm**: panelen Träningspass bygger en lista av sparade scenarion (lägg till aktuellt, som sparas automatiskt, eller sparade; flytta upp/ner; ta bort; namnge passet). Listan sparas i webbläsaren. Helskärm startas med ikonen uppe till höger på planen eller "Visa passet i helskärm". I helskärm visas bara planen, en diskret väljare uppe till höger (‹ lista ›) och play/börja om/tidslinje. Tangenter: mellanslag, R, ←/→, PageUp/PageDown, Esc. Scenariot som redigerades, med osparade ändringar och ångra-historik, återställs när man lämnar helskärm.
-  - 19 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
+  - **Inbyggda träningspass (BU2)**: de inskannade övningarna i `hockey-BU2-ovningar/` är sorterade i Grupp1–5 och heter `GruppN-M.jpg`. Varje grupp har en `traningspass.json` (samma format som export av träningspass) som byggs in i appen. Panelen Träningspass väljer mellan det egna passet och de inbyggda passen. Ett inbyggt pass kan visas i helskärm direkt eller kopieras till det egna passet. 24 av 28 sidor är tolkade som scenarion.
+  - Nytt i modellen för övningarna: roll Tränare (`C`), spelare i kö (`idle`), anfallsriktning per runda (`Round.homeAttacks`), beskrivning (`Scenario.notes`) och `TrainingPass`.
+  - **Målburar** är objekt i scenariot (`Scenario.goals`; utan fältet används de två vanliga). Verktyget Målbur ställer ut extra burar. Markerade burar kan flyttas, vridas 90° och tas bort. Målvakten vaktar närmaste bur och skott kan riktas mot en viss bur (`goalId`).
+  - **Passningsmatch**: ett lag utan målbur att anfalla håller pucken inom laget och söker ledig yta. Motståndarna pressar och stänger passningsvägar.
+  - **Trimma slutet**: dra ⟧ på tidslinjen eller tryck ✂ Sluta här när du har pausat.
+  - 24 enhetstester för motorn (Vitest), typkontroll och bygge går igenom.
 
 ## Kör
 ```

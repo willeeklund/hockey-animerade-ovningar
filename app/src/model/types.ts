@@ -1,7 +1,7 @@
 export type Vec = { x: number; y: number }
 
 export type Team = 'home' | 'away'
-export type Role = 'F' | 'D' | 'G'
+export type Role = 'F' | 'D' | 'G' | 'C'
 export type Side = 'left' | 'right'
 export type SpeedKey = 'slow' | 'normal' | 'fast'
 export type Layout = 'full' | 'zone'
@@ -13,6 +13,7 @@ export interface Player {
   label: string
   pos: Vec
   heading: number
+  idle?: boolean
 }
 
 export interface Puck {
@@ -25,6 +26,12 @@ export interface Cone {
   pos: Vec
 }
 
+export interface Goal {
+  id: string
+  pos: Vec
+  angle: number
+}
+
 export interface Divider {
   id: string
   pos: Vec
@@ -34,7 +41,7 @@ export interface Divider {
 export type Action =
   | { id: string; kind: 'skate'; playerId: string; path: Vec[]; speed: SpeedKey }
   | { id: string; kind: 'pass'; playerId: string; toPlayerId: string }
-  | { id: string; kind: 'shoot'; playerId: string; goal: Side }
+  | { id: string; kind: 'shoot'; playerId: string; goal: Side; goalId?: string }
   | { id: string; kind: 'wait'; playerId: string; seconds: number }
   | { id: string; kind: 'mark'; playerId: string; targetId: string }
 
@@ -42,6 +49,7 @@ export interface Round {
   id: string
   startT: number
   actions: Action[]
+  homeAttacks?: Side
 }
 
 export interface ScenarioSettings {
@@ -60,10 +68,18 @@ export interface Scenario {
   pucks: Puck[]
   cones?: Cone[]
   dividers?: Divider[]
+  goals?: Goal[]
   actions: Action[]
   rounds?: Round[]
   focusId?: string
+  notes?: string
   settings: ScenarioSettings
+}
+
+export interface TrainingPass {
+  name: string
+  notes?: string
+  scenarios: Scenario[]
 }
 
 export interface FramePlayer {

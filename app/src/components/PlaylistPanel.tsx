@@ -1,14 +1,94 @@
+import { useState, type ChangeEvent } from 'react'
+import { BUILTIN_PASSES, builtinPass } from '../editor/courses'
+import { MY_PASS } from '../editor/storage'
 import { useEditor } from '../editor/store'
+import type { TrainingPass } from '../model/types'
+
+function download(pass: TrainingPass) {
+  const blob = new Blob([JSON.stringify(pass, null, 2)], { type: 'application/json' })
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(blob)
+  a.download = `${pass.name.replace(/[^\wåäöÅÄÖ -]/g, '') || 'traningspass'}.json`
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+
+const courses = [...new Set(BUILTIN_PASSES.map((p) => p.course))]
 
 export function PlaylistPanel() {
-  const { scenario, library, playlist, addToPlaylist, removeFromPlaylist, movePlaylistItem, renamePlaylist, load, enterPresentation } = useEditor()
+  const st = useEditor()
+  const { scenario, library, playlist, passSource, addToPlaylist, removeFromPlaylist, movePlaylistItem, renamePlaylist, load, enterPresentation, importPass, setPassSource } = st
+  const [error, setError] = useState<string | null>(null)
+  const builtin = passSource === MY_PASS ? undefined : builtinPass(passSource)
   const items = playlist.ids.map((id) => ({ id, s: library[id] }))
   const saved = Object.values(library).sort((a, b) => a.name.localeCompare(b.name, 'sv'))
   const inList = playlist.ids.includes(scenario.id)
 
+  const readPass = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      const pass = JSON.parse(await file.text()) as TrainingPass
+      if (!Array.isArray(pass.scenarios) || pass.scenarios.some((s) => !Array.isArray(s.players))) throw new Error()
+      importPass(pass)
+      setError(null)
+    } catch {
+      setError('Kunde inte läsa passet')
+    }
+  }
+
+  const sourcePicker = (
+    <select className="pass-source" value={builtin ? passSource : MY_PASS} onChange={(e) => setPassSource(e.target.value)} aria-label="Välj träningspass">
+      <option value={MY_PASS}>Mitt träningspass{playlist.name ? `: ${playlist.name}` : ''}</option>
+      {courses.map((course) => (
+        <optgroup key={course} label={`Inbyggda pass – ${course}`}>
+          {BUILTIN_PASSES.filter((p) => p.course === course).map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.pass.name}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
+  )
+
+  if (builtin) {
+    const { pass } = builtin
+    return (
+      <section className="panel">
+        <h3>Träningspass</h3>
+        {sourcePicker}
+        {pass.notes && <p className="hint small">{pass.notes}</p>}
+        <ol className="playlist">
+          {pass.scenarios.map((s) => (
+            <li key={s.id} className={s.id === scenario.id ? 'current' : ''}>
+              <button className="pl-name" onClick={() => load(s)} title={s.notes ?? 'Öppna övningen'}>
+                {s.name}
+              </button>
+            </li>
+          ))}
+        </ol>
+        <button className="present-btn" disabled={pass.scenarios.length === 0} onClick={() => enterPresentation(pass.scenarios[0]?.id, pass.scenarios)}>
+          ▶ Visa passet i helskärm
+        </button>
+        <div className="seg">
+          <button onClick={() => importPass(pass)} title="Kopierar övningarna till dina sparade scenarion och gör dem till ditt träningspass, så att du kan ändra dem">
+            Kopiera till mitt pass
+          </button>
+          <button onClick={() => download(pass)} title="Sparar passet som en JSON-fil">
+            ⤓ Exportera
+          </button>
+        </div>
+        <p className="hint small">Inbyggda pass ändras inte. Öppna en övning och spara den för att bygga vidare på en egen kopia.</p>
+      </section>
+    )
+  }
+
   return (
     <section className="panel">
       <h3>Träningspass</h3>
+      {sourcePicker}
       <input className="playlist-name" value={playlist.name} placeholder="Namn, t.ex. Tisdag U13" onChange={(e) => renamePlaylist(e.target.value)} />
       {items.length === 0 ? (
         <p className="hint small">Lägg till övningarna du vill visa, i den ordning du vill visa dem.</p>
@@ -48,6 +128,20 @@ export function PlaylistPanel() {
       <button className="present-btn" disabled={items.every((x) => !x.s)} onClick={() => enterPresentation(items.find((x) => x.s)?.id)}>
         ▶ Visa passet i helskärm
       </button>
+      <div className="seg">
+        <button
+          disabled={items.every((x) => !x.s)}
+          onClick={() => download({ name: playlist.name || 'Träningspass', scenarios: items.flatMap((x) => (x.s ? [x.s] : [])) })}
+          title="Sparar hela passet med alla övningar som en JSON-fil"
+        >
+          ⤓ Exportera
+        </button>
+        <label className="file" title="Läser in ett pass från en JSON-fil. Övningarna läggs till bland dina sparade scenarion.">
+          ⤒ Importera
+          <input type="file" accept="application/json" onChange={readPass} hidden />
+        </label>
+      </div>
+      {error && <p className="hint small msg">{error}</p>}
       <p className="hint small">Passet visar senast sparade versionen av varje scenario. Spara efter ändringar.</p>
     </section>
   )

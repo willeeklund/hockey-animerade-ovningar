@@ -1,6 +1,7 @@
 import { PLACE_TOOLS, placementAllowed, useEditor, type Tool } from '../editor/store'
 import { PlaylistPanel } from './PlaylistPanel'
 import { TEMPLATE_GROUPS, TEMPLATE_NAMES } from '../editor/templates'
+import { goalsOf } from '../model/rink'
 import type { Role, SpeedKey } from '../model/types'
 
 interface ToolDef {
@@ -13,7 +14,7 @@ interface ToolDef {
 
 const PLAYER_TOOLS: ToolDef[] = [
   { id: 'select', label: 'Välj / flytta', icon: '↖', hint: 'Klicka för att välja, dra för att flytta', key: 'V' },
-  { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg', key: 'A' },
+  { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg', key: 'Å' },
   { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka puckföraren, sedan mottagaren', key: 'P' },
   { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka puckföraren, sedan målet', key: 'S' },
   { id: 'mark', label: 'Markera', icon: '⇄', hint: 'Klicka på försvararen, sedan på motståndaren', key: 'M' },
@@ -22,6 +23,7 @@ const PLAYER_TOOLS: ToolDef[] = [
 const OBJECT_TOOLS: ToolDef[] = [
   { id: 'puck', label: 'Puck', icon: '•', hint: 'Lägg pucken intill en spelare så har han den' },
   { id: 'cone', label: 'Kon', icon: '▲', hint: 'Klicka för att placera en kon. Spelarna åker runt den.', key: 'K' },
+  { id: 'goal', label: 'Målbur', icon: '⊐', hint: 'Klicka för att ställa ut en målbur. Markera en målbur för att vrida eller ta bort den.' },
   { id: 'divider', label: 'Sarg', icon: '▬', hint: 'Dra en linje för att lägga ut skumsarg, 2 m per bit. Ett klick lägger en bit.' },
 ]
 
@@ -29,6 +31,7 @@ const ADD_PLAYER_TOOLS: ToolDef[] = [
   { id: 'home', label: 'Lag A (röd)', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
   { id: 'away', label: 'Lag B (blå)', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
   { id: 'goalie', label: 'Målvakt', icon: 'G', hint: 'Klicka på den halva där målvakten ska stå' },
+  { id: 'coach', label: 'Tränare', icon: 'T', hint: 'Klicka på isen för att lägga ut en tränare. Tränaren står still och passar bara när du ritar det.' },
 ]
 
 const ERASE_TOOL: ToolDef = { id: 'erase', label: 'Ta bort', icon: '✕', hint: 'Klicka på spelare, puck eller kon' }
@@ -47,6 +50,7 @@ const ROLES: { id: Role; label: string }[] = [
   { id: 'F', label: 'Forward' },
   { id: 'D', label: 'Back' },
   { id: 'G', label: 'Målvakt' },
+  { id: 'C', label: 'Tränare' },
 ]
 
 function SelectedPanel() {
@@ -75,6 +79,10 @@ function SelectedPanel() {
         <input value={p.label} maxLength={3} onChange={(e) => updatePlayer(p.id, { label: e.target.value })} />
       </label>
       <button onClick={inRound(() => addAction({ kind: 'wait', playerId: p.id, seconds: 1 }))}>+ Vänta 1 s</button>
+      <label className="check" title="Spelaren står kvar i kön och deltar inte i förloppet">
+        <input type="checkbox" checked={!!p.idle} disabled={!placementAllowed(st)} onChange={(e) => updatePlayer(p.id, { idle: e.target.checked || undefined })} />
+        Står i kö
+      </label>
       <details className="subgroup">
         <summary>Fler val</summary>
         <div className="subgroup-body">
@@ -101,6 +109,26 @@ function SelectedPanel() {
           </button>
         </div>
       </details>
+    </section>
+  )
+}
+
+function GoalPanel() {
+  const st = useEditor()
+  const goal = goalsOf(st.scenario).find((g) => g.id === st.selectedId)
+  if (!goal) return null
+  const allowed = placementAllowed(st)
+  const title = allowed ? undefined : ONLY_AT_START
+  return (
+    <section className="panel">
+      <h3>Vald målbur</h3>
+      <button disabled={!allowed} title={title ?? 'Vrider målburen ett kvarts varv medurs'} onClick={() => st.rotateGoal(goal.id)}>
+        ⟳ Vrid 90°
+      </button>
+      <button className="danger" disabled={!allowed} title={title} onClick={() => st.removeObject(goal.id)}>
+        Ta bort målbur
+      </button>
+      <p className="hint small">Har ett lag ingen målbur att anfalla blir det passningsmatch: laget håller pucken och spelarna söker ledig yta.</p>
     </section>
   )
 }
@@ -162,6 +190,18 @@ export function Sidebar() {
       </section>
 
       <SelectedPanel />
+      <GoalPanel />
+
+      <details className="panel collapsible" open={!!scenario.notes || undefined}>
+        <summary>Beskrivning</summary>
+        <textarea
+          className="notes"
+          value={scenario.notes ?? ''}
+          rows={scenario.notes ? 6 : 3}
+          placeholder="Syfte, beteenden och hur övningen går till"
+          onChange={(e) => st.setNotes(e.target.value)}
+        />
+      </details>
 
       <section className="panel">
         <h3>Mallar</h3>
@@ -201,7 +241,7 @@ export function Sidebar() {
         <label className="row">
           {scenario.rounds?.length ? 'Längd efter sista rundan' : 'Längd'}
           <select value={scenario.settings.durationSec} onChange={(e) => st.updateSettings({ durationSec: Number(e.target.value) })}>
-            {[5, 8, 10, 15, 20, 30].map((d) => (
+            {[...new Set([5, 8, 10, 15, 20, 30, scenario.settings.durationSec])].sort((a, b) => a - b).map((d) => (
               <option key={d} value={d}>
                 {d} s
               </option>

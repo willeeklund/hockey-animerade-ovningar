@@ -1,6 +1,6 @@
-import { attackSide, clampToField, defendSide, fieldOf, goalCenter, RINK } from '../model/rink'
-import type { Action, Frame, Scenario, SimEvent } from '../model/types'
-import { botDecision, goalieIntent, focusPuck, type BotAct } from './ai'
+import { clampToField, fieldOf, goalNormal, goalsOf, nearestGoal, RINK } from '../model/rink'
+import type { Action, Frame, Round, Scenario, SimEvent } from '../model/types'
+import { attackGoalRef, botDecision, focusPuck, goalieIntent, guardGoal, keepAway, ownGoalRef, type BotAct, type GoalRef } from './ai'
 import { markPosition } from './marking'
 import { detectOffside, keepOnside } from './offside'
 import { avoidWalls, bounceOffWalls, buildWalls } from './walls'
@@ -45,7 +45,7 @@ function initialCarriers(s: Scenario): Map<string, string> {
   for (const k of s.pucks) {
     let best: string | null = null
     let bestD = 1.6
-    for (const p of s.players) {
+    for (const p of s.players.filter((q) => !q.idle)) {
       if (taken.has(p.id)) continue
       const d = dist(p.pos, k.pos)
       if (d < bestD) {
@@ -62,7 +62,7 @@ function initialCarriers(s: Scenario): Map<string, string> {
 }
 
 export function createWorld(s: Scenario): World {
-  const players: PlayerRt[] = s.players.map((p) => ({
+  const players: PlayerRt[] = s.players.filter((p) => !p.idle).map((p) => ({
     id: p.id,
     team: p.team,
     role: p.role,
@@ -93,7 +93,7 @@ export function createWorld(s: Scenario): World {
       wasInZone: {},
     }
   })
-  return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
+  return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -116,13 +116,12 @@ function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = fa
   w.events.push({ t: w.t, kind: 'pass', playerId: p.id })
 }
 
-function doShot(w: World, p: PlayerRt, puck: PuckRt, side: 'left' | 'right', scripted = false) {
+function doShot(w: World, p: PlayerRt, puck: PuckRt, g: GoalRef, scripted = false) {
   const from = stickPos(p)
-  const g = goalCenter(w.field, side)
-  const goalie = w.players.find((q) => q.role === 'G' && defendSide(q.team, w.scenario.settings) === side)
-  const gy = goalie ? goalie.pos.y : 0
-  const ty = (gy > 0 ? -1 : 1) * (0.55 + w.rng() * 0.25)
-  const target = { x: g.x + Math.sign(g.x) * 0.5, y: ty }
+  const goalie = w.players.find((q) => q.role === 'G' && guardGoal(w, q) === g.goal)
+  const gLat = goalie ? dot(sub(goalie.pos, g.pos), g.perp) : 0
+  const tLat = (gLat > 0 ? -1 : 1) * (0.55 + w.rng() * 0.25)
+  const target = add(g.pos, add(mul(g.n, -0.5), mul(g.perp, tLat)))
   puck.carrierId = null
   puck.pos = from
   puck.vel = mul(norm(sub(target, from)), SHOT_SPEED)
@@ -182,9 +181,11 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
       }
       if (teamHasPuck(w, p.team)) return null
       const puck = focusPuck(w, man)
+      const own = ownGoalRef(w, p.team, man.pos)
       const mark = markPosition({
         field: w.field,
-        ownGoal: goalCenter(w.field, defendSide(p.team, w.scenario.settings)),
+        ownGoal: own.pos,
+        ownGoalNormal: own.n,
         man: man.pos,
         manVel: man.vel,
         puck: puck?.pos ?? null,
@@ -199,7 +200,8 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
         const to = playerById(w, a.toPlayerId)
         if (to) doPass(w, p, puck, to, true)
       } else {
-        doShot(w, p, puck, a.goal, true)
+        const goal = (a.goalId && w.goals.find((g) => g.id === a.goalId)) || nearestGoal(w.goals, p.pos, a.goal)
+        if (goal) doShot(w, p, puck, { pos: goal.pos, n: goalNormal(goal), perp: { x: -goalNormal(goal).y, y: goalNormal(goal).x }, goal }, true)
       }
       advance(w, p)
       continue
@@ -219,12 +221,13 @@ function applyAct(w: World, p: PlayerRt, act: BotAct | undefined) {
   const puck = puckCarriedBy(w, p.id)
   if (!puck) return
   if (act.kind === 'pass') doPass(w, p, puck, act.to)
-  else doShot(w, p, puck, attackSide(p.team, w.scenario.settings))
+  else if (!keepAway(w, p.team)) doShot(w, p, puck, attackGoalRef(w, p.team, p.pos))
 }
 
 function playerIntent(w: World, p: PlayerRt): Intent {
   const scripted = scriptIntent(w, p)
   if (scripted) return scripted
+  if (p.role === 'C') return hold(p, focusPuck(w, p)?.pos)
   if (w.scenario.settings.autonomous) {
     const d = botDecision(w, p)
     applyAct(w, p, d.act)
@@ -261,22 +264,25 @@ function stepPuck(w: World, puck: PuckRt) {
   }
   let next = add(prev, mul(puck.vel, DT))
 
-  const gl = w.field.goalLineX
-  if (Math.abs(prev.x) < gl && Math.abs(next.x) >= gl && Math.sign(next.x) === Math.sign(puck.vel.x)) {
-    const t = (Math.sign(next.x) * gl - prev.x) / (next.x - prev.x)
-    const y = prev.y + (next.y - prev.y) * t
-    if (Math.abs(y) < RINK.goalHalfWidth) {
-      puck.pos = { x: Math.sign(next.x) * (gl + 0.6), y }
-      puck.vel = { x: 0, y: 0 }
-      puck.inGoal = true
-      w.events.push({ t: w.t, kind: 'goal' })
-      return
+  for (const g of w.goals) {
+    const n = goalNormal(g)
+    const perp = { x: -n.y, y: n.x }
+    const dPrev = dot(sub(prev, g.pos), n)
+    const dNext = dot(sub(next, g.pos), n)
+    if (dPrev > 0 && dNext <= 0) {
+      const cross = add(prev, mul(sub(next, prev), dPrev / (dPrev - dNext)))
+      if (Math.abs(dot(sub(cross, g.pos), perp)) < RINK.goalHalfWidth) {
+        puck.pos = add(cross, mul(n, -0.6))
+        puck.vel = { x: 0, y: 0 }
+        puck.inGoal = true
+        w.events.push({ t: w.t, kind: 'goal' })
+        return
+      }
     }
-  }
-  const back = gl + RINK.goalDepth
-  if (Math.abs(prev.x) > back && Math.abs(next.x) <= back && Math.abs(next.y) < RINK.goalHalfWidth + 0.1) {
-    puck.vel = { x: -puck.vel.x * 0.5, y: puck.vel.y }
-    next = prev
+    if (dPrev < -RINK.goalDepth && dNext >= -RINK.goalDepth && Math.abs(dot(sub(next, g.pos), perp)) < RINK.goalHalfWidth + 0.1) {
+      puck.vel = sub(puck.vel, mul(n, 1.5 * dot(puck.vel, n)))
+      next = prev
+    }
   }
 
   const bounced = bounceOffWalls(prev, next, puck.vel, w.walls, PUCK_RESTITUTION)
@@ -308,6 +314,7 @@ function stepPuck(w: World, puck: PuckRt) {
       continue
     }
     if (fast) continue
+    if (p.role === 'C' && puck.intended !== p.id) continue
     if (puck.scripted && puck.intended && puck.intended !== p.id) continue
     const r = puck.intended === p.id ? RECEIVER_RADIUS : puck.intended ? INTERCEPT_RADIUS : PICKUP_RADIUS
     if (d < r && d < bestD) {
@@ -337,10 +344,10 @@ function steals(w: World) {
   if (!w.scenario.settings.autonomous) return
   for (const puck of w.pucks) {
     const carrier = playerById(w, puck.carrierId)
-    if (!carrier || carrier.role === 'G' || w.t - carrier.holdSince < 0.4) continue
+    if (!carrier || carrier.role === 'G' || carrier.role === 'C' || w.t - carrier.holdSince < 0.4) continue
     if (carrier.idx < carrier.actions.length) continue
     for (const o of w.players) {
-      if (o.team === carrier.team || o.role === 'G' || puckCarriedBy(w, o.id)) continue
+      if (o.team === carrier.team || o.role === 'G' || o.role === 'C' || puckCarriedBy(w, o.id)) continue
       if (dist(o.pos, puck.pos) < 0.9 && w.rng() < 0.03) {
         takePuck(w, puck, o, 'steal')
         break
@@ -373,7 +380,12 @@ export function step(w: World) {
 
 export const frameIndex = (t: number) => Math.round(t / DT)
 
-function startRound(w: World, actions: Action[]) {
+function startRound(w: World, round: Round) {
+  if (round.homeAttacks && round.homeAttacks !== w.scenario.settings.homeAttacks) {
+    w.scenario = { ...w.scenario, settings: { ...w.scenario.settings, homeAttacks: round.homeAttacks } }
+    for (const k of w.pucks) k.wasInZone = {}
+  }
+  const actions = round.actions
   for (const p of w.players) {
     p.actions = actions.filter((a) => a.playerId === p.id)
     p.idx = 0
@@ -389,7 +401,7 @@ export function simulate(s: Scenario): SimResult {
   const lastStart = rounds.length ? rounds[rounds.length - 1].startT : 0
   const n = frameIndex(lastStart + s.settings.durationSec)
   for (let i = 0; i < n; i++) {
-    for (const r of rounds) if (frameIndex(r.startT) === i) startRound(w, r.actions)
+    for (const r of rounds) if (frameIndex(r.startT) === i) startRound(w, r)
     step(w)
     frames.push(snapshot(w))
   }

@@ -1,0 +1,758 @@
+{
+  "name": "Grupp 1 – Anfall och försvar i zon",
+  "notes": "Övningar med fokus på anfall och försvar i zon. Grupptillhörigheten är gissad utifrån skanningstiden.",
+  "scenarios": [
+    {
+      "id": "bu2-g1-1",
+      "name": "4 mot 2: backen ansluter i offensiv zon",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "C",
+          "pos": {
+            "x": 9,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "LW",
+          "pos": {
+            "x": 9,
+            "y": -9
+          },
+          "heading": 0
+        },
+        {
+          "id": "h3",
+          "team": "home",
+          "role": "F",
+          "label": "RW",
+          "pos": {
+            "x": 9,
+            "y": 9
+          },
+          "heading": 0
+        },
+        {
+          "id": "hd",
+          "team": "home",
+          "role": "D",
+          "label": "B",
+          "pos": {
+            "x": 2,
+            "y": -3
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "D",
+          "label": "1",
+          "pos": {
+            "x": 17,
+            "y": -4
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "D",
+          "label": "2",
+          "pos": {
+            "x": 17,
+            "y": 4
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 9.7,
+            "y": 0.0
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 14,
+              "y": 1
+            },
+            {
+              "x": 17,
+              "y": 6
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "kind": "pass",
+          "playerId": "h1",
+          "toPlayerId": "h3"
+        },
+        {
+          "id": "a3",
+          "kind": "skate",
+          "playerId": "h3",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 16,
+              "y": 10
+            },
+            {
+              "x": 21,
+              "y": 8
+            }
+          ]
+        },
+        {
+          "id": "a4",
+          "kind": "pass",
+          "playerId": "h3",
+          "toPlayerId": "hd"
+        },
+        {
+          "id": "a5",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 21,
+              "y": 3
+            },
+            {
+              "x": 23.5,
+              "y": 0.8
+            }
+          ]
+        },
+        {
+          "id": "a6",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 17,
+              "y": -8
+            },
+            {
+              "x": 21,
+              "y": -4
+            }
+          ]
+        },
+        {
+          "id": "a7",
+          "kind": "skate",
+          "playerId": "hd",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 9,
+              "y": -3
+            },
+            {
+              "x": 12,
+              "y": -2
+            }
+          ]
+        },
+        {
+          "id": "a8",
+          "kind": "shoot",
+          "playerId": "hd",
+          "goal": "right"
+        }
+      ],
+      "notes": "Grupp 1, övning 1.\nSyfte: anfall i offensiv zon, först tre forwards och sedan med back (4 mot 2).\nBeteenden: försvar ska ligga på rätt sida. Anfall ska hitta ytor, snabbt på mål och skymma. Backskott och kreativitet i zonen.",
+      "settings": {
+        "durationSec": 9,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right"
+      },
+      "focusId": "hd"
+    },
+    {
+      "id": "bu2-g1-2",
+      "name": "3 mot 3 från mitten: ingång och utgång",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -1,
+            "y": -8
+          },
+          "heading": 0
+        },
+        {
+          "id": "h3",
+          "team": "home",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": -1,
+            "y": 8
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 12,
+            "y": 0
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 14,
+            "y": -6
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a3",
+          "team": "away",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": 14,
+            "y": 6
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "qh0",
+          "team": "home",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": 0,
+            "y": -14
+          },
+          "heading": 1.57,
+          "idle": true
+        },
+        {
+          "id": "qh1",
+          "team": "home",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": -2,
+            "y": -14
+          },
+          "heading": 1.57,
+          "idle": true
+        },
+        {
+          "id": "qh2",
+          "team": "home",
+          "role": "F",
+          "label": "6",
+          "pos": {
+            "x": -4,
+            "y": -14
+          },
+          "heading": 1.57,
+          "idle": true
+        },
+        {
+          "id": "qa0",
+          "team": "away",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": 0,
+            "y": 14
+          },
+          "heading": -1.57,
+          "idle": true
+        },
+        {
+          "id": "qa1",
+          "team": "away",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": -2,
+            "y": 14
+          },
+          "heading": -1.57,
+          "idle": true
+        },
+        {
+          "id": "qa2",
+          "team": "away",
+          "role": "F",
+          "label": "6",
+          "pos": {
+            "x": -4,
+            "y": 14
+          },
+          "heading": -1.57,
+          "idle": true
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 0.7,
+            "y": 0.0
+          }
+        }
+      ],
+      "actions": [],
+      "notes": "Grupp 1, övning 2. Cirka 12 spelare plus målvakter.\nSyfte: anfallsingång, anfallsspel i offensiv zon och försvarsspel i försvarszon.\nBeteenden: återerövring, snabba avslut och vårda pucken i utgången.",
+      "settings": {
+        "durationSec": 12,
+        "seed": 2,
+        "autonomous": true,
+        "homeAttacks": "right"
+      },
+      "focusId": "h1"
+    },
+    {
+      "id": "bu2-g1-3",
+      "name": "2 mot 2: bågar i egen zon och vänder upp",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "t",
+          "team": "home",
+          "role": "C",
+          "label": "T",
+          "pos": {
+            "x": -28,
+            "y": 3
+          },
+          "heading": 0
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -8,
+            "y": -10
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -8,
+            "y": 10
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -6,
+            "y": -3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -6,
+            "y": 3
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -27.3,
+            "y": 3.0
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -15,
+              "y": -11
+            },
+            {
+              "x": -21,
+              "y": -11
+            },
+            {
+              "x": -23,
+              "y": -7
+            },
+            {
+              "x": -19,
+              "y": -5
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -15,
+              "y": 11
+            },
+            {
+              "x": -21,
+              "y": 11
+            },
+            {
+              "x": -23,
+              "y": 7
+            },
+            {
+              "x": -19,
+              "y": 5
+            }
+          ]
+        },
+        {
+          "id": "a3",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 2.6
+        },
+        {
+          "id": "a4",
+          "kind": "pass",
+          "playerId": "t",
+          "toPlayerId": "h2"
+        },
+        {
+          "id": "a5",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -12,
+              "y": 6
+            },
+            {
+              "x": 0,
+              "y": 6
+            }
+          ]
+        },
+        {
+          "id": "a6",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -12,
+              "y": -5
+            },
+            {
+              "x": 0,
+              "y": -5
+            }
+          ]
+        },
+        {
+          "id": "a7",
+          "kind": "skate",
+          "playerId": "a1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -13,
+              "y": -4
+            },
+            {
+              "x": -15,
+              "y": -2
+            },
+            {
+              "x": -11,
+              "y": -2
+            }
+          ]
+        },
+        {
+          "id": "a8",
+          "kind": "skate",
+          "playerId": "a2",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -13,
+              "y": 4
+            },
+            {
+              "x": -15,
+              "y": 2
+            },
+            {
+              "x": -11,
+              "y": 2
+            }
+          ]
+        }
+      ],
+      "notes": "Grupp 1, övning 3.\nSyfte: spelvändning från egen zon. Två spelare bågar ner i egen zon, får pucken och vänder upp i anfall mot två försvarare.\nBeteenden: tajming och gå på mål med retur.",
+      "settings": {
+        "durationSec": 13,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right"
+      },
+      "focusId": "h2"
+    },
+    {
+      "id": "bu2-g1-4",
+      "name": "3 mot 3 på tvären i zonen",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -11,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 11,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -5,
+            "y": -3
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -4,
+            "y": 5
+          },
+          "heading": 0
+        },
+        {
+          "id": "h3",
+          "team": "home",
+          "role": "D",
+          "label": "3",
+          "pos": {
+            "x": -8,
+            "y": -7
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 5,
+            "y": -3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 4,
+            "y": 5
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a3",
+          "team": "away",
+          "role": "D",
+          "label": "3",
+          "pos": {
+            "x": 8,
+            "y": -7
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -4.3,
+            "y": -3.0
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -1,
+              "y": 7
+            },
+            {
+              "x": 2,
+              "y": 4
+            }
+          ]
+        }
+      ],
+      "notes": "Grupp 1, övning 4.\nSyfte: spelbarhet. 3 mot 3 på tvären i en zon.\nBeteenden: rörelse utan puck (hitta lediga ytor) och kommunikation.",
+      "settings": {
+        "durationSec": 12,
+        "seed": 3,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "zone"
+      },
+      "focusId": "h2"
+    }
+  ]
+}

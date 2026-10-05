@@ -2,6 +2,7 @@ import type { Scenario } from '../model/types'
 
 const LIBRARY_KEY = 'hockey-vision.scenarios'
 const PLAYLIST_KEY = 'hockey-vision.playlist'
+const PASS_SOURCE_KEY = 'hockey-vision.pass-source'
 
 export interface Playlist {
   name: string
@@ -33,3 +34,7 @@ export const readLibrary = () => read<Record<string, Scenario>>(LIBRARY_KEY, {})
 export const writeLibrary = (all: Record<string, Scenario>) => write(LIBRARY_KEY, all)
 export const readPlaylist = () => read<Playlist>(PLAYLIST_KEY, { name: '', ids: [] })
 export const writePlaylist = (p: Playlist) => write(PLAYLIST_KEY, p)
+export const readPassSource = () => read<string>(PASS_SOURCE_KEY, MY_PASS)
+export const writePassSource = (id: string) => write(PASS_SOURCE_KEY, id)
+
+export const MY_PASS = 'mine'

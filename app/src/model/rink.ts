@@ -1,4 +1,4 @@
-import type { Layout, Side, Team, Vec, ScenarioSettings } from './types'
+import type { Goal, Layout, Scenario, Side, Team, Vec, ScenarioSettings } from './types'
 
 export const RINK = {
   halfLength: 30,
@@ -40,6 +40,39 @@ export const fieldOf = (settings: Pick<ScenarioSettings, 'layout'>) => FIELDS[se
 
 export function goalCenter(f: Field, side: Side): Vec {
   return { x: side === 'left' ? -f.goalLineX : f.goalLineX, y: 0 }
+}
+
+export const DEFAULT_GOAL_IDS: Record<Side, string> = { left: 'goal-left', right: 'goal-right' }
+
+export function defaultGoals(f: Field): Goal[] {
+  return [
+    { id: DEFAULT_GOAL_IDS.left, pos: goalCenter(f, 'left'), angle: 0 },
+    { id: DEFAULT_GOAL_IDS.right, pos: goalCenter(f, 'right'), angle: Math.PI },
+  ]
+}
+
+export const goalsOf = (s: Pick<Scenario, 'goals' | 'settings'>) => s.goals ?? defaultGoals(fieldOf(s.settings))
+
+export const goalNormal = (g: Goal): Vec => ({ x: Math.cos(g.angle), y: Math.sin(g.angle) })
+
+export function goalSide(g: Goal): Side {
+  const nx = Math.cos(g.angle)
+  if (Math.abs(nx) > 0.5) return nx > 0 ? 'left' : 'right'
+  return g.pos.x < 0 ? 'left' : 'right'
+}
+
+export function nearestGoal(goals: Goal[], p: Vec, side?: Side): Goal | undefined {
+  let best: Goal | undefined
+  let bestD = Infinity
+  for (const g of goals) {
+    if (side && goalSide(g) !== side) continue
+    const d = Math.hypot(g.pos.x - p.x, g.pos.y - p.y)
+    if (d < bestD) {
+      bestD = d
+      best = g
+    }
+  }
+  return best
 }
 
 export function attackSide(team: Team, settings: ScenarioSettings): Side {

@@ -1,20 +1,20 @@
 import { create } from 'zustand'
 import { DT } from '../engine/world'
-import { clampToField, FIELDS } from '../model/rink'
-import type { Action, Layout, Player, Role, Scenario, ScenarioSettings, SpeedKey, Team, Vec } from '../model/types'
+import { clampToField, DEFAULT_GOAL_IDS, defaultGoals, FIELDS, goalsOf } from '../model/rink'
+import type { Action, Goal, Layout, Player, Role, Scenario, ScenarioSettings, Side, SpeedKey, Team, TrainingPass, Vec } from '../model/types'
 import { add, fromAngle, sub } from '../engine/vec'
 import { layoutDividers } from './dividers'
-import { readLibrary, readPlaylist, writeLibrary, writePlaylist, type Playlist } from './storage'
+import { MY_PASS, playlistItems, readLibrary, readPassSource, readPlaylist, writeLibrary, writePassSource, writePlaylist, type Playlist } from './storage'
 import { applyMarks } from './marks'
 import { initialCarrierMap } from './staticPlan'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
 
-export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'puck' | 'cone' | 'divider' | 'mark' | 'skate' | 'pass' | 'shoot' | 'erase'
+export type Tool = 'select' | 'home' | 'away' | 'goalie' | 'coach' | 'goal' | 'puck' | 'cone' | 'divider' | 'mark' | 'skate' | 'pass' | 'shoot' | 'erase'
 
 type DistributiveOmit<T, K extends keyof T> = T extends unknown ? Omit<T, K> : never
 export type NewAction = DistributiveOmit<Action, 'id'>
 
-export const PLACE_TOOLS: ReadonlySet<Tool> = new Set<Tool>(['home', 'away', 'goalie', 'puck', 'cone', 'divider', 'erase'])
+export const PLACE_TOOLS: ReadonlySet<Tool> = new Set<Tool>(['home', 'away', 'goalie', 'coach', 'goal', 'puck', 'cone', 'divider', 'erase'])
 
 export function placementAllowed(st: { editing: boolean; playing: boolean; activeRound: number }) {
   return st.editing && !st.playing && st.activeRound === 0
@@ -40,7 +40,9 @@ interface EditorState {
   editing: boolean
   library: Record<string, Scenario>
   playlist: Playlist
+  passSource: string
   presenting: boolean
+  deck: Scenario[]
   stash: { scenario: Scenario; past: Scenario[]; future: Scenario[]; activeRound: number } | null
 
   saveCurrent: () => void
@@ -49,7 +51,9 @@ interface EditorState {
   removeFromPlaylist: (index: number) => void
   movePlaylistItem: (index: number, delta: number) => void
   renamePlaylist: (name: string) => void
-  enterPresentation: (startId?: string) => void
+  enterPresentation: (startId?: string, deck?: Scenario[]) => void
+  importPass: (pass: TrainingPass) => void
+  setPassSource: (id: string) => void
   exitPresentation: () => void
   present: (id: string) => void
   setTool: (t: Tool) => void
@@ -61,6 +65,8 @@ interface EditorState {
   addPlayer: (team: Team, role: Role, pos: Vec) => void
   addPuck: (pos: Vec) => void
   addCone: (pos: Vec) => void
+  addGoal: (pos: Vec) => void
+  rotateGoal: (id: string) => void
   addDividers: (from: Vec, to: Vec) => void
   moveObject: (id: string, pos: Vec, withPucks?: string[]) => void
   snapPuck: (id: string) => void
@@ -73,6 +79,7 @@ interface EditorState {
   updateSettings: (patch: Partial<ScenarioSettings>) => void
   setLayout: (layout: Layout) => void
   rename: (name: string) => void
+  setNotes: (notes: string) => void
   undo: () => void
   redo: () => void
   load: (s: Scenario) => void
@@ -83,9 +90,17 @@ interface EditorState {
   scrub: (t: number) => void
   selectRound: (index: number) => void
   deleteRound: (index: number) => void
+  setRoundDirection: (index: number, side: Side | undefined) => void
+  setEnd: (t: number) => void
   beginEditHere: () => void
   setRate: (r: number) => void
   toggle: (k: 'showPaths' | 'showTrails') => void
+}
+
+function withGoal(s: Scenario, id: string, fn: (g: Goal) => Goal | null): Scenario {
+  const goals = goalsOf(s)
+  if (!goals.some((g) => g.id === id)) return s
+  return { ...s, goals: goals.flatMap((g) => (g.id === id ? (fn(g) ?? []) : [g])) }
 }
 
 function nextLabel(players: Player[], team: Team) {
@@ -155,7 +170,9 @@ export const useEditor = create<EditorState>((set, get) => {
     editing: true,
     library: readLibrary(),
     playlist: readPlaylist(),
+    passSource: readPassSource(),
     presenting: false,
+    deck: [],
     stash: null,
 
     saveCurrent: () =>
@@ -203,11 +220,26 @@ export const useEditor = create<EditorState>((set, get) => {
         writePlaylist(playlist)
         return { playlist }
       }),
-    enterPresentation: (startId) => {
+    importPass: (pass) =>
+      set((st) => {
+        const copies = pass.scenarios.map((s) => ({ ...s, id: uid() }))
+        const library = { ...st.library, ...Object.fromEntries(copies.map((s) => [s.id, s])) }
+        const playlist = { name: pass.name, ids: copies.map((s) => s.id) }
+        writeLibrary(library)
+        writePlaylist(playlist)
+        writePassSource(MY_PASS)
+        return { library, playlist, passSource: MY_PASS }
+      }),
+    setPassSource: (passSource) => {
+      writePassSource(passSource)
+      set({ passSource })
+    },
+    enterPresentation: (startId, deck) => {
       const st = get()
       if (st.presenting) return
       set({
         presenting: true,
+        deck: deck ?? playlistItems(st.playlist, st.library).map((id) => st.library[id]),
         stash: { scenario: st.scenario, past: st.past, future: st.future, activeRound: st.activeRound },
         selectedId: null,
         pending: null,
@@ -223,12 +255,13 @@ export const useEditor = create<EditorState>((set, get) => {
         const stash = st.stash
         return {
           presenting: false,
+          deck: [],
           stash: null,
           ...(stash ? { ...restore(stash.scenario, stash.activeRound), past: stash.past, future: stash.future } : {}),
         }
       }),
     present: (id) => {
-      const s = get().library[id]
+      const s = get().deck.find((x) => x.id === id) ?? get().library[id]
       if (s) set({ ...restore(applyMarks(s), 0), selectedId: null })
     },
 
@@ -245,17 +278,24 @@ export const useEditor = create<EditorState>((set, get) => {
         ...s,
         players: [
           ...s.players,
-          { id, team, role, pos, label: role === 'G' ? 'G' : nextLabel(s.players, team), heading: team === 'home' ? 0 : Math.PI },
+          { id, team, role, pos, label: role === 'G' ? 'G' : role === 'C' ? 'T' : nextLabel(s.players, team), heading: team === 'home' ? 0 : Math.PI },
         ],
       }))
       set({ selectedId: id })
     },
     addPuck: (pos) => mutate((s) => ({ ...s, pucks: [...s.pucks, { id: uid(), pos }] })),
     addCone: (pos) => mutate((s) => ({ ...s, cones: [...(s.cones ?? []), { id: uid(), pos }] })),
+    addGoal: (pos) => {
+      const id = uid()
+      mutate((s) => ({ ...s, goals: [...goalsOf(s), { id, pos, angle: pos.x >= 0 ? Math.PI : 0 }] }))
+      set({ selectedId: id })
+    },
+    rotateGoal: (id) => mutate((s) => withGoal(s, id, (g) => ({ ...g, angle: (g.angle + Math.PI / 2) % (2 * Math.PI) }))),
     addDividers: (from, to) =>
       mutate((s) => ({ ...s, dividers: [...(s.dividers ?? []), ...layoutDividers(from, to).map((d) => ({ id: uid(), ...d }))] })),
     moveObject: (id, pos, withPucks = []) =>
       mutate((s) => {
+        s = withGoal(s, id, (g) => ({ ...g, pos }))
         const mover = s.players.find((p) => p.id === id)
         const delta = mover ? sub(pos, mover.pos) : { x: 0, y: 0 }
         return {
@@ -276,7 +316,7 @@ export const useEditor = create<EditorState>((set, get) => {
     updatePlayer: (id, patch) => mutate((s) => ({ ...s, players: s.players.map((p) => (p.id === id ? { ...p, ...patch } : p)) })),
     removeObject: (id) => {
       mutate((s) => ({
-        ...mapAllActions(s, notInvolving(id)),
+        ...mapAllActions(withGoal(s, id, () => null), notInvolving(id)),
         players: s.players.filter((p) => p.id !== id),
         pucks: s.pucks.filter((k) => k.id !== id),
         cones: s.cones?.filter((c) => c.id !== id),
@@ -308,9 +348,14 @@ export const useEditor = create<EditorState>((set, get) => {
           pucks: s.pucks.map((k) => ({ ...k, pos: fit(k.pos) })),
           cones: s.cones?.map((c) => ({ ...c, pos: fit(c.pos) })),
           dividers: s.dividers?.map((d) => ({ ...d, pos: fit(d.pos) })),
+          goals: s.goals?.map((g) => {
+            const home = defaultGoals(f).find((d) => d.id === g.id && (g.id === DEFAULT_GOAL_IDS.left || g.id === DEFAULT_GOAL_IDS.right))
+            return home ? { ...g, pos: home.pos } : { ...g, pos: clampToField(f, g.pos, 1.5).pos }
+          }),
         }
       }),
     rename: (name) => mutate((s) => ({ ...s, name }), false),
+    setNotes: (notes) => mutate((s) => ({ ...s, notes: notes || undefined }), false),
 
     undo: () =>
       set((st) => {
@@ -340,6 +385,16 @@ export const useEditor = create<EditorState>((set, get) => {
       if (index === 0) return
       mutate((s) => ({ ...s, rounds: (s.rounds ?? []).filter((_, i) => i !== index - 1) }))
       set((st) => restore(st.scenario, Math.min(st.activeRound, index - 1)))
+    },
+    setEnd: (t) => {
+      const lastStart = get().scenario.rounds?.at(-1)?.startT ?? 0
+      const durationSec = Math.round(Math.max(0.5, t - lastStart) * 10) / 10
+      mutate((s) => ({ ...s, settings: { ...s.settings, durationSec } }))
+      set({ time: lastStart + durationSec, editing: false })
+    },
+    setRoundDirection: (index, side) => {
+      if (index === 0) return
+      mutate((s) => ({ ...s, rounds: (s.rounds ?? []).map((r, i) => (i === index - 1 ? { ...r, homeAttacks: side } : r)) }))
     },
     beginEditHere: () => {
       const st = get()

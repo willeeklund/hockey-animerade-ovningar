@@ -1,0 +1,1397 @@
+{
+  "name": "Grupp 3 – Från uppvärmning till powerplay",
+  "notes": "Sex övningar från uppvärmning till powerplay med omställning.",
+  "scenarios": [
+    {
+      "id": "bu2-g3-1",
+      "name": "Uppvärmning: 3 mot 3 med give and go",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -4,
+            "y": -4
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 0,
+            "y": -9
+          },
+          "heading": 0
+        },
+        {
+          "id": "h3",
+          "team": "home",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": -3,
+            "y": 6
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 2,
+            "y": -3
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 4,
+            "y": 5
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "a3",
+          "team": "away",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": 1,
+            "y": 9
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "qh0",
+          "team": "home",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": -7,
+            "y": -13
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qh1",
+          "team": "home",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": -7,
+            "y": -11
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qh2",
+          "team": "home",
+          "role": "F",
+          "label": "6",
+          "pos": {
+            "x": -7,
+            "y": -9
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qa0",
+          "team": "away",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": 7,
+            "y": 13
+          },
+          "heading": 3.14,
+          "idle": true
+        },
+        {
+          "id": "qa1",
+          "team": "away",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": 7,
+            "y": 11
+          },
+          "heading": 3.14,
+          "idle": true
+        },
+        {
+          "id": "qa2",
+          "team": "away",
+          "role": "F",
+          "label": "6",
+          "pos": {
+            "x": 7,
+            "y": 9
+          },
+          "heading": 3.14,
+          "idle": true
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -3.3,
+            "y": -4.0
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -1.5,
+              "y": -6
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "kind": "pass",
+          "playerId": "h1",
+          "toPlayerId": "h2"
+        },
+        {
+          "id": "a3",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 3,
+              "y": -6
+            },
+            {
+              "x": 7,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "a4",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 2,
+              "y": -10
+            }
+          ]
+        },
+        {
+          "id": "a5",
+          "kind": "pass",
+          "playerId": "h2",
+          "toPlayerId": "h1"
+        }
+      ],
+      "notes": "Grupp 3, övning 1. 3 + 10 minuter.\nUppvärmning 3 mot 3 i mittzonen med flygande byten mot leden vid blålinjerna. Fokus: give and go och fyra roller.",
+      "settings": {
+        "durationSec": 9,
+        "seed": 2,
+        "autonomous": true,
+        "homeAttacks": "right"
+      },
+      "focusId": "h1"
+    },
+    {
+      "id": "bu2-g3-2",
+      "name": "Solo med puck runt koner och avslut",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -7,
+            "y": 14
+          },
+          "heading": -0.5
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 7,
+            "y": -14
+          },
+          "heading": 2.6
+        },
+        {
+          "id": "qh0",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -9,
+            "y": 14
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qh1",
+          "team": "home",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": -11,
+            "y": 14
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qa0",
+          "team": "away",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 9,
+            "y": -14
+          },
+          "heading": 3.14,
+          "idle": true
+        },
+        {
+          "id": "qa1",
+          "team": "away",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": 11,
+            "y": -14
+          },
+          "heading": 3.14,
+          "idle": true
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -6.39,
+            "y": 13.66
+          }
+        },
+        {
+          "id": "k2",
+          "pos": {
+            "x": 6.4,
+            "y": -13.64
+          }
+        }
+      ],
+      "cones": [
+        {
+          "id": "c1",
+          "pos": {
+            "x": 15.5,
+            "y": -10.5
+          }
+        },
+        {
+          "id": "c2",
+          "pos": {
+            "x": 15.5,
+            "y": -3.5
+          }
+        },
+        {
+          "id": "c3",
+          "pos": {
+            "x": -15.5,
+            "y": 3.5
+          }
+        },
+        {
+          "id": "c4",
+          "pos": {
+            "x": -15.5,
+            "y": 10.5
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3,
+              "y": 9
+            },
+            {
+              "x": -4,
+              "y": 3
+            },
+            {
+              "x": 0,
+              "y": -4
+            },
+            {
+              "x": 6,
+              "y": -7
+            },
+            {
+              "x": 11,
+              "y": -11
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 15,
+              "y": -12.5
+            },
+            {
+              "x": 18,
+              "y": -11
+            },
+            {
+              "x": 17,
+              "y": -7
+            },
+            {
+              "x": 14.5,
+              "y": -6
+            },
+            {
+              "x": 17,
+              "y": -3
+            },
+            {
+              "x": 19.5,
+              "y": -1.5
+            }
+          ]
+        },
+        {
+          "id": "a3",
+          "kind": "shoot",
+          "playerId": "h1",
+          "goal": "right"
+        },
+        {
+          "id": "a4",
+          "kind": "skate",
+          "playerId": "a1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 3,
+              "y": -9
+            },
+            {
+              "x": 4,
+              "y": -3
+            },
+            {
+              "x": 0,
+              "y": 4
+            },
+            {
+              "x": -6,
+              "y": 7
+            },
+            {
+              "x": -11,
+              "y": 11
+            }
+          ]
+        },
+        {
+          "id": "a5",
+          "kind": "skate",
+          "playerId": "a1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -15,
+              "y": 12.5
+            },
+            {
+              "x": -18,
+              "y": 11
+            },
+            {
+              "x": -17,
+              "y": 7
+            },
+            {
+              "x": -14.5,
+              "y": 6
+            },
+            {
+              "x": -17,
+              "y": 3
+            },
+            {
+              "x": -19.5,
+              "y": 1.5
+            }
+          ]
+        },
+        {
+          "id": "a6",
+          "kind": "shoot",
+          "playerId": "a1",
+          "goal": "left"
+        }
+      ],
+      "notes": "Grupp 3, övning 2. 3 + 10 minuter.\nSpelaren åker med puck genom mittzonen, gör ingång, skyddar pucken runt konerna, gör en fint och avslutar med quick release. Körs från båda hörnen samtidigt.",
+      "settings": {
+        "durationSec": 13,
+        "seed": 1,
+        "autonomous": false,
+        "homeAttacks": "right"
+      },
+      "focusId": "h1"
+    },
+    {
+      "id": "bu2-g3-3",
+      "name": "2 mot 2 framför mål + 2 skyttar",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "s1",
+          "team": "home",
+          "role": "D",
+          "label": "+",
+          "pos": {
+            "x": 15,
+            "y": -7
+          },
+          "heading": 0
+        },
+        {
+          "id": "s2",
+          "team": "home",
+          "role": "D",
+          "label": "+",
+          "pos": {
+            "x": 15,
+            "y": 7
+          },
+          "heading": 0
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 21,
+            "y": -4
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 21,
+            "y": 4
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "D",
+          "label": "1",
+          "pos": {
+            "x": 22.5,
+            "y": -2.5
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "D",
+          "label": "2",
+          "pos": {
+            "x": 22.5,
+            "y": 2.5
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 15.7,
+            "y": -7.0
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "mark",
+          "playerId": "a1",
+          "targetId": "h1"
+        },
+        {
+          "id": "a2",
+          "kind": "mark",
+          "playerId": "a2",
+          "targetId": "h2"
+        },
+        {
+          "id": "a3",
+          "kind": "pass",
+          "playerId": "s1",
+          "toPlayerId": "s2"
+        },
+        {
+          "id": "a4",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 19,
+              "y": 8
+            },
+            {
+              "x": 17.5,
+              "y": 10
+            }
+          ]
+        },
+        {
+          "id": "a5",
+          "kind": "pass",
+          "playerId": "s2",
+          "toPlayerId": "h2"
+        },
+        {
+          "id": "a6",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 23,
+              "y": -1.5
+            },
+            {
+              "x": 23.6,
+              "y": 0.8
+            }
+          ]
+        },
+        {
+          "id": "a7",
+          "kind": "pass",
+          "playerId": "h2",
+          "toPlayerId": "s1"
+        },
+        {
+          "id": "a8",
+          "kind": "skate",
+          "playerId": "h2",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 21,
+              "y": 5
+            },
+            {
+              "x": 23.4,
+              "y": 1.8
+            }
+          ]
+        },
+        {
+          "id": "a9",
+          "kind": "shoot",
+          "playerId": "s1",
+          "goal": "right"
+        }
+      ],
+      "notes": "Grupp 3, övning 3. 15 minuter, hög intensitet.\n2 mot 2 framför mål med två extra anfallare (+2) högt upp. Fokus: spel framför offensivt mål, spel framför defensivt mål och bredd i spelet så att försvaret måste förflytta sig i sidled.",
+      "settings": {
+        "durationSec": 8,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right"
+      },
+      "focusId": "h2"
+    },
+    {
+      "id": "bu2-g3-4",
+      "name": "Uppspel: backen hämtar i hörnet, 4 roller",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "hd",
+          "team": "home",
+          "role": "D",
+          "label": "B",
+          "pos": {
+            "x": 3,
+            "y": 1.5
+          },
+          "heading": 0
+        },
+        {
+          "id": "hw",
+          "team": "home",
+          "role": "F",
+          "label": "W",
+          "pos": {
+            "x": 8,
+            "y": -13.5
+          },
+          "heading": 0
+        },
+        {
+          "id": "hc",
+          "team": "home",
+          "role": "F",
+          "label": "C",
+          "pos": {
+            "x": 3,
+            "y": -1.5
+          },
+          "heading": 0
+        },
+        {
+          "id": "hw2",
+          "team": "home",
+          "role": "F",
+          "label": "W",
+          "pos": {
+            "x": 8,
+            "y": 13.5
+          },
+          "heading": 0
+        },
+        {
+          "id": "ql0",
+          "team": "home",
+          "role": "F",
+          "label": "W",
+          "pos": {
+            "x": 6.0,
+            "y": -13.5
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "ql1",
+          "team": "home",
+          "role": "F",
+          "label": "W",
+          "pos": {
+            "x": 4.2,
+            "y": -13.5
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qr0",
+          "team": "home",
+          "role": "F",
+          "label": "W",
+          "pos": {
+            "x": 6.0,
+            "y": 13.5
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qr1",
+          "team": "home",
+          "role": "F",
+          "label": "W",
+          "pos": {
+            "x": 4.2,
+            "y": 13.5
+          },
+          "heading": 0,
+          "idle": true
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 26.5,
+            "y": -10.5
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "hd",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 14,
+              "y": 0
+            },
+            {
+              "x": 22,
+              "y": -5
+            },
+            {
+              "x": 26,
+              "y": -10
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "kind": "skate",
+          "playerId": "hd",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 24.5,
+              "y": -12.5
+            },
+            {
+              "x": 21,
+              "y": -12.5
+            }
+          ]
+        },
+        {
+          "id": "a3",
+          "kind": "pass",
+          "playerId": "hd",
+          "toPlayerId": "hw"
+        },
+        {
+          "id": "a4",
+          "kind": "skate",
+          "playerId": "hw",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 13,
+              "y": -13.5
+            },
+            {
+              "x": 17,
+              "y": -12.8
+            }
+          ]
+        },
+        {
+          "id": "a5",
+          "kind": "wait",
+          "playerId": "hw",
+          "seconds": 3.4
+        },
+        {
+          "id": "a6",
+          "kind": "skate",
+          "playerId": "hw",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 12,
+              "y": -12
+            },
+            {
+              "x": 4,
+              "y": -11
+            }
+          ]
+        },
+        {
+          "id": "a7",
+          "kind": "pass",
+          "playerId": "hw",
+          "toPlayerId": "hc"
+        },
+        {
+          "id": "a8",
+          "kind": "skate",
+          "playerId": "hc",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 10,
+              "y": -2
+            },
+            {
+              "x": 16,
+              "y": -3.5
+            },
+            {
+              "x": 17,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "a9",
+          "kind": "wait",
+          "playerId": "hc",
+          "seconds": 2.6
+        },
+        {
+          "id": "a10",
+          "kind": "skate",
+          "playerId": "hc",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 10,
+              "y": -2
+            },
+            {
+              "x": 2,
+              "y": -4
+            },
+            {
+              "x": -8,
+              "y": -4
+            },
+            {
+              "x": -17,
+              "y": -2
+            }
+          ]
+        },
+        {
+          "id": "a11",
+          "kind": "shoot",
+          "playerId": "hc",
+          "goal": "left"
+        },
+        {
+          "id": "a12",
+          "kind": "skate",
+          "playerId": "hw2",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 14,
+              "y": 12
+            },
+            {
+              "x": 18,
+              "y": 9
+            },
+            {
+              "x": 15,
+              "y": 6
+            }
+          ]
+        },
+        {
+          "id": "a13",
+          "kind": "wait",
+          "playerId": "hw2",
+          "seconds": 2.8
+        },
+        {
+          "id": "a14",
+          "kind": "skate",
+          "playerId": "hw2",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 2,
+              "y": 8
+            },
+            {
+              "x": -12,
+              "y": 7
+            },
+            {
+              "x": -20,
+              "y": 3
+            }
+          ]
+        }
+      ],
+      "notes": "Grupp 3, övning 4.\nUppspel och spelvändning med fyra roller. Pucken spelas runt sargen till hörnet, backen hämtar och spelar upp till yttern längs sargen. Centern kommer i fart genom mitten och laget går på anfall åt andra hållet.\nFokus: ta egna beslut och \"breaks\".",
+      "settings": {
+        "durationSec": 15,
+        "seed": 1,
+        "autonomous": false,
+        "homeAttacks": "left"
+      },
+      "focusId": "hd"
+    },
+    {
+      "id": "bu2-g3-5",
+      "name": "3 mot 2 på tvären med give and go",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -11,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 11,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "t",
+          "team": "away",
+          "role": "C",
+          "label": "T",
+          "pos": {
+            "x": 0,
+            "y": -10.5
+          },
+          "heading": 1.57
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": -4,
+            "y": -4
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -3,
+            "y": 5
+          },
+          "heading": 0
+        },
+        {
+          "id": "h3",
+          "team": "home",
+          "role": "D",
+          "label": "3",
+          "pos": {
+            "x": -7,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 4,
+            "y": -3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": 4,
+            "y": 3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "qh0",
+          "team": "home",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": -13,
+            "y": -9
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qh1",
+          "team": "home",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": -11,
+            "y": -9
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "qa0",
+          "team": "away",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": 13,
+            "y": -9
+          },
+          "heading": 3.14,
+          "idle": true
+        },
+        {
+          "id": "qa1",
+          "team": "away",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": 11,
+            "y": -9
+          },
+          "heading": 3.14,
+          "idle": true
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": -3.3,
+            "y": -4.0
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 0,
+              "y": -4
+            }
+          ]
+        },
+        {
+          "id": "a2",
+          "kind": "pass",
+          "playerId": "h1",
+          "toPlayerId": "h2"
+        },
+        {
+          "id": "a3",
+          "kind": "skate",
+          "playerId": "h1",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 4,
+              "y": -6
+            },
+            {
+              "x": 7,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "a4",
+          "kind": "wait",
+          "playerId": "h2",
+          "seconds": 0.4
+        },
+        {
+          "id": "a5",
+          "kind": "pass",
+          "playerId": "h2",
+          "toPlayerId": "h1"
+        }
+      ],
+      "notes": "Grupp 3, övning 5.\n3 mot 2 i en zon. Fokus: anfallsspel i trängsel, give and go och presspel. Vid blockering kommer en ny puck från tränaren. Vinner försvararna pucken spelar de över den till andra sidan, då flyttas spelet: två nya anfallare kommer in och de tidigare försvararna kommer snabbt över och spelar 3 mot 2.",
+      "settings": {
+        "durationSec": 10,
+        "seed": 2,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "zone"
+      },
+      "focusId": "h1"
+    },
+    {
+      "id": "bu2-g3-6",
+      "name": "Powerplay 5 mot 3, omställning vid utspel",
+      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "players": [
+        {
+          "id": "ag",
+          "team": "away",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": 25,
+            "y": 0
+          },
+          "heading": 3.142
+        },
+        {
+          "id": "t",
+          "team": "away",
+          "role": "C",
+          "label": "T",
+          "pos": {
+            "x": 12,
+            "y": 14.2
+          },
+          "heading": -1.57
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "D",
+          "label": "D",
+          "pos": {
+            "x": 9,
+            "y": -4
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "D",
+          "label": "D",
+          "pos": {
+            "x": 9,
+            "y": 4
+          },
+          "heading": 0
+        },
+        {
+          "id": "h3",
+          "team": "home",
+          "role": "F",
+          "label": "F",
+          "pos": {
+            "x": 18,
+            "y": -9
+          },
+          "heading": 0
+        },
+        {
+          "id": "h4",
+          "team": "home",
+          "role": "F",
+          "label": "F",
+          "pos": {
+            "x": 18,
+            "y": 9
+          },
+          "heading": 0
+        },
+        {
+          "id": "h5",
+          "team": "home",
+          "role": "F",
+          "label": "F",
+          "pos": {
+            "x": 22.5,
+            "y": 1
+          },
+          "heading": 0
+        },
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 14,
+            "y": 0
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "D",
+          "label": "2",
+          "pos": {
+            "x": 20,
+            "y": -4
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a3",
+          "team": "away",
+          "role": "D",
+          "label": "3",
+          "pos": {
+            "x": 20,
+            "y": 4
+          },
+          "heading": 3.14
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 12.0,
+            "y": 13.5
+          }
+        }
+      ],
+      "actions": [
+        {
+          "id": "a1",
+          "kind": "pass",
+          "playerId": "t",
+          "toPlayerId": "h2"
+        }
+      ],
+      "notes": "Grupp 3, övning 6.\nPowerplay. Fokus: spelvändning och backcheck. Anfallslaget blir försvarare när försvararna får ut pucken ur zonen.\nVarianter: 5 mot 3 och 5 mot 4. Snabb omställning.",
+      "settings": {
+        "durationSec": 12,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right"
+      },
+      "focusId": "h1"
+    }
+  ]
+}
