@@ -28,8 +28,19 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Trimma slutet:** dra den röda markeringen ⟧ i slutet av tidslinjen åt vänster för att korta scenen, eller förbi slutet åt höger för att förlänga den (ungefär en sekund per 20 pixlar, högst 30 s åt gången). Du kan också pausa och trycka ✂ Sluta här. Scenen stannar vid slutet och startar om från början när du trycker play igen.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
-- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm syns bara planen, play/paus, börja om och tidslinjen. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna. Ett helt pass kan exporteras och importeras som JSON.
+- **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm fyller planen hela skärmen, och play/paus, börja om och tidslinjen ligger i en smal genomskinlig list ovanpå. Under uppspelning tonas kontrollerna bort efter ett par sekunder, och på en telefon i liggande läge redan en halv sekund efter play. Ett tryck var som helst tar tillbaka dem utan att pausa. Syns kontrollerna pausar ett tryck på planen. Läget är anpassat för telefon i liggande läge och tar hänsyn till notch och webbläsarlister. På iPhone tillåter Safari inte äkta helskärm för webbsidor. Lägg i stället till sidan på hemskärmen (Dela → Lägg till på hemskärmen), så öppnas den utan webbläsarlister. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna. Ett helt pass kan exporteras och importeras som JSON.
 - **Inbyggda träningspass:** i panelen Träningspass väljer man mellan sitt eget pass och inbyggda pass, till exempel gruppernas pass från BU2-kursen. Ett inbyggt pass kan visas i helskärm direkt eller kopieras till det egna passet för att ändras. Övningarna och de inskannade förlagorna finns i [`hockey-BU2-ovningar`](hockey-BU2-ovningar/README.md).
+- **Länkar och Dela:** adressen visar vilket inbyggt pass, vilken övning eller mall och om helskärm är vald. Knappen **Dela** finns i verktygsfältet och uppe till höger i helskärm. Den ger en länk till det du tittar på, och du väljer om den ska öppnas direkt i helskärm. Är övningen ändrad eller din egen packas hela övningen, eller i helskärm hela passet, in i länken, så att mottagaren ser exakt samma sak.
+  - `#!/pass/bu2/grupp2` väljer passet.
+  - `#!/pass/bu2/grupp2/ovning/3` öppnar passets tredje övning.
+  - `#!/pass/bu2/grupp2/helskarm` visar passet i helskärm från första övningen.
+  - `#!/pass/bu2/grupp2/ovning/3/helskarm` visar passet i helskärm från tredje övningen.
+  - `#!/mall/2v1` öppnar en mall, med `/helskarm` direkt i helskärm.
+  - `#!/data/…` innehåller en eller flera övningar och skapas av Dela. Ett delat pass med flera övningar visas som *Delat pass* i panelen Träningspass, och mottagaren kan kopiera det till sitt eget pass.
+
+  I Dela väljer du om länken gäller **Övningen** eller **Hela passet**. Knappen 🔗 Dela passet i panelen Träningspass väljer hela passet direkt. Innehållet komprimeras (deflate) och koordinaterna avrundas till centimeter. Ett pass med fem övningar blir ungefär 3 000 tecken, och alla 24 BU2-övningar i ett pass ungefär 10 000 tecken. Allt efter `#` skickas aldrig till servern, så webbläsarens gräns är den enda tekniska gränsen (Chrome klarar 2 MB). Däremot kan chattar, sms och e-post korta av eller bryta långa länkar, så Dela varnar när länken är längre än 4 000 tecken.
+
+  Webbläsaren tillåter inte äkta helskärm förrän sidan har fått ett klick. Länken öppnar därför helskärmsläget i fönstret, och första klicket gör det till äkta helskärm.
 - **Mallar**, ordnade efter spelyta:
   - *Hel rink:* tom rink, 2 mot 1, 3 mot 2, 1 mot 1 med gap control, uppspel mot forechecking, 5 mot 5, powerplay 5 mot 4, markering 3 mot 3 och konslalom.
   - *Zonspel:* tom zon, 1 mot 1, 2 mot 2, 3 mot 2 (överläge) och 3 mot 3.

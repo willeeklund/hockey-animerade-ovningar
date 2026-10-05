@@ -1,8 +1,9 @@
 import { useState, type ChangeEvent } from 'react'
 import { BUILTIN_PASSES, builtinPass } from '../editor/courses'
-import { MY_PASS } from '../editor/storage'
+import { MY_PASS, SHARED_PASS } from '../editor/storage'
 import { useEditor } from '../editor/store'
 import type { TrainingPass } from '../model/types'
+import { ShareButton } from './ShareButton'
 
 function download(pass: TrainingPass) {
   const blob = new Blob([JSON.stringify(pass, null, 2)], { type: 'application/json' })
@@ -17,9 +18,10 @@ const courses = [...new Set(BUILTIN_PASSES.map((p) => p.course))]
 
 export function PlaylistPanel() {
   const st = useEditor()
-  const { scenario, library, playlist, passSource, addToPlaylist, removeFromPlaylist, movePlaylistItem, renamePlaylist, load, enterPresentation, importPass, setPassSource } = st
+  const { scenario, library, playlist, passSource, sharedPass, addToPlaylist, removeFromPlaylist, movePlaylistItem, renamePlaylist, load, enterPresentation, importPass, setPassSource } = st
   const [error, setError] = useState<string | null>(null)
-  const builtin = passSource === MY_PASS ? undefined : builtinPass(passSource)
+  const builtin =
+    passSource === SHARED_PASS && sharedPass ? { id: SHARED_PASS, pass: sharedPass } : passSource === MY_PASS ? undefined : builtinPass(passSource)
   const items = playlist.ids.map((id) => ({ id, s: library[id] }))
   const saved = Object.values(library).sort((a, b) => a.name.localeCompare(b.name, 'sv'))
   const inList = playlist.ids.includes(scenario.id)
@@ -41,6 +43,7 @@ export function PlaylistPanel() {
   const sourcePicker = (
     <select className="pass-source" value={builtin ? passSource : MY_PASS} onChange={(e) => setPassSource(e.target.value)} aria-label="Välj träningspass">
       <option value={MY_PASS}>Mitt träningspass{playlist.name ? `: ${playlist.name}` : ''}</option>
+      {sharedPass && <option value={SHARED_PASS}>Delat pass: {sharedPass.name}</option>}
       {courses.map((course) => (
         <optgroup key={course} label={`Inbyggda pass – ${course}`}>
           {BUILTIN_PASSES.filter((p) => p.course === course).map((p) => (
@@ -80,7 +83,10 @@ export function PlaylistPanel() {
             ⤓ Exportera
           </button>
         </div>
-        <p className="hint small">Inbyggda pass ändras inte. Öppna en övning och spara den för att bygga vidare på en egen kopia.</p>
+        <ShareButton inPanel label="🔗 Dela passet" scope="pass" />
+        <p className="hint small">
+          {builtin.id === SHARED_PASS ? 'Passet kommer från en delad länk.' : 'Inbyggda pass ändras inte.'} Öppna en övning och spara den för att bygga vidare på en egen kopia.
+        </p>
       </section>
     )
   }
@@ -141,6 +147,7 @@ export function PlaylistPanel() {
           <input type="file" accept="application/json" onChange={readPass} hidden />
         </label>
       </div>
+      {items.some((x) => x.s) && <ShareButton inPanel label="🔗 Dela passet" scope="pass" />}
       {error && <p className="hint small msg">{error}</p>}
       <p className="hint small">Passet visar senast sparade versionen av varje scenario. Spara efter ändringar.</p>
     </section>

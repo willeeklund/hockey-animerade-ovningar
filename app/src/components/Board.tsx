@@ -194,7 +194,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     const p = toM(e)
     const capture = () => (e.target as Element).setPointerCapture?.(e.pointerId)
     const inside = clampToField(field, p, 0.6).pos
-    if (st.presenting) return st.togglePlay(sim.duration)
+    if (st.presenting) return st.idle && playing ? undefined : st.togglePlay(sim.duration)
     if (playing) return st.setPlaying(false)
 
     if (!editing) {

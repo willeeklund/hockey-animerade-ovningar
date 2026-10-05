@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react'
 import { useEditor } from '../editor/store'
 import { uid } from '../editor/templates'
 import type { Scenario } from '../model/types'
+import { ShareButton } from './ShareButton'
 
 export function Library() {
   const { scenario, rename, load, loadTemplate, library: saved, saveCurrent, deleteSaved } = useEditor()
@@ -69,6 +70,7 @@ export function Library() {
         ⤒
         <input type="file" accept="application/json" onChange={importJson} hidden />
       </label>
+      <ShareButton />
       {flash && <span className="flash">{flash}</span>}
     </div>
   )

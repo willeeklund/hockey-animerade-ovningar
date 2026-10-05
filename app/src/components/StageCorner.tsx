@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useEditor } from '../editor/store'
+import { ShareButton } from './ShareButton'
 
 function FullscreenIcon({ exit }: { exit: boolean }) {
   return (
@@ -53,6 +54,7 @@ export function StageCorner() {
             </button>
           </div>
         )}
+        <ShareButton corner />
         <button className="corner-btn" onClick={exitPresentation} title="Lämna helskärm (Esc)">
           <FullscreenIcon exit />
         </button>

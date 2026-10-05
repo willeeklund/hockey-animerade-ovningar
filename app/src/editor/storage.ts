@@ -38,3 +38,4 @@ export const readPassSource = () => read<string>(PASS_SOURCE_KEY, MY_PASS)
 export const writePassSource = (id: string) => write(PASS_SOURCE_KEY, id)
 
 export const MY_PASS = 'mine'
+export const SHARED_PASS = 'shared'
