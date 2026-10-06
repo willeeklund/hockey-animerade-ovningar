@@ -144,7 +144,6 @@ button.danger { color: #b91c1c; width: 100%; }
   .mobile-bar { min-width: 0; flex-wrap: wrap; }
   .mobile-pass, .mobile-exercise { flex: 1 1 0; width: 0; min-width: 0; font-size: 13px; padding: 6px 8px; }
   .app:not(.presenting) .scrub { min-width: 60px; }
-  .mobile-present { flex: none; background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 700; padding: 7px 14px; }
   .app:not(.presenting) .stage { padding: 6px max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left)); gap: 6px; }
   .board-wrap, .board { min-height: 0; }
   .app:not(.presenting) .timeline { padding: 4px 8px; gap: 4px; }

@@ -1,4 +1,4 @@
-import { passScenarios, presentCurrentPass } from '../editor/router'
+import { passScenarios } from '../editor/router'
 import { useEditor } from '../editor/store'
 import { PassSourceSelect } from './PassPicker'
 
@@ -25,9 +25,6 @@ export function MobileBar() {
           </option>
         ))}
       </select>
-      <button className="mobile-present" onClick={presentCurrentPass}>
-        ⛶ Helskärm
-      </button>
     </div>
   )
 }
