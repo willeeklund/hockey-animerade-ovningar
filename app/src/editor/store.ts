@@ -251,7 +251,7 @@ export const useEditor = create<EditorState>((set, get) => {
       if (st.presenting) return
       set({
         presenting: true,
-        deck: deck ?? playlistItems(st.playlist, st.library).map((id) => st.library[id]),
+        deck: (deck ?? playlistItems(st.playlist, st.library).map((id) => st.library[id])).map((s) => (s.id === st.scenario.id ? st.scenario : s)),
         stash: { scenario: st.scenario, past: st.past, future: st.future, activeRound: st.activeRound },
         selectedId: null,
         pending: null,
