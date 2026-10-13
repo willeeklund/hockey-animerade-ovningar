@@ -11,6 +11,11 @@ const LATERAL_ACCEL = 8
 const MAX_TURN_RATE = 7
 const STAND_TURN_RATE = 6
 const PLAYER_RADIUS = 0.45
+const BACK_SPEED = 5.8
+const BACK_ACCEL = 3.2
+const BACK_ENTER = 2.0
+const BACK_EXIT = 1.3
+const HEAD_TURN_RATE = 10
 
 export function separate(p: PlayerRt, others: PlayerRt[], target: Vec, sideOnly = false): Vec {
   let push = { x: 0, y: 0 }
@@ -70,10 +75,10 @@ function pushOutOfCones(p: PlayerRt, cones: Vec[]) {
   }
 }
 
-function turnToward(p: PlayerRt, dir: Vec | null, dt: number) {
+function turnToward(p: PlayerRt, dir: Vec | null, dt: number, rate = STAND_TURN_RATE) {
   if (!dir || len(dir) < 1e-6) return
   const a = wrapAngle(angleOf(dir) - p.heading)
-  const m = STAND_TURN_RATE * dt
+  const m = rate * dt
   p.heading = wrapAngle(p.heading + Math.max(-m, Math.min(m, a)))
 }
 
@@ -97,20 +102,30 @@ export function stepPlayer(p: PlayerRt, intent: Intent, dt: number, field: Field
   const d = len(toT)
   let desired = d < 0.15 ? 0 : intent.speed
   const speed = len(p.vel)
-  const curDir = speed > 0.1 ? mul(p.vel, 1 / speed) : fromAngle(p.heading)
-  const wantDir = d > 1e-6 ? mul(toT, 1 / d) : curDir
+  const faceDir = intent.face ? sub(intent.face, p.pos) : null
+  if (!intent.back || !faceDir || len(faceDir) < 0.3) p.backward = false
+  else if (d > 0.15) p.backward = Math.abs(wrapAngle(angleOf(faceDir) - angleOf(toT))) > (p.backward ? BACK_EXIT : BACK_ENTER)
+  const back = p.backward
+  const wantDir = d > 1e-6 ? mul(toT, 1 / d) : speed > 0.1 ? mul(p.vel, 1 / speed) : fromAngle(p.heading)
+  const curDir = speed > 0.1 ? mul(p.vel, 1 / speed) : back ? wantDir : fromAngle(p.heading)
   const angle = wrapAngle(angleOf(wantDir) - angleOf(curDir))
+  if (back) desired = Math.min(desired, BACK_SPEED)
 
   let newSpeed = speed
   let newDir = curDir
-  if (speed > 2.5 && Math.abs(angle) > 2.0) {
+  if (speed > 1 && Math.abs(angle) > 2.0) {
     newSpeed = Math.max(0, speed - HOCKEY_STOP_DECEL * dt)
+  } else if (back && speed < 1) {
+    newDir = wantDir
+    newSpeed = Math.min(desired, speed + BACK_ACCEL * dt)
   } else {
     if (Math.abs(angle) > 0.7) desired = Math.min(desired, 4.5)
+    if (Math.abs(angle) > 0.3) desired = Math.min(desired, Math.sqrt((LATERAL_ACCEL * d) / (2 * Math.sin(Math.abs(angle)))))
     const maxTurn = Math.min(MAX_TURN_RATE, LATERAL_ACCEL / Math.max(speed, 0.5)) * dt
     const turn = Math.max(-maxTurn, Math.min(maxTurn, angle))
     newDir = fromAngle(angleOf(curDir) + turn)
-    if (desired > speed) newSpeed = Math.min(desired, speed + ACCEL * (1 - speed / 12) * dt)
+    const accel = back ? BACK_ACCEL * (1 - speed / 9) : ACCEL * (1 - speed / 12)
+    if (desired > speed) newSpeed = Math.min(desired, speed + accel * dt)
     else newSpeed = Math.max(desired, speed - DECEL * dt)
   }
 
@@ -124,8 +139,10 @@ export function stepPlayer(p: PlayerRt, intent: Intent, dt: number, field: Field
   pushOutOfCones(p, cones)
   if (walls) Object.assign(p, pushOutOfWalls(p.pos, p.vel, walls, PLAYER_RADIUS))
 
-  if (newSpeed > 0.6) {
-    p.heading = angleOf(newDir)
+  if (back && faceDir) {
+    turnToward(p, faceDir, dt, HEAD_TURN_RATE)
+  } else if (newSpeed > 0.6) {
+    turnToward(p, newDir, dt, HEAD_TURN_RATE)
   } else {
     turnToward(p, intent.face ? sub(intent.face, p.pos) : d > 0.3 ? toT : null, dt)
   }

@@ -55,11 +55,12 @@ const ROLES: { id: Role; label: string }[] = [
 
 function SelectedPanel() {
   const st = useEditor()
-  const { scenario, selectedId, activeRound, editing, updatePlayer, addAction, clearActions, removeObject, beginEditHere, setFocus } = st
+  const { scenario, selectedId, activeRound, editing, updatePlayer, addAction, clearActions, resetPlayer, removeObject, beginEditHere, setFocus } = st
   const p = scenario.players.find((x) => x.id === selectedId)
   if (!p) return null
   const roundActions = editing ? (activeRound === 0 ? scenario.actions : (scenario.rounds?.[activeRound - 1]?.actions ?? [])) : []
   const count = roundActions.filter((a) => a.playerId === p.id).length
+  const total = [scenario.actions, ...(scenario.rounds ?? []).map((r) => r.actions)].flat().filter((a) => a.playerId === p.id).length
   const inRound = (fn: () => void) => () => {
     beginEditHere()
     fn()
@@ -79,6 +80,9 @@ function SelectedPanel() {
         <input value={p.label} maxLength={3} onChange={(e) => updatePlayer(p.id, { label: e.target.value })} />
       </label>
       <button onClick={inRound(() => addAction({ kind: 'wait', playerId: p.id, seconds: 1 }))}>+ Vänta 1 s</button>
+      <button disabled={!total} title="Tar bort alla spelarens instruktioner i alla rundor" onClick={() => resetPlayer(p.id)}>
+        ⟲ Nollställ spelaren ({total})
+      </button>
       <label className="check" title="Spelaren står kvar i kön och deltar inte i förloppet">
         <input type="checkbox" checked={!!p.idle} disabled={!placementAllowed(st)} onChange={(e) => updatePlayer(p.id, { idle: e.target.checked || undefined })} />
         Står i kö

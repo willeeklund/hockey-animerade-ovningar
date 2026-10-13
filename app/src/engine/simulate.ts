@@ -1,7 +1,6 @@
 import { clampToField, fieldOf, goalNormal, goalsOf, nearestGoal, RINK } from '../model/rink'
 import type { Action, Frame, Round, Scenario, SimEvent } from '../model/types'
-import { attackGoalRef, botDecision, focusPuck, goalieIntent, guardGoal, keepAway, ownGoalRef, type BotAct, type GoalRef } from './ai'
-import { markPosition } from './marking'
+import { attackGoalRef, botDecision, markIntent, focusPuck, goalieIntent, guardGoal, keepAway, type BotAct, type GoalRef } from './ai'
 import { detectOffside, keepOnside } from './offside'
 import { avoidWalls, bounceOffWalls, buildWalls } from './walls'
 import { avoidCones, separate, stepPlayer } from './kinematics'
@@ -34,6 +33,12 @@ const PUCK_RESTITUTION = 0.6
 const PICKUP_RADIUS = 1.0
 const INTERCEPT_RADIUS = 0.65
 const RECEIVER_RADIUS = 1.4
+const POKE_REACH = 2.6
+const POKE_SURE = 1.2
+const CORNER_ACCEL = 7
+const POKE_INTERVAL = 0.4
+const POKE_FORWARD = 0.3
+const POKE_BACKWARD = 0.6
 
 function stickPos(p: PlayerRt) {
   return add(p.pos, fromAngle(p.heading, STICK_REACH))
@@ -75,6 +80,8 @@ export function createWorld(s: Scenario): World {
     pathS: 0,
     holdSince: 0,
     lastDecision: -1,
+    lastPoke: -1,
+    backward: false,
   }))
   const carriers = initialCarriers(s)
   const pucks: PuckRt[] = s.pucks.map((k) => {
@@ -147,6 +154,18 @@ function advance(w: World, p: PlayerRt) {
   p.pathS = 0
 }
 
+function cornerSpeed(info: ReturnType<typeof pathInfo>, s: number) {
+  const dirAt = (at: number) => norm(sub(pointAt(info, Math.min(info.total, at + 0.5)), pointAt(info, at)))
+  const d0 = dirAt(s)
+  let limit = Infinity
+  for (const ahead of [1, 2, 3]) {
+    if (s + ahead + 0.5 > info.total) break
+    const turn = Math.acos(Math.max(-1, Math.min(1, dot(d0, dirAt(s + ahead)))))
+    if (turn > 0.05) limit = Math.min(limit, Math.sqrt(CORNER_ACCEL * (ahead / turn)) + 0.3)
+  }
+  return limit
+}
+
 function awaitingPass(w: World, p: PlayerRt) {
   if (w.pucks.some((k) => k.intended === p.id && k.carrierId === null && !k.inGoal)) return true
   return w.players.some((q) => q.team === p.team && q.actions.slice(q.idx).some((a) => a.kind === 'pass' && a.toPlayerId === p.id))
@@ -164,7 +183,8 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
     }
     if (a.kind === 'skate') {
       const info = pathInfo(a.path)
-      p.pathS = project(info, p.pos, p.pathS, p.pathS + 3)
+      p.pathS = project(info, p.pos, p.pathS, p.pathS + 1)
+      if (dist(p.pos, pointAt(info, Math.min(info.total, p.pathS + 1.6))) < 0.8) p.pathS = Math.min(info.total, p.pathS + 0.8)
       const end = a.path[a.path.length - 1]
       const dEnd = dist(p.pos, end)
       const remaining = Math.max(info.total - p.pathS, dEnd)
@@ -173,9 +193,10 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
         continue
       }
       const target = pointAt(info, Math.min(info.total, p.pathS + 1.6))
-      let speed = SPEEDS[a.speed] * (puckCarriedBy(w, p.id) ? 0.93 : 1)
+      let speed = Math.min(SPEEDS[a.speed] * (puckCarriedBy(w, p.id) ? 0.93 : 1), cornerSpeed(info, p.pathS))
       const nk = nextKind(p)
-      if (nk !== 'skate' && nk !== 'pass' && nk !== 'shoot' && nk !== 'mark') speed = Math.min(speed, Math.sqrt(2 * 4.5 * remaining) + 0.4)
+      const flowsOn = nk === 'skate' || nk === 'pass' || nk === 'shoot' || nk === 'mark' || (!nk && w.scenario.settings.autonomous)
+      if (!flowsOn) speed = Math.min(speed, Math.sqrt(2 * 4.5 * remaining) + 0.4)
       return { target, speed, scripted: true }
     }
     if (a.kind === 'mark') {
@@ -185,19 +206,7 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
         continue
       }
       if (teamHasPuck(w, p.team)) return null
-      const puck = focusPuck(w, man)
-      const own = ownGoalRef(w, p.team, man.pos)
-      const mark = markPosition({
-        field: w.field,
-        ownGoal: own.pos,
-        ownGoalNormal: own.n,
-        man: man.pos,
-        manVel: man.vel,
-        puck: puck?.pos ?? null,
-        manHasPuck: puck?.carrierId === man.id,
-      })
-      const speed = Math.min(SPEEDS.fast, len(man.vel) + 2.5 * dist(p.pos, mark.pos))
-      return { target: mark.pos, speed, face: mark.face, scripted: true }
+      return { ...markIntent(w, p, man), scripted: true }
     }
     const puck = puckCarriedBy(w, p.id)
     if (puck) {
@@ -346,18 +355,39 @@ function stepPuck(w: World, puck: PuckRt) {
   takePuck(w, puck, best, 'pickup')
 }
 
-function steals(w: World) {
-  if (!w.scenario.settings.autonomous) return
+function canPoke(w: World, p: PlayerRt) {
+  const a = p.actions[p.idx]
+  if (a?.kind === 'mark') return true
+  return !a && w.scenario.settings.autonomous
+}
+
+function pokeChecks(w: World) {
   for (const puck of w.pucks) {
     const carrier = playerById(w, puck.carrierId)
     if (!carrier || carrier.role === 'G' || carrier.role === 'C' || w.t - carrier.holdSince < 0.4) continue
     if (carrier.idx < carrier.actions.length) continue
     for (const o of w.players) {
-      if (o.team === carrier.team || o.role === 'G' || o.role === 'C' || puckCarriedBy(w, o.id)) continue
-      if (dist(o.pos, puck.pos) < 0.9 && w.rng() < 0.03) {
-        takePuck(w, puck, o, 'steal')
-        break
-      }
+      if (o.team === carrier.team || o.role === 'G' || o.role === 'C' || puckCarriedBy(w, o.id) || !canPoke(w, o)) continue
+      if (w.t - o.lastPoke < POKE_INTERVAL) continue
+      const d = dist(o.pos, puck.pos)
+      if (d > POKE_REACH) continue
+      const facing = dot(fromAngle(o.heading), norm(sub(puck.pos, o.pos)))
+      if (facing < 0) continue
+      o.lastPoke = w.t
+      if (w.rng() >= (o.backward ? POKE_BACKWARD : POKE_FORWARD) * Math.min(1, (POKE_REACH - d) / (POKE_REACH - POKE_SURE)) * (0.5 + 0.5 * facing)) continue
+      const dir = norm(sub(puck.pos, o.pos))
+      const ang = (w.rng() - 0.5) * 1.6
+      const c = Math.cos(ang)
+      const s = Math.sin(ang)
+      puck.carrierId = null
+      puck.vel = mul({ x: dir.x * c - dir.y * s, y: dir.x * s + dir.y * c }, 4 + w.rng() * 3)
+      puck.noPickup = { [carrier.id]: w.t + 0.5, [o.id]: w.t + 0.15 }
+      puck.intended = null
+      puck.scripted = false
+      puck.lastTeam = o.team
+      carrier.lastDecision = w.t
+      w.events.push({ t: w.t, kind: 'steal', playerId: o.id })
+      break
     }
   }
 }
@@ -379,7 +409,7 @@ export function step(w: World) {
     stepPlayer(p, { ...it, target }, DT, w.field, w.cones, w.walls)
   })
   for (const k of w.pucks) stepPuck(w, k)
-  steals(w)
+  pokeChecks(w)
   for (const k of w.pucks) detectOffside(w, k, k.wasInZone)
   w.t += DT
 }

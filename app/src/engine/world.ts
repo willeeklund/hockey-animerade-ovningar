@@ -22,6 +22,8 @@ export interface PlayerRt {
   pathS: number
   holdSince: number
   lastDecision: number
+  lastPoke: number
+  backward: boolean
 }
 
 export interface PuckRt {
@@ -42,6 +44,7 @@ export interface Intent {
   speed: number
   face?: Vec
   scripted?: boolean
+  back?: boolean
 }
 
 export interface World {

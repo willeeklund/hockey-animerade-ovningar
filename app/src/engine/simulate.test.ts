@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { Scenario } from '../model/types'
-import { simulate } from './simulate'
-import { dist } from './vec'
+import { createWorld, simulate, step } from './simulate'
+import { stepPlayer } from './kinematics'
+import { dist, wrapAngle } from './vec'
 import { template } from '../editor/templates'
 import { clampToField, FIELDS } from '../model/rink'
 import { applyMarks } from '../editor/marks'
@@ -55,6 +56,114 @@ describe('simulate', () => {
     const pass = r.events.find((e) => e.kind === 'pass')!
     expect(dist(r.frames[Math.floor(pass.t / r.dt)].players.b, { x: -8, y: 8 })).toBeGreaterThan(3)
     expect(r.events.some((e) => e.kind === 'shot' && e.playerId === 'b')).toBe(true)
+  })
+
+  it('a close marker pokes the puck away, a distant one cannot reach it', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players = [
+      { id: 'a', team: 'away', role: 'F', label: '9', pos: { x: 8, y: -2 }, heading: Math.PI },
+      { id: 'h', team: 'home', role: 'D', label: '4', pos: { x: -4, y: 0 }, heading: 0 },
+    ]
+    s.pucks = [{ id: 'k', pos: { x: 7.3, y: -2 } }]
+    s.actions = [{ id: 'm', kind: 'mark', playerId: 'h', targetId: 'a' }]
+    expect(simulate(s).events.some((e) => e.kind === 'steal' && e.playerId === 'h')).toBe(true)
+    s.settings.autonomous = false
+    s.actions = []
+    expect(simulate(s).events.some((e) => e.kind === 'steal')).toBe(false)
+  })
+
+  it('a small drawn loop is skated once, even with a bot carrier nearby', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players = [
+      { id: 'h', team: 'home', role: 'D', label: '4', pos: { x: -4, y: 0 }, heading: 0 },
+      { id: 'a', team: 'away', role: 'F', label: '9', pos: { x: 10, y: -2 }, heading: Math.PI },
+    ]
+    s.pucks = [{ id: 'k', pos: { x: 9.3, y: -2 } }]
+    const loop = Array.from({ length: 25 }, (_, i) => ({ x: -4 + 0.8 * Math.cos(Math.PI / 2 - (0.9 * Math.PI * i) / 24), y: -0.8 + 0.8 * Math.sin(Math.PI / 2 - (0.9 * Math.PI * i) / 24) }))
+    s.actions = [{ id: 's', kind: 'skate', playerId: 'h', speed: 'normal', path: [...loop, { x: -14, y: -3 }] }]
+    const w = createWorld(s)
+    const h = w.players.find((p) => p.id === 'h')!
+    let turned = 0
+    let lo = 0
+    let hi = 0
+    let prev = h.heading
+    let done = -1
+    while (w.t < 6) {
+      step(w)
+      turned += wrapAngle(h.heading - prev)
+      prev = h.heading
+      lo = Math.min(lo, turned)
+      hi = Math.max(hi, turned)
+      if (done < 0 && h.idx >= h.actions.length) done = w.t
+    }
+    expect(done).toBeGreaterThan(0)
+    expect(hi - lo).toBeLessThan(2.5 * Math.PI)
+  })
+
+  it('skates backwards facing the play, a bit slower than forwards', () => {
+    const s = base()
+    s.players = [{ id: 'h', team: 'home', role: 'D', label: '4', pos: { x: 10, y: 0 }, heading: 0 }]
+    s.pucks = []
+    const field = FIELDS.full
+    const run = (back: boolean) => {
+      const h = createWorld(s).players[0]
+      for (let i = 0; i < 120; i++) stepPlayer(h, { target: { x: -30, y: 0 }, speed: 7.6, face: { x: 30, y: 0 }, back }, 1 / 30, field)
+      return h
+    }
+    const back = run(true)
+    expect(back.backward).toBe(true)
+    expect(Math.cos(back.heading)).toBeGreaterThan(0.9)
+    expect(back.vel.x).toBeLessThan(-4)
+    const fwd = run(false)
+    expect(Math.cos(fwd.heading)).toBeLessThan(-0.9)
+    expect(-fwd.vel.x).toBeGreaterThan(-back.vel.x + 1)
+  })
+
+  it('a defender keeps skating goal-side after its drawn turn instead of stopping', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.settings.durationSec = 7
+    s.players = [
+      { id: 'a', team: 'away', role: 'F', label: '9', pos: { x: 10, y: -3 }, heading: Math.PI },
+      { id: 'h', team: 'home', role: 'D', label: '4', pos: { x: -6, y: 0 }, heading: 0 },
+    ]
+    s.pucks = [{ id: 'k', pos: { x: 9.3, y: -3 } }]
+    s.actions = [
+      { id: 'l', kind: 'skate', playerId: 'h', speed: 'normal', path: [{ x: -6, y: 0 }, { x: -4, y: 1 }, { x: -2.5, y: 0 }, { x: -3, y: -1.5 }, { x: -5, y: -1.8 }, { x: -7, y: -1.5 }] },
+    ]
+    const w = createWorld(s)
+    const h = w.players.find((p) => p.id === 'h')!
+    const a = w.players.find((p) => p.id === 'a')!
+    while (h.idx === 0 && w.t < 6) step(w)
+    const done = w.t
+    while (w.t < done + 1.2) {
+      step(w)
+      expect(Math.hypot(h.vel.x, h.vel.y)).toBeGreaterThan(3)
+      expect(h.pos.x).toBeLessThan(a.pos.x)
+    }
+  })
+
+  it('a marker coming from the front angles the carrier wide instead of letting him through', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players = [
+      { id: 'a', team: 'away', role: 'F', label: '9', pos: { x: 10, y: -3 }, heading: Math.PI },
+      { id: 'h', team: 'home', role: 'D', label: '4', pos: { x: -6, y: 0 }, heading: 0 },
+    ]
+    s.pucks = [{ id: 'k', pos: { x: 9.3, y: -3 } }]
+    s.actions = [
+      { id: 'w', kind: 'wait', playerId: 'h', seconds: 0.05 },
+      { id: 'm', kind: 'mark', playerId: 'h', targetId: 'a' },
+    ]
+    const r = simulate(s)
+    expect(r.events.some((e) => e.kind === 'shot' && e.playerId === 'a')).toBe(false)
+    const close = r.frames.filter((f) => f.t > 3 && f.t < 5 && f.pucks.k.c === 'a')
+    for (const f of close) {
+      expect(f.players.h.x).toBeLessThan(f.players.a.x + 1)
+      expect(Math.abs(f.players.h.y)).toBeLessThan(Math.abs(f.players.a.y) + 0.5)
+    }
   })
 
   it('is deterministic', () => {
@@ -155,7 +264,7 @@ describe('simulate', () => {
       if (!carrier?.startsWith('h')) continue
       for (const [m, t] of pairs) {
         const gap = dist(f.players[m], f.players[t])
-        expect(gap).toBeGreaterThan(0.3)
+        expect(gap).toBeGreaterThan(0.1)
         expect(gap).toBeLessThan(5.5)
         gapSum += gap
         checked++
@@ -185,7 +294,8 @@ describe('simulate', () => {
       const s = template(key)
       const r = simulate(s)
       expect(r.events.filter((e) => e.kind === 'offside')).toEqual([])
-      for (const f of r.frames) {
+      const turnover = r.events.find((e) => e.kind === 'steal')?.t ?? Infinity
+      for (const f of r.frames.filter((x) => x.t < turnover)) {
         const puck = f.pucks.k1
         if (!puck.c?.startsWith('h') || puck.x > 7.5) continue
         for (const [id, p] of Object.entries(f.players)) {

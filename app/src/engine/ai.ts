@@ -1,6 +1,7 @@
 import { attackSide, clampToField, defendSide, goalCenter, goalNormal, goalSide, nearestGoal } from '../model/rink'
 import type { Goal, Side, Team, Vec } from '../model/types'
-import { add, clamp, dist, distToSegment, dot, lerp, mul, norm, sub } from './vec'
+import { markPosition } from './marking'
+import { add, clamp, dist, distToSegment, dot, len, lerp, mul, norm, sub } from './vec'
 import { wallBlocks } from './walls'
 import { hold, playerById, SPEEDS, type Intent, type PlayerRt, type PuckRt, type World } from './world'
 
@@ -297,6 +298,32 @@ function supportIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string
   return { target, speed: arrive(p, target, SPEEDS.fast * 0.9), face: carrierPos }
 }
 
+const GAP_HOLD = 1.8
+
+export function markIntent(w: World, p: PlayerRt, man: PlayerRt): Intent {
+  const puck = focusPuck(w, man)
+  const own = ownGoalRef(w, p.team, man.pos)
+  const mark = markPosition({
+    field: w.field,
+    ownGoal: own.pos,
+    ownGoalNormal: own.n,
+    man: man.pos,
+    manVel: man.vel,
+    puck: puck?.pos ?? null,
+    manHasPuck: puck?.carrierId === man.id,
+    self: p.pos,
+  })
+  const toGoal = norm(sub(own.pos, man.pos))
+  const gap = dot(sub(p.pos, man.pos), toGoal)
+  if (puck?.carrierId === man.id && gap > GAP_HOLD && dot(p.vel, toGoal) > 1 && dist(p.pos, own.pos) > 3) {
+    const retreat = dot(man.vel, toGoal) - 1.25 * (gap - GAP_HOLD)
+    if (retreat < 0) return { target: mark.pos, speed: Math.min(SPEEDS.fast, -retreat), face: puck.pos, back: true }
+    return { target: add(man.pos, mul(toGoal, gap + 1.2)), speed: Math.min(SPEEDS.fast, retreat + 1), face: puck.pos, back: true }
+  }
+  const speed = Math.min(SPEEDS.fast, len(man.vel) + 2.5 * dist(p.pos, mark.pos))
+  return { target: mark.pos, speed, face: mark.face, back: true }
+}
+
 function defendIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string | null, press = true): Intent {
   const g = ownGoalRef(w, p.team, carrierPos)
   const own = g.pos
@@ -304,9 +331,11 @@ function defendIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string 
   const presser = press ? [...defenders].sort((a, b) => dist(a.pos, carrierPos) - dist(b.pos, carrierPos) || a.id.localeCompare(b.id))[0] : undefined
 
   if (presser?.id === p.id) {
-    const gap = clamp(dist(carrierPos, own) * 0.12, 1.6, 4)
+    const carrier = playerById(w, carrierId)
+    if (carrier && p.actions.length > 0) return markIntent(w, p, carrier)
+    const gap = clamp(dist(carrierPos, own) * 0.06, 1.4, 2.2)
     const target = add(carrierPos, mul(norm(sub(own, carrierPos)), gap))
-    return { target, speed: SPEEDS.fast, face: carrierPos }
+    return { target, speed: SPEEDS.fast, face: carrierPos, back: true }
   }
 
   const attackers = skaters(w, p.team === 'home' ? 'away' : 'home')
@@ -332,7 +361,7 @@ function defendIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string 
   if (mark) {
     const goalSide = add(mark.pos, mul(norm(sub(own, mark.pos)), 1.8))
     const target = lerp(goalSide, slot, 0.2)
-    return { target, speed: arrive(p, target, SPEEDS.fast), face: carrierPos }
+    return { target, speed: arrive(p, target, SPEEDS.fast), face: carrierPos, back: true }
   }
   return { target: slot, speed: arrive(p, slot, SPEEDS.normal), face: carrierPos }
 }

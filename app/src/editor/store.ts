@@ -81,6 +81,7 @@ interface EditorState {
   addMark: (markerId: string, targetId: string) => void
   setFocus: (id: string | null) => void
   clearActions: (playerId: string) => void
+  resetPlayer: (playerId: string) => void
   updateSettings: (patch: Partial<ScenarioSettings>) => void
   setLayout: (layout: Layout) => void
   rename: (name: string) => void
@@ -338,6 +339,7 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     addAction: (a) => mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, { ...a, id: uid() } as Action])),
     clearActions: (playerId) => mutate((s) => mapRoundActions(s, get().activeRound, notBy(playerId))),
+    resetPlayer: (playerId) => mutate((s) => mapAllActions(s, (as) => as.filter((a) => a.playerId !== playerId))),
     addMark: (markerId, targetId) =>
       mutate((s) =>
         mapRoundActions(s, get().activeRound, (as) => [
