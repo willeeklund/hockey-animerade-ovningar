@@ -1,0 +1,213 @@
+{
+  "name": "Stoppa frilägena",
+  "notes": "Tre försvarsuppdrag för röda laget. Blått anfaller med pucken. Våra röda spelare har inga instruktioner än och gör sitt bästa själva, men blå kommer ändå fram till skott. Ge de röda instruktioner med Åk och Markera och se vilken taktik som fungerar bäst. Den som ligger nära med klubban kan slå bort pucken, och ju närmare desto större chans. Lyckas du stoppa blå innan de kommer fria mot målvakten?",
+  "scenarios": [
+    {
+      "id": "frilage-1",
+      "name": "Uppdrag 1: Ensam back",
+      "updatedAt": "2026-10-13T12:00:00.000Z",
+      "players": [
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "9",
+          "pos": {
+            "x": 10,
+            "y": -3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "D",
+          "label": "4",
+          "pos": {
+            "x": -6,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 9.3,
+            "y": -3
+          }
+        }
+      ],
+      "actions": [],
+      "settings": {
+        "durationSec": 7,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "full"
+      },
+      "notes": "Blå 9 har pucken och åker mot vårt mål. Vår back 4 försöker på egen hand, men blå 9 åker runt och kommer till skott. Ditt uppdrag: ge 4 instruktioner så att blå 9 inte kommer fri mot målvakten. Kanske kan 4 till och med slå bort pucken? Ledtråd: var står man bäst, framför eller bakom puckföraren? Och hur nära?"
+    },
+    {
+      "id": "frilage-2",
+      "name": "Uppdrag 2: Två mot en",
+      "updatedAt": "2026-10-13T12:00:00.000Z",
+      "players": [
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "9",
+          "pos": {
+            "x": 8,
+            "y": -3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "17",
+          "pos": {
+            "x": 6,
+            "y": 8
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "D",
+          "label": "4",
+          "pos": {
+            "x": -6,
+            "y": 0
+          },
+          "heading": 0
+        },
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 7.3,
+            "y": -3
+          }
+        }
+      ],
+      "actions": [],
+      "settings": {
+        "durationSec": 7,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "full"
+      },
+      "notes": "Nu är de två blå mot vår back 4. Ditt uppdrag: få 4 att stoppa både skottet och passningen. Om 4 går på puckföraren, vad gör då blå 17? Ledtråd: prova att åka bakåt mot vårt mål mitt emellan de blå, och jämför med att markera puckföraren."
+    },
+    {
+      "id": "frilage-3",
+      "name": "Uppdrag 3: Två mot två",
+      "updatedAt": "2026-10-13T12:00:00.000Z",
+      "players": [
+        {
+          "id": "a1",
+          "team": "away",
+          "role": "F",
+          "label": "9",
+          "pos": {
+            "x": 10,
+            "y": -3
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "a2",
+          "team": "away",
+          "role": "F",
+          "label": "17",
+          "pos": {
+            "x": 9,
+            "y": 9
+          },
+          "heading": 3.14
+        },
+        {
+          "id": "h1",
+          "team": "home",
+          "role": "D",
+          "label": "4",
+          "pos": {
+            "x": -6,
+            "y": -3
+          },
+          "heading": 0
+        },
+        {
+          "id": "h2",
+          "team": "home",
+          "role": "D",
+          "label": "5",
+          "pos": {
+            "x": -6,
+            "y": -6
+          },
+          "heading": 0
+        },
+        {
+          "id": "hg",
+          "team": "home",
+          "role": "G",
+          "label": "G",
+          "pos": {
+            "x": -25,
+            "y": 0
+          },
+          "heading": 0
+        }
+      ],
+      "pucks": [
+        {
+          "id": "k1",
+          "pos": {
+            "x": 9.3,
+            "y": -3
+          }
+        }
+      ],
+      "actions": [],
+      "settings": {
+        "durationSec": 7,
+        "seed": 1,
+        "autonomous": true,
+        "homeAttacks": "right",
+        "layout": "full"
+      },
+      "notes": "Nu är vi lika många, två mot två. Blå 9 passar gärna till blå 17. Ditt uppdrag: fördela jobbet mellan 4 och 5 så att ingen blå blir fri. Ledtråd: verktyget Markera låter en spelare ta hand om en motståndare. Vem tar vem? Vad händer om båda tar samma?"
+    }
+  ]
+}

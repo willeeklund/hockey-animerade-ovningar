@@ -7,3 +7,4 @@ Lägg till ett pass genom att exportera det från appen, eller avkoda en delning
 | Fil | Pass |
 |---|---|
 | zonspel-1-mot-1.json | 1 mot 1 med angling: zonspel 1 mot 1, först rakt på mål och sedan med angling |
+| stoppa-frilagen.json | Stoppa frilägena: tre försvarsuppdrag (1 mot 1, 2 mot 1, 2 mot 2) där röda saknar instruktioner från start och ska få en taktik som stoppar blå |
