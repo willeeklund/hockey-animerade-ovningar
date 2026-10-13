@@ -147,6 +147,11 @@ function advance(w: World, p: PlayerRt) {
   p.pathS = 0
 }
 
+function awaitingPass(w: World, p: PlayerRt) {
+  if (w.pucks.some((k) => k.intended === p.id && k.carrierId === null && !k.inGoal)) return true
+  return w.players.some((q) => q.team === p.team && q.actions.slice(q.idx).some((a) => a.kind === 'pass' && a.toPlayerId === p.id))
+}
+
 function scriptIntent(w: World, p: PlayerRt): Intent | null {
   for (let guard = 0; guard < 20 && p.idx < p.actions.length; guard++) {
     const a: Action = p.actions[p.idx]
@@ -206,10 +211,11 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
       advance(w, p)
       continue
     }
-    if (w.t - p.idxStart > 4) {
+    if (!awaitingPass(w, p) && w.t - p.idxStart > 4) {
       advance(w, p)
       continue
     }
+    if (w.scenario.settings.autonomous) return botDecision(w, p).intent
     const loose = focusPuck(w, p)
     return hold(p, loose?.pos)
   }

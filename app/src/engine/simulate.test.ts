@@ -39,6 +39,24 @@ describe('simulate', () => {
     expect(r.frames[r.frames.length - 1].pucks.k.c).toBe('b')
   })
 
+  it('receiver with its own shot keeps playing until the pass arrives', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players[0].pos = { x: -10, y: 0 }
+    s.players[1].pos = { x: -8, y: 8 }
+    s.pucks[0].pos = { x: -9.4, y: 0 }
+    s.goals = [{ id: 'g', pos: { x: 26, y: 0 }, angle: Math.PI }]
+    s.actions.push(
+      { id: 's1', kind: 'skate', playerId: 'a', speed: 'normal', path: [{ x: -10, y: 0 }, { x: 5, y: 0 }] },
+      { id: 'p1', kind: 'pass', playerId: 'a', toPlayerId: 'b' },
+      { id: 'sh', kind: 'shoot', playerId: 'b', goal: 'right' },
+    )
+    const r = simulate(s)
+    const pass = r.events.find((e) => e.kind === 'pass')!
+    expect(dist(r.frames[Math.floor(pass.t / r.dt)].players.b, { x: -8, y: 8 })).toBeGreaterThan(3)
+    expect(r.events.some((e) => e.kind === 'shot' && e.playerId === 'b')).toBe(true)
+  })
+
   it('is deterministic', () => {
     const s = template('3v2')
     s.settings.autonomous = true
