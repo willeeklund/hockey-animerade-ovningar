@@ -15,8 +15,8 @@ interface ToolDef {
 const PLAYER_TOOLS: ToolDef[] = [
   { id: 'select', label: 'Välj / flytta', icon: '↖', hint: 'Klicka för att välja, dra för att flytta', key: 'V' },
   { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg', key: 'Å' },
-  { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka puckföraren, sedan mottagaren', key: 'P' },
-  { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka puckföraren, sedan målet', key: 'S' },
+  { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka på mottagaren', key: 'P' },
+  { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka på målet', key: 'S' },
   { id: 'mark', label: 'Markera', icon: '⇄', hint: 'Klicka på försvararen, sedan på motståndaren', key: 'M' },
 ]
 

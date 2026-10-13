@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { CONFIG } from '../config'
 import { chaikin, simplify, wavy } from '../engine/path'
 import { closestOnSegment, dividerEnds } from '../engine/walls'
@@ -117,18 +117,19 @@ function FocusRing({ x, y }: { x: number; y: number }) {
   )
 }
 
-function stepText(tool: string, fromLabel: string | undefined): { count: string; text: string } | null {
+function stepText(tool: string, fromLabel: string | undefined, goalCount: number): { count: string; text: string } | null {
   if (tool === 'mark') {
     return fromLabel
       ? { count: 'Steg 2 av 2', text: `Klicka på motståndaren som ${fromLabel} ska markera` }
       : { count: 'Steg 1 av 2', text: 'Klicka på försvararen, alltså den som ska markera' }
   }
   if (tool === 'pass') {
-    return fromLabel ? { count: 'Steg 2 av 2', text: `Klicka på spelaren som ${fromLabel} passar till` } : { count: 'Steg 1 av 2', text: 'Klicka på puckföraren som ska passa' }
+    return fromLabel ? { count: 'Passa', text: `Klicka på spelaren som ${fromLabel} passar till` } : { count: 'Passa', text: 'Klicka på puckföraren som ska passa' }
   }
   if (tool === 'divider') return { count: 'Sarg', text: 'Dra en linje där sargen ska stå, 2 m per bit. Ett klick lägger en bit.' }
   if (tool === 'shoot') {
-    return fromLabel ? { count: 'Steg 2 av 2', text: `Klicka på målet som ${fromLabel} skjuter mot` } : { count: 'Steg 1 av 2', text: 'Klicka på puckföraren som ska skjuta' }
+    if (!fromLabel) return { count: 'Skjut', text: 'Klicka på puckföraren som ska skjuta' }
+    return { count: 'Skjut', text: goalCount === 1 ? `Klicka för att låta ${fromLabel} skjuta mot målet` : `Klicka på målet som ${fromLabel} skjuter mot` }
   }
   return null
 }
@@ -184,6 +185,19 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       const [a, b] = dividerEnds(d)
       return dist(p, closestOnSegment(p, a, b)) < 0.6
     })
+
+  const passer = (c: EditContext) => {
+    if (selectedId && c.plan.carriers.has(selectedId)) return selectedId
+    return c.plan.carriers.size === 1 ? [...c.plan.carriers][0] : undefined
+  }
+
+  useEffect(() => {
+    if (!editing || (tool !== 'pass' && tool !== 'shoot') || pending) return
+    const id = passer(ctx)
+    if (!id) return
+    st.setPending({ kind: tool, fromId: id })
+    st.select(id)
+  })
 
   const currentContext = (): EditContext => {
     const now = useEditor.getState()
@@ -265,23 +279,24 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     }
 
     if (tool === 'pass' || tool === 'shoot') {
-      if (!pending) {
-        const hp = hitPlayer(c, p, true)
+      const hp = hitPlayer(c, p, true)
+      const switchTo = hp && c.plan.carriers.has(hp.id) && hp.id !== pending?.fromId ? hp : undefined
+      const fromId = switchTo ? undefined : pending?.kind === tool ? pending.fromId : passer(c)
+      if (!fromId) {
         if (!hp) return
-        if (!c.plan.carriers.has(hp.id)) return st.setMessage(`${hp.label} har inte pucken. Lägg pucken intill en spelare eller passa först.`)
+        if (!switchTo) return st.setMessage(`${hp.label} har inte pucken. Lägg pucken intill en spelare eller passa först.`)
         st.setPending({ kind: tool, fromId: hp.id })
         st.select(hp.id)
         st.setMessage(null)
         return
       }
-      if (pending.kind === 'pass') {
-        const hp = hitPlayer(c, p, true)
-        if (!hp || hp.id === pending.fromId) return
-        st.addAction({ kind: 'pass', playerId: pending.fromId, toPlayerId: hp.id })
+      if (tool === 'pass') {
+        if (!hp || hp.id === fromId) return
+        st.addAction({ kind: 'pass', playerId: fromId, toPlayerId: hp.id })
       } else {
         const goal = nearestGoal(goals, p)
         if (!goal) return st.setMessage('Det finns ingen målbur att skjuta på.')
-        st.addAction({ kind: 'shoot', playerId: pending.fromId, goal: goalSide(goal), goalId: goal.id })
+        st.addAction({ kind: 'shoot', playerId: fromId, goal: goalSide(goal), goalId: goal.id })
       }
       st.setPending(null)
       st.setMessage(null)
@@ -367,7 +382,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   }
 
   const pendingFrom = scenario.players.find((p) => p.id === pending?.fromId)
-  const step = stepText(tool, pending?.kind === tool ? pendingFrom?.label : undefined)
+  const step = stepText(tool, pending?.kind === tool ? pendingFrom?.label : undefined, goals.length)
+  const shotFrom = editing && tool === 'shoot' && pending?.kind === 'shoot' && goals.length === 1 ? ctx.plan.endPos[pending.fromId] : undefined
 
   return (
     <div className="board-wrap">
@@ -406,6 +422,21 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
               return <ActionShape key={a.id} a={a} from={g.from} to={g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
             })}
           </g>
+        )}
+
+        {shotFrom && (
+          <line
+            x1={shotFrom.x}
+            y1={shotFrom.y}
+            x2={goals[0].pos.x}
+            y2={goals[0].pos.y}
+            stroke="#111"
+            strokeWidth={0.1}
+            strokeDasharray="0.45 0.3"
+            markerEnd="url(#arrow)"
+            opacity={0.45}
+            style={{ color: '#111', pointerEvents: 'none' }}
+          />
         )}
 
         {drag?.kind === 'draw' && (
