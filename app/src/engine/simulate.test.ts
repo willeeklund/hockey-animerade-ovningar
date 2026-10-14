@@ -179,6 +179,40 @@ describe('simulate', () => {
     expect(r.events.some((e) => e.kind === 'shot')).toBe(true)
   })
 
+  it('a free skater on a breakaway drives in close before shooting', () => {
+    const s = template('breakaway')
+    const r = simulate(s)
+    const shot = r.events.find((e) => e.kind === 'shot')!
+    const at = r.frames[Math.round(shot.t / r.dt)].players.h1
+    expect(26 - at.x).toBeLessThan(6.8)
+    expect(26 - at.x).toBeGreaterThan(5)
+    expect(Math.abs(at.y)).toBeLessThan(7)
+  })
+
+  it('a breakaway skater with a defender on his back shoots early', () => {
+    const s = template('breakaway')
+    s.players[1].pos.x = -3.5
+    const r = simulate(s)
+    const shot = r.events.find((e) => e.kind === 'shot')!
+    expect(dist(r.frames[Math.round(shot.t / r.dt)].players.h1, { x: 26, y: 0 })).toBeGreaterThan(8)
+  })
+
+  it('teammates go for a pass that slid past its receiver right away', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players.push({ id: 'c', team: 'home', role: 'F', label: '3', pos: { x: 14, y: -9 }, heading: 0 })
+    const w = createWorld(s)
+    const puck = w.pucks[0]
+    puck.carrierId = null
+    puck.pos = { x: 2, y: -6 }
+    puck.vel = { x: 15, y: 0 }
+    puck.intended = 'b'
+    puck.lastTeam = 'home'
+    for (let i = 0; i < 45; i++) step(w)
+    expect(puck.intended).toBeNull()
+    expect(dist(w.players.find((p) => p.id === 'c')!.pos, { x: 14, y: -9 })).toBeGreaterThan(2)
+  })
+
   it('keeps everyone inside the rink', () => {
     const s = template('5v5')
     s.settings.autonomous = true

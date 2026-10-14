@@ -1,5 +1,5 @@
 import { clampToField, fieldOf, goalNormal, goalsOf, nearestGoal, RINK } from '../model/rink'
-import type { Action, Frame, Round, Scenario, SimEvent } from '../model/types'
+import type { Action, Frame, Round, Scenario, SimEvent, Vec } from '../model/types'
 import { attackGoalRef, botDecision, markIntent, focusPuck, goalieIntent, guardGoal, keepAway, type BotAct, type GoalRef } from './ai'
 import { detectOffside, keepOnside } from './offside'
 import { avoidWalls, bounceOffWalls, buildWalls } from './walls'
@@ -9,6 +9,8 @@ import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, s
 import {
   benched,
   DT,
+  GOALIE_CORE,
+  GOALIE_REACH,
   hold,
   PASS_SPEED,
   playerById,
@@ -31,6 +33,11 @@ export interface SimResult {
 
 const PUCK_FRICTION = 0.9
 const PUCK_RESTITUTION = 0.6
+const PUCK_TIDY_SEC = 4
+const PASS_MISS_MARGIN = 1.2
+const BOARD_DRAG = 0.95
+const BOARD_HIT_SPEED = 3
+const BOARD_HIT_DRAG = 0.45
 const PICKUP_RADIUS = 1.0
 const INTERCEPT_RADIUS = 0.65
 const RECEIVER_RADIUS = 1.4
@@ -40,6 +47,10 @@ const CORNER_ACCEL = 7
 const POKE_INTERVAL = 0.4
 const POKE_FORWARD = 0.3
 const POKE_BACKWARD = 0.6
+const POST_MARGIN = 0.1
+const AIM_CLEARANCE = 0.55
+const SHOT_SPREAD = 0.12
+const SHOT_SPREAD_PER_M = 0.06
 
 function stickPos(p: PlayerRt) {
   return add(p.pos, fromAngle(p.heading, STICK_REACH))
@@ -108,9 +119,10 @@ export function createWorld(s: Scenario): World {
       scripted: false,
       wasInZone: {},
       spare: !!k.spare,
+      freeSince: null,
     }
   })
-  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
+  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings), tidy: s.pucks.some((k) => k.spare) }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -133,11 +145,25 @@ function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = fa
   w.events.push({ t: w.t, kind: 'pass', playerId: p.id })
 }
 
+function aimLat(w: World, from: Vec, g: GoalRef, goalie: PlayerRt | undefined) {
+  const half = RINK.goalHalfWidth - POST_MARGIN
+  const depth = dot(sub(from, g.pos), g.n)
+  const lat = dot(sub(from, g.pos), g.perp)
+  if (!goalie) return (w.rng() < 0.5 ? -1 : 1) * half * 0.7
+  const gDepth = dot(sub(goalie.pos, g.pos), g.n)
+  const k = depth / Math.max(0.3, depth - gDepth)
+  const shadow = lat + (dot(sub(goalie.pos, g.pos), g.perp) - lat) * k
+  const reach = AIM_CLEARANCE * k
+  const low = Math.min(half, shadow + reach)
+  const high = Math.max(-half, shadow - reach)
+  return half - low >= high + half ? (low + half) / 2 : (high - half) / 2
+}
+
 function doShot(w: World, p: PlayerRt, puck: PuckRt, g: GoalRef, scripted = false) {
   const from = stickPos(p)
   const goalie = w.players.find((q) => q.role === 'G' && guardGoal(w, q) === g.goal)
-  const gLat = goalie ? dot(sub(goalie.pos, g.pos), g.perp) : 0
-  const tLat = (gLat > 0 ? -1 : 1) * (0.55 + w.rng() * 0.25)
+  const spread = SHOT_SPREAD + SHOT_SPREAD_PER_M * dist(from, g.pos)
+  const tLat = aimLat(w, from, g, goalie) + (w.rng() + w.rng() - 1) * spread
   const target = add(g.pos, add(mul(g.n, -0.5), mul(g.perp, tLat)))
   puck.carrierId = null
   puck.pos = from
@@ -192,6 +218,15 @@ function receive(w: World, p: PlayerRt): Intent | null {
 
 const playing = (p: PlayerRt) => p.actions[p.idx]?.kind === 'play'
 
+function dropPuck(w: World, p: PlayerRt) {
+  const k = w.pool.find((q) => q.carrierId === p.id)
+  if (!k) return
+  k.carrierId = null
+  k.vel = { x: 0, y: 0 }
+  k.intended = null
+  k.spare = true
+}
+
 function scriptIntent(w: World, p: PlayerRt): Intent | null {
   for (let guard = 0; guard < 20 && p.idx < p.actions.length; guard++) {
     const a: Action = p.actions[p.idx]
@@ -205,19 +240,14 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
     }
     if (a.kind === 'play') {
       if (w.t - p.idxStart >= a.seconds) {
+        if (!p.actions.slice(p.idx).some((b) => b.kind === 'pass' || b.kind === 'shoot')) dropPuck(w, p)
         advance(w, p)
         continue
       }
       return null
     }
     if (a.kind === 'drop') {
-      const k = w.pool.find((q) => q.carrierId === p.id)
-      if (k) {
-        k.carrierId = null
-        k.vel = { x: 0, y: 0 }
-        k.intended = null
-        k.spare = true
-      }
+      dropPuck(w, p)
       advance(w, p)
       continue
     }
@@ -291,13 +321,14 @@ function playerIntent(w: World, p: PlayerRt): Intent {
     applyAct(w, p, d.act)
     return d.intent
   }
-  if (p.role === 'G' && p.actions.length === 0) return goalieIntent(w, p, focusPuck(w, p)?.pos)
+  if (p.role === 'G' && p.actions.length === 0) return goalieIntent(w, p, focusPuck(w, p))
   return hold(p)
 }
 
 function takePuck(w: World, puck: PuckRt, p: PlayerRt, kind: 'pickup' | 'steal' | 'save') {
   puck.carrierId = p.id
   puck.vel = { x: 0, y: 0 }
+  puck.freeSince = null
   puck.intended = null
   puck.scripted = false
   puck.lastTeam = p.team
@@ -316,7 +347,9 @@ function stepPuck(w: World, puck: PuckRt) {
 
   const prev = puck.pos
   const speed = len(puck.vel)
-  if (puck.intended && speed < 1.5) {
+  const receiver = puck.intended ? w.players.find((q) => q.id === puck.intended) : undefined
+  const missed = receiver && speed > 0 && dot(sub(receiver.pos, prev), puck.vel) / speed < -PASS_MISS_MARGIN
+  if (puck.intended && (speed < 1.5 || missed || !receiver)) {
     puck.intended = null
     puck.scripted = false
   }
@@ -357,9 +390,17 @@ function stepPuck(w: World, puck: PuckRt) {
   if (c.normal) {
     const into = dot(puck.vel, c.normal)
     if (into > 0) puck.vel = sub(puck.vel, mul(c.normal, (1 + PUCK_RESTITUTION) * into))
+    puck.vel = mul(puck.vel, into > BOARD_HIT_SPEED ? BOARD_HIT_DRAG : BOARD_DRAG)
     next = c.pos
   }
   puck.pos = next
+  if (puck.lastTeam) puck.freeSince ??= w.t
+  if (w.tidy && puck.freeSince !== null && w.t - puck.freeSince > PUCK_TIDY_SEC) {
+    puck.spare = true
+    puck.intended = null
+    puck.vel = { x: 0, y: 0 }
+    return
+  }
 
   const fast = len(puck.vel) > 20
   let best: PlayerRt | null = null
@@ -369,7 +410,11 @@ function stepPuck(w: World, puck: PuckRt) {
     if (puckCarriedBy(w, p.id)) continue
     const d = distToSegment(p.pos, prev, puck.pos)
     if (p.role === 'G') {
-      if (d < 0.72 && d < bestD) {
+      if (d < GOALIE_REACH && d < bestD) {
+        if (fast && d > GOALIE_CORE && w.rng() > (GOALIE_REACH - d) / (GOALIE_REACH - GOALIE_CORE)) {
+          puck.noPickup = { ...puck.noPickup, [p.id]: w.t + 0.5 }
+          continue
+        }
         best = p
         bestD = d
       }

@@ -4,6 +4,7 @@ import { chaikin, simplify, wavy } from '../engine/path'
 import { closestOnSegment, dividerEnds } from '../engine/walls'
 import { layoutDividers } from '../editor/dividers'
 import type { SimResult } from '../engine/simulate'
+import { GOALIE_CORE, GOALIE_REACH } from '../engine/world'
 import { dist, wrapAngle } from '../engine/vec'
 import { clampToField, defendSide, DIVIDER, fieldOf, goalNormal, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
 import type { Action, Frame, Goal, Player, Vec } from '../model/types'
@@ -75,14 +76,94 @@ function ActionShape({ a, from, to, withPuck, color }: { a: Action; from: Vec; t
   return null
 }
 
+const GOALIE_DRAW_SCALE = 1.6
+
+function GoalieGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean }) {
+  const fill = TEAM_COLOR[p.team]
+  const r = GOALIE_REACH
+  const c = GOALIE_CORE
+  return (
+    <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={faded ? 0.45 : 1}>
+      {(selected || pending) && <circle r={1.6} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.16} strokeDasharray="0.4 0.25" />}
+      <g transform={`rotate(${(h * 180) / Math.PI}) scale(${GOALIE_DRAW_SCALE})`}>
+        <path d={`M 0 ${-r} A ${r} ${r} 0 0 1 0 ${r}`} fill="none" stroke="#111" strokeWidth={0.04} strokeDasharray="0.12 0.1" opacity={0.5} />
+        <rect x={-0.18} y={-c} width={0.36} height={c * 2} rx={0.14} fill="#f8fafc" stroke="#111" strokeWidth={0.06} />
+        <path d={`M -0.1 -0.04 H 0.12 M -0.1 0.04 H 0.12`} stroke="#111" strokeWidth={0.04} />
+        <ellipse cx={-0.2} rx={0.26} ry={0.36} fill={fill} stroke="#111" strokeWidth={0.06} />
+        <circle cx={-0.15} r={0.15} fill="#e5e7eb" stroke="#111" strokeWidth={0.05} />
+        <circle cx={0.02} cy={r - 0.17} r={0.17} fill="#fde68a" stroke="#111" strokeWidth={0.05} />
+        <rect x={-0.08} y={-r} width={0.2} height={0.3} rx={0.04} fill="#fde68a" stroke="#111" strokeWidth={0.05} />
+        <path d={`M 0.02 ${-r + 0.3} L 0.26 ${-r + 0.42} L 0.26 0.15`} fill="none" stroke="#3b2a1a" strokeWidth={0.09} strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      <text x={-Math.cos(h) * 1.35} y={-Math.sin(h) * 1.35 + 0.2} textAnchor="middle" fontSize={0.55} fontWeight={700} fill="#111" stroke="#fff" strokeWidth={0.08} paintOrder="stroke" style={{ pointerEvents: 'none' }}>
+        {p.label}
+      </text>
+    </g>
+  )
+}
+
+const SHOT_VIEW_RANGE = 16
+const OPEN_COLOR = '#16a34a'
+const CHANCE_COLOR = '#eab308'
+
+function ShotLanes({ frame, players, goals }: { frame: Frame; players: Player[]; goals: Goal[] }) {
+  const out: ReactNode[] = []
+  for (const gk of players) {
+    const gp = frame.players[gk.id]
+    if (gk.role !== 'G' || !gp || gp.q) continue
+    const goal = nearestGoal(goals, gp)
+    if (!goal) continue
+    const shooter = Object.values(frame.pucks)
+      .filter((k) => k.c && !k.s)
+      .map((k) => ({ k, p: players.find((q) => q.id === k.c) }))
+      .find(({ p }) => p && p.team !== gk.team && p.role !== 'G' && p.role !== 'C')
+    if (!shooter) continue
+    const n = goalNormal(goal)
+    const perp = { x: -n.y, y: n.x }
+    const puck = shooter.k
+    const rel = (v: Vec) => ({ d: (v.x - goal.pos.x) * n.x + (v.y - goal.pos.y) * n.y, l: (v.x - goal.pos.x) * perp.x + (v.y - goal.pos.y) * perp.y })
+    const s = rel(puck)
+    if (s.d < 0.8 || dist(puck, goal.pos) > SHOT_VIEW_RANGE) continue
+    const g = rel(gp)
+    const k = s.d / Math.max(0.3, s.d - g.d)
+    const center = s.l + (g.l - s.l) * k
+    const half = RINK.goalHalfWidth
+    const at = (l: number) => ({ x: goal.pos.x + perp.x * l, y: goal.pos.y + perp.y * l })
+    const tri = (a: number, b: number) => pts2([puck, at(a), at(b)])
+    const gaps = (reach: number) =>
+      [
+        [-half, Math.min(half, center - reach * k)],
+        [Math.max(-half, center + reach * k), half],
+      ].filter(([a, b]) => b - a > 0.05)
+    const zones = [
+      ...gaps(GOALIE_CORE).map(([a, b]) => ({ a, b, color: CHANCE_COLOR })),
+      ...gaps(GOALIE_REACH).map(([a, b]) => ({ a, b, color: OPEN_COLOR })),
+    ]
+    out.push(
+      <g key={gk.id} style={{ pointerEvents: 'none' }}>
+        {zones.map(({ a, b, color }) => (
+          <g key={`${color}${a}`}>
+            <polygon points={tri(a, b)} fill={color} opacity={0.22} />
+            <line x1={at(a).x} y1={at(a).y} x2={at(b).x} y2={at(b).y} stroke={color} strokeWidth={0.22} strokeLinecap="round" />
+          </g>
+        ))}
+        {[-half, half].map((l) => (
+          <line key={l} x1={puck.x} y1={puck.y} x2={at(l).x} y2={at(l).y} stroke="#0f172a" strokeWidth={0.05} strokeDasharray="0.25 0.2" opacity={0.5} />
+        ))}
+      </g>,
+    )
+  }
+  return <>{out}</>
+}
+
 function PlayerGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean }) {
-  const goalie = p.role === 'G'
+  if (p.role === 'G') return <GoalieGlyph p={p} x={x} y={y} h={h} faded={faded} selected={selected} pending={pending} />
   const fill = p.role === 'C' ? '#334155' : TEAM_COLOR[p.team]
   return (
     <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={faded ? 0.45 : 1}>
       {(selected || pending) && <circle r={1.45} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
       <line x1={0} y1={0} x2={Math.cos(h) * 1.6} y2={Math.sin(h) * 1.6} stroke="#3b2a1a" strokeWidth={0.16} strokeLinecap="round" />
-      <circle r={0.95} fill={fill} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
+      <circle r={0.95} fill={fill} stroke="#fff" strokeWidth={0.14} />
       <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill="#fff" style={{ pointerEvents: 'none' }}>
         {p.label}
       </text>
@@ -497,6 +578,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
             strokeLinecap="round"
           />
         ))}
+
+        {frame && <ShotLanes frame={frame} players={scenario.players} goals={goals} />}
 
         {scenario.players.map((p) => {
           const q = posOf(p)

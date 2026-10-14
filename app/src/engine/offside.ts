@@ -6,6 +6,7 @@ import { playerById, puckCarriedBy, type Intent, type PlayerRt, type PuckRt, typ
 const ONSIDE_MARGIN = 0.6
 const OFFSIDE_DEPTH = 0.3
 const STOP_DECEL = 5
+const CARRIER_HOLD = 1.3
 
 function attackDir(w: World, team: Team) {
   return attackSide(team, w.scenario.settings) === 'right' ? 1 : -1
@@ -25,9 +26,21 @@ export function puckInZone(w: World, puck: PuckRt, team: Team) {
   return (puck.pos.x - dir * blue) * dir > 0
 }
 
+function waitForOnside(w: World, p: PlayerRt, puck: PuckRt, it: Intent): Intent {
+  const dir = attackDir(w, p.team)
+  const line = dir * w.field.blueLineX!
+  const offside = w.players.some((q) => q.team === p.team && q.id !== p.id && q.role !== 'G' && q.role !== 'C' && (q.pos.x - line) * dir > OFFSIDE_DEPTH)
+  if (!offside || puckInZone(w, puck, p.team)) return it
+  const hold = line - dir * CARRIER_HOLD
+  if ((it.target.x - hold) * dir <= 0) return it
+  return { ...it, target: { x: hold, y: it.target.y }, speed: Math.min(it.speed, Math.sqrt(2 * STOP_DECEL * Math.max(0, (hold - p.pos.x) * dir)) + 0.2) }
+}
+
 export function keepOnside(w: World, p: PlayerRt, it: Intent): Intent {
   const blue = w.field.blueLineX
-  if (blue === null || w.scenario.settings.offside === false || p.role === 'G' || p.role === 'C' || it.speed <= 0 || puckCarriedBy(w, p.id)) return it
+  if (blue === null || w.scenario.settings.offside === false || p.role === 'G' || p.role === 'C' || it.speed <= 0) return it
+  const carried = puckCarriedBy(w, p.id)
+  if (carried) return it.scripted ? it : waitForOnside(w, p, carried, it)
   const puck = teamPuck(w, p)
   if (!puck || puckInZone(w, puck, p.team)) return it
 

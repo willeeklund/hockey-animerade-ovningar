@@ -8,6 +8,8 @@ export const SPEEDS = { slow: 3.2, normal: 5.6, fast: 7.6 }
 export const STICK_REACH = 0.75
 export const PASS_SPEED = 15
 export const SHOT_SPEED = 27
+export const GOALIE_CORE = 0.5
+export const GOALIE_REACH = 0.85
 
 export interface PlayerRt {
   id: string
@@ -39,6 +41,7 @@ export interface PuckRt {
   scripted: boolean
   wasInZone: Partial<Record<Team, boolean>>
   spare: boolean
+  freeSince: number | null
 }
 
 export interface Intent {
@@ -62,6 +65,7 @@ export interface World {
   events: SimEvent[]
   scenario: Scenario
   field: Field
+  tidy: boolean
 }
 
 export function playerById(w: World, id: string | null) {

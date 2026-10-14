@@ -83,17 +83,29 @@ export function focusPuck(w: World, p: PlayerRt): PuckRt | undefined {
   return best
 }
 
-export function goalieIntent(w: World, p: PlayerRt, puck: Vec | undefined): Intent {
+export function goalieIntent(w: World, p: PlayerRt, k: PuckRt | undefined): Intent {
   const goal = guardGoal(w, p)
+  const puck = k?.pos
   if (!goal) return hold(p, puck)
+  if (k && !k.carrierId && len(k.vel) > SHOT_REACT_SPEED) return { target: p.pos, speed: 0, face: puck }
   const g = refOf(goal)
   if (!puck) return { target: add(g.pos, mul(g.n, 0.8)), speed: 3, face: add(g.pos, mul(g.n, 10)) }
   const dir = norm(sub(puck, g.pos))
   const dx = Math.max(0.35, dot(dir, g.n))
   const fixed = norm(add(mul(g.n, dx), mul(g.perp, dot(dir, g.perp))))
+  const carrier = playerById(w, k?.carrierId ?? null)
+  const alone = carrier && carrier.team !== p.team && skaters(w, p.team).every((q) => depthOf(g, q.pos) > depthOf(g, carrier.pos))
+  if (alone && depthOf(g, puck) < 16) {
+    const depth = clamp(dist(puck, g.pos) * 0.35, 0.6, 2.8)
+    return { target: add(g.pos, mul(fixed, depth)), speed: 5, face: puck }
+  }
   const depth = clamp(dist(puck, g.pos) * 0.08, 0.6, 1.3)
   return { target: add(g.pos, mul(fixed, depth)), speed: 4, face: puck }
 }
+
+const SHOT_REACT_SPEED = 15
+const BREAKAWAY_SHOT = 6.5
+const BREAKAWAY_PRESSURE = 3.2
 
 function carrierDecision(w: World, p: PlayerRt): BotDecision {
   if (keepAway(w, p.team)) return keepAwayCarrier(w, p)
@@ -106,6 +118,17 @@ function carrierDecision(w: World, p: PlayerRt): BotDecision {
   const dGoal = dist(p.pos, goal)
   const depthToLine = depthOf(g, p.pos)
   const lat = latOf(g, p.pos)
+
+  if (depthToLine > 0.8 && depthToLine < w.field.goalLineX && opps.every((o) => depthOf(g, o.pos) > depthToLine)) {
+    const angleOk = Math.abs(lat) < depthToLine * 1.6 + 1
+    const pressed = nearestDist(p.pos, opps) < BREAKAWAY_PRESSURE
+    const inRange = depthToLine < BREAKAWAY_SHOT || (pressed && dGoal < 14)
+    if (canAct && angleOk && inRange && !wallBlocks(p.pos, goal, w.walls)) {
+      return { intent: { target: goal, speed: SPEEDS.normal }, act: { kind: 'shoot' } }
+    }
+    const target = local(g, BREAKAWAY_SHOT - 1.5, clamp(lat * 0.3, -1.5, 1.5))
+    return { intent: { target, speed: SPEEDS.fast } }
+  }
 
   if (canAct && depthToLine > 0.8) {
     const angleOk = Math.abs(lat) < depthToLine * 1.6 + 1
@@ -369,7 +392,7 @@ function defendIntent(w: World, p: PlayerRt, carrierPos: Vec, carrierId: string 
 export function botDecision(w: World, p: PlayerRt): BotDecision {
   const puck = focusPuck(w, p)
   if (p.role === 'G') {
-    const intent = goalieIntent(w, p, puck?.pos)
+    const intent = goalieIntent(w, p, puck)
     const goal = guardGoal(w, p)
     if (goal && puck?.carrierId === p.id && w.t - p.holdSince > 1.5) {
       const g = refOf(goal)

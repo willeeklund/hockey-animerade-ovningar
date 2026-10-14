@@ -10,6 +10,7 @@ export type TemplateKey =
   | '2v1'
   | '3v2'
   | '1v1gap'
+  | 'breakaway'
   | 'breakout'
   | '5v5'
   | 'pp54'
@@ -26,6 +27,7 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   '2v1': '2 mot 1',
   '3v2': '3 mot 2',
   '1v1gap': '1 mot 1, gap control',
+  breakaway: 'Friläge',
   breakout: 'Uppspel mot forechecking',
   '5v5': '5 mot 5 (anfall)',
   pp54: 'Powerplay 5 mot 4',
@@ -39,7 +41,7 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
 }
 
 export const TEMPLATE_GROUPS: Record<Layout, TemplateKey[]> = {
-  full: ['empty', '2v1', '3v2', '1v1gap', 'breakout', '5v5', 'pp54', 'mark3v3', 'slalom'],
+  full: ['empty', '2v1', '3v2', '1v1gap', 'breakaway', 'breakout', '5v5', 'pp54', 'mark3v3', 'slalom'],
   zone: ['emptyZone', 'zone1v1', 'zone2v2', 'zone3v2', 'zone3v3'],
 }
 
@@ -185,6 +187,9 @@ export function template(key: TemplateKey): Scenario {
       { id: 's1', kind: 'skate', playerId: 'h1', speed: 'normal', path: [{ x: 17, y: 9 }, { x: 21, y: 6 }, { x: 20, y: 2 }] },
       { id: 'p1', kind: 'pass', playerId: 'h1', toPlayerId: 'h3' },
     ]
+  } else if (key === 'breakaway') {
+    s.players = [pl('h1', 'home', 'F', '9', -2, -4), pl('a1', 'away', 'D', '4', -9, -1), awayG]
+    s.pucks = [{ id: 'k1', pos: { x: -1.3, y: -4 } }]
   } else if (key === 'slalom') {
     s.players = [pl('h1', 'home', 'F', '9', -6, 0), awayG]
     s.pucks = [{ id: 'k1', pos: { x: -5.3, y: 0 } }]
