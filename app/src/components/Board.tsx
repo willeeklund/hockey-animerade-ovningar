@@ -5,8 +5,9 @@ import { closestOnSegment, dividerEnds } from '../engine/walls'
 import { layoutDividers } from '../editor/dividers'
 import type { SimResult } from '../engine/simulate'
 import { GOALIE_CORE, GOALIE_REACH } from '../engine/world'
+import { goalieSpot } from '../engine/ai'
 import { dist, wrapAngle } from '../engine/vec'
-import { clampToField, defendSide, DIVIDER, fieldOf, goalNormal, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
+import { clampToField, defendSide, DIVIDER, fieldOf, goalAcross, goalNormal, goalPoint, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
 import type { Action, Frame, Goal, Player, Vec } from '../model/types'
 import { editContext, initialCarrierMap, openingActions, roundAt, type EditContext } from '../editor/staticPlan'
 import { useEditor } from '../editor/store'
@@ -19,6 +20,7 @@ type Drag =
   | { kind: 'move'; id: string; pucks: string[] }
   | { kind: 'draw'; playerId: string; pts: Vec[] }
   | { kind: 'divider'; from: Vec; to: Vec }
+  | { kind: 'aim'; playerId: string; goalId: string; start: Vec; aim: number; moved: boolean }
   | null
 
 function frameAt(sim: SimResult, t: number): Frame {
@@ -78,14 +80,14 @@ function ActionShape({ a, from, to, withPuck, color }: { a: Action; from: Vec; t
 
 const GOALIE_DRAW_SCALE = 1.6
 
-function GoalieGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean }) {
+function GoalieGlyph({ p, x, y, h, faded, selected, pending, drawScale = GOALIE_DRAW_SCALE }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean; drawScale?: number }) {
   const fill = TEAM_COLOR[p.team]
   const r = GOALIE_REACH
   const c = GOALIE_CORE
   return (
     <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={faded ? 0.45 : 1}>
       {(selected || pending) && <circle r={1.6} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.16} strokeDasharray="0.4 0.25" />}
-      <g transform={`rotate(${(h * 180) / Math.PI}) scale(${GOALIE_DRAW_SCALE})`}>
+      <g transform={`rotate(${(h * 180) / Math.PI}) scale(${drawScale})`}>
         <path d={`M 0 ${-r} A ${r} ${r} 0 0 1 0 ${r}`} fill="none" stroke="#111" strokeWidth={0.04} strokeDasharray="0.12 0.1" opacity={0.5} />
         <rect x={-0.18} y={-c} width={0.36} height={c * 2} rx={0.14} fill="#f8fafc" stroke="#111" strokeWidth={0.06} />
         <path d={`M -0.1 -0.04 H 0.12 M -0.1 0.04 H 0.12`} stroke="#111" strokeWidth={0.04} />
@@ -95,9 +97,11 @@ function GoalieGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: n
         <rect x={-0.08} y={-r} width={0.2} height={0.3} rx={0.04} fill="#fde68a" stroke="#111" strokeWidth={0.05} />
         <path d={`M 0.02 ${-r + 0.3} L 0.26 ${-r + 0.42} L 0.26 0.15`} fill="none" stroke="#3b2a1a" strokeWidth={0.09} strokeLinecap="round" strokeLinejoin="round" />
       </g>
+      {drawScale === GOALIE_DRAW_SCALE && (
       <text x={-Math.cos(h) * 1.35} y={-Math.sin(h) * 1.35 + 0.2} textAnchor="middle" fontSize={0.55} fontWeight={700} fill="#111" stroke="#fff" strokeWidth={0.08} paintOrder="stroke" style={{ pointerEvents: 'none' }}>
         {p.label}
       </text>
+      )}
     </g>
   )
 }
@@ -105,6 +109,46 @@ function GoalieGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: n
 const SHOT_VIEW_RANGE = 16
 const OPEN_COLOR = '#16a34a'
 const CHANCE_COLOR = '#eab308'
+const BLOCKED_COLOR = '#dc2626'
+
+type Zone = { a: number; b: number; color: string }
+
+function shotZones(goal: Goal, puck: Vec, goalie: Vec | undefined): Zone[] {
+  const half = RINK.goalHalfWidth
+  if (!goalie) return [{ a: -half, b: half, color: OPEN_COLOR }]
+  const n = goalNormal(goal)
+  const across = goalAcross(goal)
+  const rel = (v: Vec) => ({ d: (v.x - goal.pos.x) * n.x + (v.y - goal.pos.y) * n.y, l: (v.x - goal.pos.x) * across.x + (v.y - goal.pos.y) * across.y })
+  const s = rel(puck)
+  const g = rel(goalie)
+  const k = s.d / Math.max(0.3, s.d - g.d)
+  const center = s.l + (g.l - s.l) * k
+  const gaps = (reach: number) =>
+    [
+      [-half, Math.min(half, center - reach * k)],
+      [Math.max(-half, center + reach * k), half],
+    ].filter(([a, b]) => b - a > 0.05)
+  return [...gaps(GOALIE_CORE).map(([a, b]) => ({ a, b, color: CHANCE_COLOR })), ...gaps(GOALIE_REACH).map(([a, b]) => ({ a, b, color: OPEN_COLOR }))]
+}
+
+const zoneAt = (zones: Zone[], lat: number) => zones.filter((z) => lat >= z.a && lat <= z.b).at(-1)?.color ?? BLOCKED_COLOR
+
+function ZoneShapes({ goal, puck, zones, posts = true }: { goal: Goal; puck: Vec; zones: Zone[]; posts?: boolean }) {
+  const at = (l: number) => goalPoint(goal, l)
+  const half = RINK.goalHalfWidth
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {zones.map(({ a, b, color }) => (
+        <g key={`${color}${a}`}>
+          <polygon points={pts2([puck, at(a), at(b)])} fill={color} opacity={0.22} />
+          <line x1={at(a).x} y1={at(a).y} x2={at(b).x} y2={at(b).y} stroke={color} strokeWidth={0.22} strokeLinecap="round" />
+        </g>
+      ))}
+      {posts &&
+        [-half, half].map((l) => <line key={l} x1={puck.x} y1={puck.y} x2={at(l).x} y2={at(l).y} stroke="#0f172a" strokeWidth={0.05} strokeDasharray="0.25 0.2" opacity={0.5} />)}
+    </g>
+  )
+}
 
 function ShotLanes({ frame, players, goals }: { frame: Frame; players: Player[]; goals: Goal[] }) {
   const out: ReactNode[] = []
@@ -118,42 +162,62 @@ function ShotLanes({ frame, players, goals }: { frame: Frame; players: Player[];
       .map((k) => ({ k, p: players.find((q) => q.id === k.c) }))
       .find(({ p }) => p && p.team !== gk.team && p.role !== 'G' && p.role !== 'C')
     if (!shooter) continue
-    const n = goalNormal(goal)
-    const perp = { x: -n.y, y: n.x }
     const puck = shooter.k
-    const rel = (v: Vec) => ({ d: (v.x - goal.pos.x) * n.x + (v.y - goal.pos.y) * n.y, l: (v.x - goal.pos.x) * perp.x + (v.y - goal.pos.y) * perp.y })
-    const s = rel(puck)
-    if (s.d < 0.8 || dist(puck, goal.pos) > SHOT_VIEW_RANGE) continue
-    const g = rel(gp)
-    const k = s.d / Math.max(0.3, s.d - g.d)
-    const center = s.l + (g.l - s.l) * k
-    const half = RINK.goalHalfWidth
-    const at = (l: number) => ({ x: goal.pos.x + perp.x * l, y: goal.pos.y + perp.y * l })
-    const tri = (a: number, b: number) => pts2([puck, at(a), at(b)])
-    const gaps = (reach: number) =>
-      [
-        [-half, Math.min(half, center - reach * k)],
-        [Math.max(-half, center + reach * k), half],
-      ].filter(([a, b]) => b - a > 0.05)
-    const zones = [
-      ...gaps(GOALIE_CORE).map(([a, b]) => ({ a, b, color: CHANCE_COLOR })),
-      ...gaps(GOALIE_REACH).map(([a, b]) => ({ a, b, color: OPEN_COLOR })),
-    ]
-    out.push(
-      <g key={gk.id} style={{ pointerEvents: 'none' }}>
-        {zones.map(({ a, b, color }) => (
-          <g key={`${color}${a}`}>
-            <polygon points={tri(a, b)} fill={color} opacity={0.22} />
-            <line x1={at(a).x} y1={at(a).y} x2={at(b).x} y2={at(b).y} stroke={color} strokeWidth={0.22} strokeLinecap="round" />
-          </g>
-        ))}
-        {[-half, half].map((l) => (
-          <line key={l} x1={puck.x} y1={puck.y} x2={at(l).x} y2={at(l).y} stroke="#0f172a" strokeWidth={0.05} strokeDasharray="0.25 0.2" opacity={0.5} />
-        ))}
-      </g>,
-    )
+    const n = goalNormal(goal)
+    if ((puck.x - goal.pos.x) * n.x + (puck.y - goal.pos.y) * n.y < 0.8 || dist(puck, goal.pos) > SHOT_VIEW_RANGE) continue
+    out.push(<ZoneShapes key={gk.id} goal={goal} puck={puck} zones={shotZones(goal, puck, gp)} />)
   }
   return <>{out}</>
+}
+
+const AIM_GAIN = 0.25
+const AIM_MAX = RINK.goalHalfWidth - 0.05
+const AIM_MIN_DRAG = 0.4
+const MAG = 2.6
+const MAG_R = 4.2
+const MAG_FOCUS = 1
+
+function AimView({ goal, from, aim, goalie }: { goal: Goal; from: Vec; aim: number; goalie?: { p: Player; pos: Vec } }) {
+  const n = goalNormal(goal)
+  const across = goalAcross(goal)
+  const gRef = { pos: goal.pos, n, perp: across }
+  const spot = goalie ? goalieSpot(gRef, from) : undefined
+  const zones = shotZones(goal, from, spot)
+  const target = goalPoint(goal, aim)
+  const color = zoneAt(zones, aim)
+  const side = (from.x - goal.pos.x) * across.x + (from.y - goal.pos.y) * across.y > 0 ? -1 : 1
+  const c = { x: goal.pos.x + n.x * (MAG_R + 2.2) + across.x * side * (MAG_R + 1), y: goal.pos.y + n.y * (MAG_R + 2.2) + across.y * side * (MAG_R + 1) }
+  const face = spot ? Math.atan2(from.y - spot.y, from.x - spot.x) : 0
+  const scene = (
+    <>
+      <ZoneShapes goal={goal} puck={from} zones={zones} />
+      <line x1={from.x} y1={from.y} x2={target.x} y2={target.y} stroke={color} strokeWidth={0.12} strokeLinecap="round" />
+      <circle cx={target.x} cy={target.y} r={0.14} fill="#fff" stroke={color} strokeWidth={0.07} />
+    </>
+  )
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {scene}
+      <defs>
+        <clipPath id="aim-mag">
+          <circle cx={c.x} cy={c.y} r={MAG_R} />
+        </clipPath>
+      </defs>
+      <line x1={c.x} y1={c.y} x2={goal.pos.x} y2={goal.pos.y} stroke="#0f172a" strokeWidth={0.08} opacity={0.35} />
+      <g clipPath="url(#aim-mag)">
+        <circle cx={c.x} cy={c.y} r={MAG_R} fill="#f8fafc" />
+        <g transform={`translate(${c.x} ${c.y}) scale(${MAG}) translate(${-goal.pos.x - n.x * MAG_FOCUS} ${-goal.pos.y - n.y * MAG_FOCUS})`}>
+          <GoalGlyph g={goal} selected={false} />
+          <ZoneShapes goal={goal} puck={from} zones={zones} posts={false} />
+          {goalie && spot && <GoalieGlyph p={goalie.p} x={spot.x} y={spot.y} h={face} faded={false} selected={false} pending={false} drawScale={1} />}
+          <line x1={from.x} y1={from.y} x2={target.x} y2={target.y} stroke={color} strokeWidth={0.05} strokeLinecap="round" />
+          <circle cx={target.x} cy={target.y} r={0.09} fill="#fff" stroke={color} strokeWidth={0.04} />
+          <path d={`M ${target.x - 0.2} ${target.y} H ${target.x + 0.2} M ${target.x} ${target.y - 0.2} V ${target.y + 0.2}`} stroke="#0f172a" strokeWidth={0.02} />
+        </g>
+      </g>
+      <circle cx={c.x} cy={c.y} r={MAG_R} fill="none" stroke={color} strokeWidth={0.2} />
+    </g>
+  )
 }
 
 function PlayerGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean }) {
@@ -210,7 +274,7 @@ function stepText(tool: string, fromLabel: string | undefined, goalCount: number
   if (tool === 'divider') return { count: 'Sarg', text: 'Dra en linje där sargen ska stå, 2 m per bit. Ett klick lägger en bit.' }
   if (tool === 'shoot') {
     if (!fromLabel) return { count: 'Skjut', text: 'Klicka på puckföraren som ska skjuta' }
-    return { count: 'Skjut', text: goalCount === 1 ? `Klicka för att låta ${fromLabel} skjuta mot målet` : `Klicka på målet som ${fromLabel} skjuter mot` }
+    return { count: 'Skjut', text: `${goalCount === 1 ? 'Klicka på planen' : 'Klicka nära målet'} för att låta ${fromLabel} skjuta. Håll kvar och dra i sidled för att sikta.` }
   }
   return null
 }
@@ -377,7 +441,9 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       } else {
         const goal = nearestGoal(goals, p)
         if (!goal) return st.setMessage('Det finns ingen målbur att skjuta på.')
-        st.addAction({ kind: 'shoot', playerId: fromId, goal: goalSide(goal), goalId: goal.id })
+        setDrag({ kind: 'aim', playerId: fromId, goalId: goal.id, start: p, aim: 0, moved: false })
+        capture()
+        return
       }
       st.setPending(null)
       st.setMessage(null)
@@ -418,6 +484,12 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       st.moveObject(drag.id, clampToField(field, p, 0.6).pos, drag.pucks)
     } else if (drag.kind === 'divider') {
       setDrag({ ...drag, to: clampToField(field, p, 0.6).pos })
+    } else if (drag.kind === 'aim') {
+      const goal = goals.find((g) => g.id === drag.goalId)
+      if (!goal) return
+      const across = goalAcross(goal)
+      const lateral = (p.x - drag.start.x) * across.x + (p.y - drag.start.y) * across.y
+      setDrag({ ...drag, aim: Math.max(-AIM_MAX, Math.min(AIM_MAX, lateral * AIM_GAIN)), moved: drag.moved || dist(p, drag.start) > AIM_MIN_DRAG })
     } else {
       const last = drag.pts[drag.pts.length - 1]
       if (dist(last, p) > 0.3) setDrag({ ...drag, pts: [...drag.pts, clampToField(field, p, 0.6).pos] })
@@ -427,6 +499,12 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const onUp = () => {
     if (drag?.kind === 'move' && scenario.pucks.some((k) => k.id === drag.id)) st.snapPuck(drag.id)
     if (drag?.kind === 'divider') st.addDividers(drag.from, drag.to)
+    if (drag?.kind === 'aim') {
+      const goal = goals.find((g) => g.id === drag.goalId)
+      if (goal) st.addAction({ kind: 'shoot', playerId: drag.playerId, goal: goalSide(goal), goalId: goal.id, ...(drag.moved ? { aim: Math.round(drag.aim * 100) / 100 } : {}) })
+      st.setPending(null)
+      st.setMessage(null)
+    }
     if (drag?.kind === 'draw') {
       const raw = drag.pts
       const length = raw.reduce((acc, q, i) => (i ? acc + dist(raw[i - 1], q) : 0), 0)
@@ -464,6 +542,16 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
   const pendingFrom = scenario.players.find((p) => p.id === pending?.fromId)
   const step = stepText(tool, pending?.kind === tool ? pendingFrom?.label : undefined, goals.length)
+  const aimView = (() => {
+    if (drag?.kind !== 'aim') return null
+    const goal = goals.find((g) => g.id === drag.goalId)
+    const from = ctx.plan.endPos[drag.playerId]
+    if (!goal || !from) return null
+    const shooterTeam = teamOf(drag.playerId)
+    const gk = scenario.players.find((q) => q.role === 'G' && q.team !== shooterTeam && ctx.pos[q.id] && nearestGoal(goals, ctx.pos[q.id]) === goal)
+    return <AimView goal={goal} from={from} aim={drag.moved ? drag.aim : 0} goalie={gk ? { p: gk, pos: ctx.pos[gk.id] } : undefined} />
+  })()
+
   const shotFrom = editing && tool === 'shoot' && pending?.kind === 'shoot' && goals.length === 1 ? ctx.plan.endPos[pending.fromId] : undefined
 
   return (
@@ -597,6 +685,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
         })}
 
         {focus && <FocusRing {...posOf(focus)} />}
+
+        {aimView}
       </svg>
     </div>
   )

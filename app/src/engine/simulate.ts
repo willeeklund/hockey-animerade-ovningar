@@ -159,11 +159,11 @@ function aimLat(w: World, from: Vec, g: GoalRef, goalie: PlayerRt | undefined) {
   return half - low >= high + half ? (low + half) / 2 : (high - half) / 2
 }
 
-function doShot(w: World, p: PlayerRt, puck: PuckRt, g: GoalRef, scripted = false) {
+function doShot(w: World, p: PlayerRt, puck: PuckRt, g: GoalRef, scripted = false, aim?: number) {
   const from = stickPos(p)
   const goalie = w.players.find((q) => q.role === 'G' && guardGoal(w, q) === g.goal)
   const spread = SHOT_SPREAD + SHOT_SPREAD_PER_M * dist(from, g.pos)
-  const tLat = aimLat(w, from, g, goalie) + (w.rng() + w.rng() - 1) * spread
+  const tLat = (aim ?? aimLat(w, from, g, goalie)) + (w.rng() + w.rng() - 1) * spread
   const target = add(g.pos, add(mul(g.n, -0.5), mul(g.perp, tLat)))
   puck.carrierId = null
   puck.pos = from
@@ -286,7 +286,7 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
         if (to) doPass(w, p, puck, to, true)
       } else {
         const goal = (a.goalId && w.goals.find((g) => g.id === a.goalId)) || nearestGoal(w.goals, p.pos, a.goal)
-        if (goal) doShot(w, p, puck, { pos: goal.pos, n: goalNormal(goal), perp: { x: -goalNormal(goal).y, y: goalNormal(goal).x }, goal }, true)
+        if (goal) doShot(w, p, puck, { pos: goal.pos, n: goalNormal(goal), perp: { x: -goalNormal(goal).y, y: goalNormal(goal).x }, goal }, true, a.aim)
       }
       advance(w, p)
       continue

@@ -90,17 +90,18 @@ export function goalieIntent(w: World, p: PlayerRt, k: PuckRt | undefined): Inte
   if (k && !k.carrierId && len(k.vel) > SHOT_REACT_SPEED) return { target: p.pos, speed: 0, face: puck }
   const g = refOf(goal)
   if (!puck) return { target: add(g.pos, mul(g.n, 0.8)), speed: 3, face: add(g.pos, mul(g.n, 10)) }
+  const carrier = playerById(w, k?.carrierId ?? null)
+  const alone = carrier && carrier.team !== p.team && skaters(w, p.team).every((q) => depthOf(g, q.pos) > depthOf(g, carrier.pos))
+  const challenge = !!alone && depthOf(g, puck) < 16
+  return { target: goalieSpot(g, puck, challenge), speed: challenge ? 5 : 4, face: puck }
+}
+
+export function goalieSpot(g: Omit<GoalRef, 'goal'>, puck: Vec, challenge = false): Vec {
   const dir = norm(sub(puck, g.pos))
   const dx = Math.max(0.35, dot(dir, g.n))
   const fixed = norm(add(mul(g.n, dx), mul(g.perp, dot(dir, g.perp))))
-  const carrier = playerById(w, k?.carrierId ?? null)
-  const alone = carrier && carrier.team !== p.team && skaters(w, p.team).every((q) => depthOf(g, q.pos) > depthOf(g, carrier.pos))
-  if (alone && depthOf(g, puck) < 16) {
-    const depth = clamp(dist(puck, g.pos) * 0.35, 0.6, 2.8)
-    return { target: add(g.pos, mul(fixed, depth)), speed: 5, face: puck }
-  }
-  const depth = clamp(dist(puck, g.pos) * 0.08, 0.6, 1.3)
-  return { target: add(g.pos, mul(fixed, depth)), speed: 4, face: puck }
+  const depth = challenge ? clamp(dist(puck, g.pos) * 0.35, 0.6, 2.8) : clamp(dist(puck, g.pos) * 0.08, 0.6, 1.3)
+  return add(g.pos, mul(fixed, depth))
 }
 
 const SHOT_REACT_SPEED = 15

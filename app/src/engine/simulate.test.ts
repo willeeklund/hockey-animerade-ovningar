@@ -213,6 +213,25 @@ describe('simulate', () => {
     expect(dist(w.players.find((p) => p.id === 'c')!.pos, { x: 14, y: -9 })).toBeGreaterThan(2)
   })
 
+  it('an aimed shot goes towards the chosen side of the goal', () => {
+    const lateral = (aim: number) => {
+      let sum = 0
+      for (let seed = 1; seed <= 20; seed++) {
+        const s = base()
+        s.settings.seed = seed
+        s.players = [s.players[0]]
+        s.players[0].pos = { x: 18, y: 0 }
+        s.pucks[0].pos = { x: 18.6, y: 0 }
+        s.actions = [{ id: 'sh', kind: 'shoot', playerId: 'a', goal: 'right', aim }]
+        const r = simulate(s)
+        sum += r.frames.find((f) => f.pucks.k.x > 25.5)!.pucks.k.y
+      }
+      return sum / 20
+    }
+    expect(lateral(0.7)).toBeLessThan(-0.4)
+    expect(lateral(-0.7)).toBeGreaterThan(0.4)
+  })
+
   it('keeps everyone inside the rink', () => {
     const s = template('5v5')
     s.settings.autonomous = true

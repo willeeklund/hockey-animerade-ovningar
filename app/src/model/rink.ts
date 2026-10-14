@@ -56,6 +56,10 @@ export const goalsOf = (s: Pick<Scenario, 'goals' | 'settings'>) => s.goals ?? d
 
 export const goalNormal = (g: Goal): Vec => ({ x: Math.cos(g.angle), y: Math.sin(g.angle) })
 
+export const goalAcross = (g: Goal): Vec => ({ x: -Math.sin(g.angle), y: Math.cos(g.angle) })
+
+export const goalPoint = (g: Goal, lat: number): Vec => ({ x: g.pos.x + goalAcross(g).x * lat, y: g.pos.y + goalAcross(g).y * lat })
+
 export function goalSide(g: Goal): Side {
   const nx = Math.cos(g.angle)
   if (Math.abs(nx) > 0.5) return nx > 0 ? 'left' : 'right'

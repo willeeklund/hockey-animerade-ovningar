@@ -16,7 +16,7 @@ const PLAYER_TOOLS: ToolDef[] = [
   { id: 'select', label: 'Välj / flytta', icon: '↖', hint: 'Klicka för att välja, dra för att flytta', key: 'V' },
   { id: 'skate', label: 'Åk', icon: '〰', hint: 'Dra från en spelare för att rita åkväg', key: 'Å' },
   { id: 'pass', label: 'Passa', icon: '⇢', hint: 'Klicka på mottagaren', key: 'P' },
-  { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka på målet', key: 'S' },
+  { id: 'shoot', label: 'Skjut', icon: '⇒', hint: 'Klicka, dra i sidled för att sikta', key: 'S' },
   { id: 'mark', label: 'Markera', icon: '⇄', hint: 'Klicka på försvararen, sedan på motståndaren', key: 'M' },
 ]
 

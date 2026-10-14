@@ -1,4 +1,4 @@
-import { fieldOf, goalCenter, goalsOf, nearestGoal } from '../model/rink'
+import { fieldOf, goalCenter, goalPoint, goalsOf, nearestGoal } from '../model/rink'
 import type { Action, Goal, Scenario, Vec } from '../model/types'
 import { frameIndex, type SimResult } from '../engine/simulate'
 import { dist } from '../engine/vec'
@@ -90,7 +90,7 @@ export function staticPlan(actions: Action[], start: Record<string, Vec>, startC
       geom[a.id] = { from, to: endPos[a.targetId], withPuck }
     } else if (a.kind === 'shoot') {
       const goal = goals.find((g) => g.id === a.goalId) ?? nearestGoal(goals, from, a.goal)
-      geom[a.id] = { from, to: goal?.pos ?? fallback(a), withPuck }
+      geom[a.id] = { from, to: goal ? goalPoint(goal, a.aim ?? 0) : fallback(a), withPuck }
       carriers.delete(a.playerId)
     } else {
       geom[a.id] = { from, withPuck }
