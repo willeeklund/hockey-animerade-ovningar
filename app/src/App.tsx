@@ -14,6 +14,9 @@ const IDLE_AFTER_PLAY_SMALL_MS = 500
 const isSmallScreen = () => window.matchMedia('(max-height: 500px)').matches
 
 const TOOL_KEYS: Record<string, Tool> = { v: 'select', å: 'skate', p: 'pass', s: 'shoot', k: 'cone', m: 'mark' }
+const TEXT_INPUTS = new Set(['text', 'number', 'search', 'email', 'url', 'tel', 'password'])
+const typing = (el: HTMLElement) =>
+  el.isContentEditable || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || (el.tagName === 'INPUT' && TEXT_INPUTS.has((el as HTMLInputElement).type))
 
 export default function App() {
   const scenario = useEditor((s) => s.scenario)
@@ -74,8 +77,7 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const el = e.target as HTMLElement
-      if (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') return
+      if (typing(e.target as HTMLElement)) return
       const st = useEditor.getState()
       if (st.presenting) {
         const ids = st.deck.map((s) => s.id)
@@ -108,8 +110,16 @@ export default function App() {
         st.setTool('select')
       }
     }
+    const onChange = (e: Event) => {
+      const el = e.target as HTMLElement
+      if (el.tagName === 'SELECT' || (el.tagName === 'INPUT' && !typing(el))) el.blur()
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    document.addEventListener('change', onChange)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.removeEventListener('change', onChange)
+    }
   }, [sim.duration])
 
   if (presenting) {

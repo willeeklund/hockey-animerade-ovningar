@@ -64,18 +64,18 @@ button.danger { color: #b91c1c; width: 100%; }
 .sidebar {
   grid-area: side;
   overflow-y: auto;
-  padding: 12px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   border-right: 1px solid var(--line);
   background: #f8fafc;
 }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .panel h3 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
-.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.tool { display: flex; align-items: center; gap: 6px; text-align: left; padding: 8px; }
-.tool .icon { width: 18px; text-align: center; font-weight: 700; }
+.tools { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.tool { display: flex; align-items: center; gap: 4px; text-align: left; padding: 7px 6px; min-width: 0; line-height: 1.2; }
+.tool .icon { width: 16px; flex: none; text-align: center; font-weight: 700; }
 .t-home .icon { color: var(--home); }
 .t-away .icon { color: var(--away); }
 .tool.on .icon { color: #fff; }
@@ -162,8 +162,9 @@ button.danger { color: #b91c1c; width: 100%; }
   border: 1px solid var(--line);
   border-bottom-width: 2px;
   border-radius: 4px;
-  padding: 2px 5px;
+  padding: 2px 4px;
   background: #f8fafc;
+  flex: none;
 }
 .tool.on kbd { color: var(--accent); }
 
@@ -199,7 +200,7 @@ button.focus.on { background: #facc15; border-color: #eab308; color: #1f2937; }
 .m-offside { background: #7c3aed; height: 12px; }
 .ev-offside { background: #ede9fe; color: #5b21b6; font-weight: 600; }
 
-.templates { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.templates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
 .templates > button { text-align: left; font-size: 13px; padding: 7px 8px; }
 
 .collapsible > summary {
