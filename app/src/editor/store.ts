@@ -36,7 +36,7 @@ interface EditorState {
   rate: number
   showPaths: boolean
   showTrails: boolean
-  showGoalie: boolean
+  showDetails: boolean
   activeRound: number
   editing: boolean
   library: Record<string, Scenario>
@@ -102,7 +102,7 @@ interface EditorState {
   setEnd: (t: number) => void
   beginEditHere: () => void
   setRate: (r: number) => void
-  toggle: (k: 'showPaths' | 'showTrails' | 'showGoalie') => void
+  toggle: (k: 'showPaths' | 'showTrails' | 'showDetails') => void
 }
 
 function withGoal(s: Scenario, id: string, fn: (g: Goal) => Goal | null): Scenario {
@@ -175,7 +175,7 @@ export const useEditor = create<EditorState>((set, get) => {
     rate: 1,
     showPaths: true,
     showTrails: true,
-    showGoalie: true,
+    showDetails: false,
     activeRound: 0,
     editing: true,
     library: readLibrary(),

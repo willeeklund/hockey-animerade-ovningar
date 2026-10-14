@@ -52,6 +52,9 @@ const POST_MARGIN = 0.1
 const AIM_CLEARANCE = 0.55
 const SHOT_SPREAD = 0.12
 const SHOT_SPREAD_PER_M = 0.06
+const MANUAL_SPREAD = 0.55
+const MANUAL_MISS = 0.1
+const ON_TARGET = RINK.goalHalfWidth - 0.04
 
 function stickPos(p: PlayerRt) {
   return add(p.pos, fromAngle(p.heading, STICK_REACH))
@@ -164,7 +167,10 @@ function doShot(w: World, p: PlayerRt, puck: PuckRt, g: GoalRef, scripted = fals
   const from = stickPos(p)
   const goalie = w.players.find((q) => q.role === 'G' && guardGoal(w, q) === g.goal)
   const spread = SHOT_SPREAD + SHOT_SPREAD_PER_M * dist(from, g.pos)
-  const tLat = (aim ?? aimLat(w, from, g, goalie)) + (w.rng() + w.rng() - 1) * spread
+  const manual = aim !== undefined
+  const err = (w.rng() + w.rng() - 1) * spread * (manual ? MANUAL_SPREAD : 1)
+  let tLat = (aim ?? aimLat(w, from, g, goalie)) + err
+  if (manual && w.rng() > MANUAL_MISS) tLat = Math.max(-ON_TARGET, Math.min(ON_TARGET, tLat))
   const target = add(g.pos, add(mul(g.n, -0.5), mul(g.perp, tLat)))
   puck.carrierId = null
   puck.pos = from

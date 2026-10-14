@@ -27,7 +27,7 @@ const EVENT_LABEL: Record<string, string> = {
 
 export function Timeline({ sim, compact = false }: { sim: SimResult; compact?: boolean }) {
   const st = useEditor()
-  const { scenario, time, playing, rate, showPaths, showTrails, showGoalie, editing, activeRound } = st
+  const { scenario, time, playing, rate, showPaths, showTrails, showDetails, editing, activeRound } = st
   const last = useRef<number | null>(null)
   const scrubRef = useRef<HTMLDivElement>(null)
   const [trim, setTrim] = useState<number | null>(null)
@@ -199,7 +199,7 @@ export function Timeline({ sim, compact = false }: { sim: SimResult; compact?: b
           <input type="checkbox" checked={showTrails} onChange={() => st.toggle('showTrails')} /> Visa spår
         </label>
         <label className="check">
-          <input type="checkbox" checked={showGoalie} onChange={() => st.toggle('showGoalie')} /> Visa målvaktsdetaljer
+          <input type="checkbox" checked={showDetails} onChange={() => st.toggle('showDetails')} /> Visa detaljer
         </label>
         <span className="events">
           {events.length === 0

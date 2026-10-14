@@ -106,6 +106,7 @@ function GoalieGlyph({ p, x, y, h, faded, selected, pending, drawScale = GOALIE_
   )
 }
 
+const HEADING_LEN = 1.3
 const SHOT_VIEW_RANGE = 16
 const OPEN_COLOR = '#16a34a'
 const CHANCE_COLOR = '#eab308'
@@ -228,7 +229,7 @@ const TRAIL_OPACITY = 0.28
 const TRAIL_SELECTED_OPACITY = 0.6
 const GHOST_OPACITY = 0.18
 
-function LookAhead({ sim, ctx, players, selectedId }: { sim: SimResult; ctx: EditContext; players: Player[]; selectedId: string | null }) {
+function LookAhead({ sim, ctx, players, selectedId, detailed }: { sim: SimResult; ctx: EditContext; players: Player[]; selectedId: string | null; detailed: boolean }) {
   const i0 = Math.round(ctx.startT / sim.dt)
   const i1 = Math.round(ctx.focusT / sim.dt)
   const step = Math.max(1, Math.round(0.1 / sim.dt))
@@ -261,7 +262,7 @@ function LookAhead({ sim, ctx, players, selectedId }: { sim: SimResult; ctx: Edi
               </>
             )}
             <g opacity={GHOST_OPACITY}>
-              <PlayerGlyph p={p} x={start.x} y={start.y} h={ctx.heading[p.id] ?? p.heading} faded={false} selected={false} pending={false} />
+              <PlayerGlyph p={p} x={start.x} y={start.y} h={ctx.heading[p.id] ?? p.heading} faded={false} selected={false} pending={false} detailed={detailed} />
             </g>
           </g>
         )
@@ -270,14 +271,14 @@ function LookAhead({ sim, ctx, players, selectedId }: { sim: SimResult; ctx: Edi
   )
 }
 
-function PlayerGlyph({ p, x, y, h, faded, selected, pending, detailed = true }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean; detailed?: boolean }) {
-  if (p.role === 'G' && detailed) return <GoalieGlyph p={p} x={x} y={y} h={h} faded={faded} selected={selected} pending={pending} />
+function PlayerGlyph({ p, x, y, h, faded, selected, pending, detailed = false }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean; detailed?: boolean }) {
+  if (detailed && p.role === 'G') return <GoalieGlyph p={p} x={x} y={y} h={h} faded={faded} selected={selected} pending={pending} />
   const goalie = p.role === 'G'
   const fill = p.role === 'C' ? '#334155' : TEAM_COLOR[p.team]
   return (
     <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={faded ? 0.45 : 1}>
       {(selected || pending) && <circle r={1.45} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
-      <line x1={0} y1={0} x2={Math.cos(h) * 1.6} y2={Math.sin(h) * 1.6} stroke="#3b2a1a" strokeWidth={0.16} strokeLinecap="round" />
+      <line x1={0} y1={0} x2={Math.cos(h) * HEADING_LEN} y2={Math.sin(h) * HEADING_LEN} stroke="#3b2a1a" strokeWidth={0.09} strokeLinecap="round" opacity={0.75} />
       <circle r={0.95} fill={fill} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
       <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill="#fff" style={{ pointerEvents: 'none' }}>
         {p.label}
@@ -334,7 +335,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [drag, setDrag] = useState<Drag>(null)
   const st = useEditor()
-  const { scenario, tool, time, playing, selectedId, pending, showPaths, showTrails, showGoalie, activeRound } = st
+  const { scenario, tool, time, playing, selectedId, pending, showPaths, showTrails, showDetails, activeRound } = st
   const editing = st.editing && !playing
   const field = fieldOf(scenario.settings)
   const view = `${-field.halfLength - PAD} ${-field.halfWidth - PAD} ${2 * (field.halfLength + PAD)} ${2 * (field.halfWidth + PAD)}`
@@ -591,7 +592,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     if (editing || !showTrails) return []
     const end = Math.floor(time / sim.dt)
     const start = Math.max(0, end - Math.round(CONFIG.trailSeconds / sim.dt))
-    return scenario.players.filter((p) => showGoalie || p.role !== 'G').map((p) => {
+    return scenario.players.filter((p) => showDetails || p.role !== 'G').map((p) => {
       const pts: Vec[] = []
       for (let i = start; i <= end; i += 2) {
         const f = sim.frames[i]?.players[p.id]
@@ -599,7 +600,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       }
       return { id: p.id, team: p.team, pts }
     })
-  }, [editing, showTrails, showGoalie, time, sim, scenario.players])
+  }, [editing, showTrails, showDetails, time, sim, scenario.players])
 
   const focus = scenario.players.find((p) => p.id === scenario.focusId)
   const posOf = (p: Player) => {
@@ -738,16 +739,28 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
           />
         ))}
 
-        {frame && showGoalie && <ShotLanes frame={frame} players={scenario.players} goals={goals} />}
+        {frame && showDetails && <ShotLanes frame={frame} players={scenario.players} goals={goals} />}
 
-        {ahead && <LookAhead sim={sim} ctx={ctx} players={showGoalie ? scenario.players : scenario.players.filter((p) => p.role !== 'G')} selectedId={selectedId} />}
+        {ahead && <LookAhead sim={sim} ctx={ctx} players={showDetails ? scenario.players : scenario.players.filter((p) => p.role !== 'G')} selectedId={selectedId} detailed={showDetails} />}
 
         {scenario.players.map((p) => {
           const q = posOf(p)
           const first = scenario.actions.find((a) => a.playerId === p.id)
           const later = !first && scenario.rounds?.some((r) => r.actions.some((a) => a.playerId === p.id && a.kind !== 'wait'))
           const f = frame?.players[p.id]
-          return <PlayerGlyph key={p.id} p={p} x={q.x} y={q.y} h={q.h} faded={f ? !!f.q : !!p.idle && !later && (!first || first.kind === 'wait')} selected={p.id === selectedId} pending={pending?.fromId === p.id} detailed={showGoalie} />
+          return (
+            <PlayerGlyph
+              key={p.id}
+              p={p}
+              x={q.x}
+              y={q.y}
+              h={q.h}
+              faded={f ? !!f.q : !!p.idle && !later && (!first || first.kind === 'wait')}
+              selected={p.id === selectedId}
+              pending={pending?.fromId === p.id}
+              detailed={showDetails}
+            />
+          )
         })}
 
         {scenario.pucks.map((k) => {
