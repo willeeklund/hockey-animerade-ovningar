@@ -34,6 +34,15 @@ jobs:
       - run: npm test
       - run: npm run build
 
+      - name: Skriv gitVersion.json
+        run: |
+          jq -n \
+            --arg commit "$GITHUB_SHA" \
+            --arg branch "$GITHUB_REF_NAME" \
+            --arg buildTime "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{commit: $commit, branch: $branch, buildTime: $buildTime}' > dist/gitVersion.json
+          cat dist/gitVersion.json
+
       - uses: actions/configure-pages@v6
 
       - uses: actions/upload-pages-artifact@v5
