@@ -7,7 +7,7 @@ import type { SimResult } from '../engine/simulate'
 import { dist, wrapAngle } from '../engine/vec'
 import { clampToField, defendSide, DIVIDER, fieldOf, goalNormal, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
 import type { Action, Frame, Goal, Player, Vec } from '../model/types'
-import { editContext, initialCarrierMap, roundAt, type EditContext } from '../editor/staticPlan'
+import { editContext, initialCarrierMap, openingActions, roundAt, type EditContext } from '../editor/staticPlan'
 import { useEditor } from '../editor/store'
 import { RinkLines } from './RinkLines'
 
@@ -31,13 +31,13 @@ function frameAt(sim: SimResult, t: number): Frame {
   for (const id in a.players) {
     const pa = a.players[id]
     const pb = b.players[id] ?? pa
-    players[id] = { x: pa.x + (pb.x - pa.x) * k, y: pa.y + (pb.y - pa.y) * k, h: pa.h + wrapAngle(pb.h - pa.h) * k }
+    players[id] = { x: pa.x + (pb.x - pa.x) * k, y: pa.y + (pb.y - pa.y) * k, h: pa.h + wrapAngle(pb.h - pa.h) * k, q: pa.q }
   }
   const pucks: Frame['pucks'] = {}
   for (const id in a.pucks) {
     const ka = a.pucks[id]
     const kb = b.pucks[id] ?? ka
-    pucks[id] = { x: ka.x + (kb.x - ka.x) * k, y: ka.y + (kb.y - ka.y) * k, c: ka.c }
+    pucks[id] = { x: ka.x + (kb.x - ka.x) * k, y: ka.y + (kb.y - ka.y) * k, c: ka.c, s: ka.s }
   }
   return { t, players, pucks }
 }
@@ -75,11 +75,11 @@ function ActionShape({ a, from, to, withPuck, color }: { a: Action; from: Vec; t
   return null
 }
 
-function PlayerGlyph({ p, x, y, h, selected, pending }: { p: Player; x: number; y: number; h: number; selected: boolean; pending: boolean }) {
+function PlayerGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean }) {
   const goalie = p.role === 'G'
   const fill = p.role === 'C' ? '#334155' : TEAM_COLOR[p.team]
   return (
-    <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={p.idle ? 0.45 : 1}>
+    <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={faded ? 0.45 : 1}>
       {(selected || pending) && <circle r={1.45} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
       <line x1={0} y1={0} x2={Math.cos(h) * 1.6} y2={Math.sin(h) * 1.6} stroke="#3b2a1a" strokeWidth={0.16} strokeLinecap="round" />
       <circle r={0.95} fill={fill} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
@@ -416,9 +416,9 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {showPaths && (
           <g opacity={editing ? 0.9 : 0.25} style={{ pointerEvents: 'none' }}>
-            {ctx.actions.map((a) => {
+            {openingActions(ctx.actions).map((a) => {
               const g = ctx.plan.geom[a.id]
-              if (!g) return null
+              if (!g || (!editing && a.kind === 'wait')) return null
               return <ActionShape key={a.id} a={a} from={g.from} to={g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
             })}
           </g>
@@ -500,12 +500,17 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {scenario.players.map((p) => {
           const q = posOf(p)
-          return <PlayerGlyph key={p.id} p={p} x={q.x} y={q.y} h={q.h} selected={p.id === selectedId} pending={pending?.fromId === p.id} />
+          const first = scenario.actions.find((a) => a.playerId === p.id)
+          const later = !first && scenario.rounds?.some((r) => r.actions.some((a) => a.playerId === p.id && a.kind !== 'wait'))
+          const f = frame?.players[p.id]
+          return <PlayerGlyph key={p.id} p={p} x={q.x} y={q.y} h={q.h} faded={f ? !!f.q : !!p.idle && !later && (!first || first.kind === 'wait')} selected={p.id === selectedId} pending={pending?.fromId === p.id} />
         })}
 
         {scenario.pucks.map((k) => {
-          const q = frame?.pucks[k.id] ?? ctx.pucks[k.id] ?? k.pos
-          return <circle key={k.id} cx={q.x} cy={q.y} r={0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} />
+          const f = frame?.pucks[k.id]
+          const q = f ?? ctx.pucks[k.id] ?? k.pos
+          const spare = f ? !!f.s : !!k.spare
+          return <circle key={k.id} cx={q.x} cy={q.y} r={spare ? 0.26 : 0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} opacity={spare ? 0.3 : 1} />
         })}
 
         {focus && <FocusRing {...posOf(focus)} />}

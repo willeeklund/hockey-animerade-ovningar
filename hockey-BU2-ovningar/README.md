@@ -2,13 +2,13 @@
 
 Inskannade övningar som grupperna ritade under kursen BU2 (Barn och ungdom steg 2, Svenska Ishockeyförbundet) helgen 3–4 oktober 2026.
 
-Varje mapp innehåller en grupps skanningar och en `traningspass.json` med gruppens övningar tolkade som animerade scenarion. Filerna byggs in i appen som inbyggda träningspass. Välj dem i panelen **Träningspass**, under rubriken *Inbyggda pass – BU2-kursen*. Där kan man öppna en övning, visa passet i helskärm eller kopiera det till sitt eget träningspass. De inbyggda passen och mallarna i appen ändras inte.
+Varje mapp innehåller en grupps skanningar och en `traningspass.json` med animerade övningar på gruppens tema. Filerna byggs in i appen som inbyggda träningspass. Välj dem i panelen **Träningspass**, under rubriken *Inbyggda pass – BU2-kursen*. Där kan man öppna en övning, visa passet i helskärm eller kopiera det till sitt eget träningspass. De inbyggda passen och mallarna i appen ändras inte.
 
 `traningspass.json` har samma format som när man exporterar ett träningspass från appen (Träningspass → Exportera). Ändrar man en övning i appen kan passet exporteras och sparas över filen. Starta om `npm run dev` efter att en fil har lagts till.
 
 ## Filnamn och gruppindelning
 
-Bilderna heter `GruppN-M.jpg`, där M är övningens plats i gruppens pass. Sidor som inte finns med i appen har de sista numren.
+Bilderna heter `GruppN-M.jpg`, där M är sidans nummer i gruppens skanning.
 
 Skanningarna togs i fem omgångar, och filerna från samma omgång hör till samma grupp.
 
@@ -24,57 +24,58 @@ Grupp 1 och Grupp 3 kan vara omkastade.
 
 ## Övningar
 
-Tecken på papperen: △ är röda (Lag A) och ○ blå (Lag B). Övningar som körs från båda hållen samtidigt visas oftast från ena hållet.
+Tecken på papperen: △ är röda (Lag A) och ○ blå (Lag B).
+
+Passen i appen följer gruppernas teman, men övningarna är omgjorda så att syftet syns direkt i animeringen. Skanningarna har varit inspiration. Varje övning har:
+
+- **En titel som säger vad som tränas**, och en beskrivning med syfte, upplägg och rotation (ⓘ i helskärm).
+- **Köer som flyttar fram.** Spelarna i kön syns blekta. När den första går iväg flyttar de andra fram, och den som är klar ställer sig sist i nästa led enligt rotationen.
+- **En puck i spel åt gången.** Nästa repetition startar när pucken är död och förra gruppen har lämnat ytan framför mål. Puckar som inte är i spel, alltså i pucklådan, i målet eller undanlagda, syns blekta.
+- **Riktiga beslut.** Målvakten täcker returer, försvarare som vinner pucken spelar ut den ur zonen, och en lös puck hämtas av en spelare från kön.
+
+Chicago five behölls som den var och är den enda övningen där flera puckar är i spel samtidigt.
 
 ### Grupp 1 – Anfall och försvar i zon
 
-| Bild | Övning i appen |
+| Övning | Syfte |
 |---|---|
-| Grupp1-1.jpg | 4 mot 2: backen ansluter i offensiv zon |
-| Grupp1-2.jpg | 3 mot 3 från mitten: ingång och utgång |
-| Grupp1-3.jpg | 2 mot 2: bågar i egen zon och vänder upp |
-| Grupp1-4.jpg | 3 mot 3 på tvären i zonen |
-| Grupp1-5.jpg | Finns inte i appen. "Switcher" 3 mot 3 och 1 mot 1 med chip i sargen, svårtolkad |
+| Give and go: passa tränaren, gå på mål och skjut | Ge och gå, avslut i fart. Två led som byter sida. |
+| 1 mot 1: forwarden utmanar, backen håller gapet | Forwarden utmanar i fart, backen håller gapet och stänger mot sargen. |
+| 2 mot 1: håll bredden, tvinga backen att välja | Går backen på puckföraren passar han kamraten, annars skott. |
 
-### Grupp 2 – Spelförståelse U14 (18 spelare och 2 målvakter)
+### Grupp 2 – Spelförståelse U14
 
-| Bild | Övning i appen |
+| Övning | Syfte |
 |---|---|
-| Grupp2-1.jpg | 3 mot 3 i mittzon, backen ansluter |
-| Grupp2-2.jpg | 2 mot 1: backen hämtar och spelar upp |
-| Grupp2-3.jpg | 3 mot 2 med backcheck, blir 5 mot 5 |
-| Grupp2-4.jpg | 2 mot 2 i hörnet, pass till skytt |
-| Grupp2-5.jpg | Powerplay 4 mot 2, max 3 s med pucken (utan däcken). Sidan har också sammanfattningen av passet. |
+| Uppspel: back – ytter – center i fart | Back hämtar i hörnet, ytter på sargen, center i fart genom mitten. Rotation back → ytter → center. |
+| 2 mot 1: puckföraren läser backen | Läsa backen och välja pass eller skott. |
+| Powerplay 4 mot 2: pucken går runt boxen | Snabb puckrörelse i box, ingen håller pucken längre än cirka två sekunder, skott med skymning. |
 
 ### Grupp 3 – Från uppvärmning till powerplay
 
-| Bild | Övning i appen |
+| Övning | Syfte |
 |---|---|
-| Grupp3-1.jpg | Uppvärmning: 3 mot 3 med give and go |
-| Grupp3-2.jpg | Solo med puck runt koner och avslut |
-| Grupp3-3.jpg | 2 mot 2 framför mål + 2 skyttar |
-| Grupp3-4.jpg | Uppspel: backen hämtar i hörnet, 4 roller |
-| Grupp3-5.jpg | 3 mot 2 på tvären med give and go (zonspel) |
-| Grupp3-6.jpg | Powerplay 5 mot 3, omställning vid utspel |
+| Uppvärmning: konslalom med puck och avslut | Puckföring i fart runt koner, sedan skott. |
+| Give and go med avslut i fart | Ge och gå med tränaren. |
+| Uppspel: backen hämtar, yttern vid sargen, centern i mitten | Uppspel i tre passningar. |
+| Powerplay: snabba passningar och skott med skymning | Powerplay 4 mot 2. |
 
 ### Grupp 4 – Passningar, uppspel och gapkontroll
 
-| Bild | Övning i appen |
+| Övning | Syfte |
 |---|---|
-| Grupp4-1.jpg | Luleå: 2 mot 2 med hörnpassare |
-| Grupp4-2.jpg | Diagonala led: pass runt mittcirkeln och skott |
-| Grupp4-3.jpg | SSK: 2 mot 1 med tajmade bågar |
-| Grupp4-4.jpg | 4 mot 2: bred ingång, backen vänder spelet (del 1) |
-| Grupp4-5.jpg | Håll pucken mot forecheck, sedan 2 mot 2 (steg 1–2) |
+| Passning i fart: ge och gå med tränaren | Passa och ta emot i fart. |
+| Uppspel: tre passningar ut ur zonen | Uppspel back – ytter – center. |
+| Gapkontroll: backen möter 1 mot 1 | Backens avstånd och vinkel mot forwarden. |
 
-### Grupp 5 – Uppvärmning, 2 mot 2 och uppspel
+### Grupp 5 – Uppvärmning, anfall och uppspel
 
-| Bild | Övning i appen |
+| Övning | Syfte |
 |---|---|
-| Grupp5-1.jpg | Chicago five: passa och åk efter |
-| Grupp5-2.jpg | 2 mot 2: vinn pucken och spela via tränaren |
-| Grupp5-3.jpg | Ingång, sedan uppspel back–back |
-| Grupp5-4.jpg | 3 mot 2 åt båda hållen med backcheck |
-| Grupp5-5.jpg | Finns inte i appen. Gruppens övning 4: back startar, forward anglar, center tar puck, svårtolkad |
-| Grupp5-6.jpg | Finns inte i appen. 3 mot 3 (2 mot 1) |
-| Grupp5-7.jpg | Finns inte i appen. Täcka puck, passa, vägga, göra sig fri, lura (fyra lag i mittzonen) |
+| Chicago five: passa och åk efter | Uppvärmning. Passa till den främsta i ett valfritt led på andra sidan och ställ dig sist där. |
+| 2 mot 1: anfall med två mot en back | Anfall med överläge. |
+| Uppspel: backen hämtar och spelar upp | Uppspel back – ytter – center. |
+
+## Hur övningarna byggs
+
+Övningarna är inspelade med den riktiga simuleringsmotorn. Ett skript fattar besluten medan simuleringen körs: vem som står först i kön, när nästa repetition får starta, vart pucken ska passas och när ett fritt spel är över. Besluten sparas som vanliga instruktioner (åk, passa, skjut, vänta, vänta på pucken, spela fritt, lägg undan pucken), så uppspelningen i appen blir exakt densamma.

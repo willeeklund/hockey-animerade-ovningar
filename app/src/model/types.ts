@@ -19,6 +19,7 @@ export interface Player {
 export interface Puck {
   id: string
   pos: Vec
+  spare?: boolean
 }
 
 export interface Cone {
@@ -42,7 +43,9 @@ export type Action =
   | { id: string; kind: 'skate'; playerId: string; path: Vec[]; speed: SpeedKey }
   | { id: string; kind: 'pass'; playerId: string; toPlayerId: string }
   | { id: string; kind: 'shoot'; playerId: string; goal: Side; goalId?: string }
-  | { id: string; kind: 'wait'; playerId: string; seconds: number }
+  | { id: string; kind: 'wait'; playerId: string; seconds: number; untilPuck?: boolean }
+  | { id: string; kind: 'play'; playerId: string; seconds: number }
+  | { id: string; kind: 'drop'; playerId: string }
   | { id: string; kind: 'mark'; playerId: string; targetId: string }
 
 export interface Round {
@@ -58,6 +61,7 @@ export interface ScenarioSettings {
   autonomous: boolean
   homeAttacks: Side
   layout?: Layout
+  offside?: boolean
 }
 
 export interface Scenario {
@@ -86,12 +90,14 @@ export interface FramePlayer {
   x: number
   y: number
   h: number
+  q?: 1
 }
 
 export interface FramePuck {
   x: number
   y: number
   c: string | null
+  s?: 1
 }
 
 export interface Frame {

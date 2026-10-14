@@ -1,300 +1,28 @@
 {
   "name": "Grupp 2 – Spelförståelse U14",
-  "notes": "U14-pass med 18 spelare och 2 målvakter. Tema: spelförståelse.",
+  "notes": "Tema: spelförståelse. Uppspel ur egen zon, läsa 2 mot 1 och powerplay med snabb puckrörelse.\nÖvningarna är uppbyggda efter gruppens tema från BU2-kursen. De inskannade papperen har varit inspiration, men varje övning är omgjord så att syftet syns direkt: tydliga roller, köer som flyttar fram och bara en puck i spel åt gången.",
   "scenarios": [
     {
       "id": "bu2-g2-1",
-      "name": "3 mot 3 i mittzon, backen ansluter",
-      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "name": "Uppspel: back – ytter – center i fart",
+      "updatedAt": "2026-10-14T06:00:00.000Z",
       "players": [
         {
-          "id": "ag",
+          "id": "gr",
           "team": "away",
           "role": "G",
-          "label": "G",
+          "label": "MV",
           "pos": {
             "x": 25,
             "y": 0
           },
-          "heading": 3.142
+          "heading": 3.141592653589793
         },
         {
-          "id": "t",
-          "team": "away",
-          "role": "C",
-          "label": "T",
-          "pos": {
-            "x": 0,
-            "y": 14.2
-          },
-          "heading": -1.57
-        },
-        {
-          "id": "h1",
-          "team": "home",
-          "role": "F",
-          "label": "1",
-          "pos": {
-            "x": -1,
-            "y": -3
-          },
-          "heading": 0
-        },
-        {
-          "id": "h2",
-          "team": "home",
-          "role": "F",
-          "label": "2",
-          "pos": {
-            "x": -3,
-            "y": 5
-          },
-          "heading": 0
-        },
-        {
-          "id": "h3",
-          "team": "home",
-          "role": "F",
-          "label": "3",
-          "pos": {
-            "x": 2,
-            "y": 7
-          },
-          "heading": 0
-        },
-        {
-          "id": "a1",
-          "team": "away",
-          "role": "F",
-          "label": "1",
-          "pos": {
-            "x": 3,
-            "y": -2
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "a2",
-          "team": "away",
-          "role": "F",
-          "label": "2",
-          "pos": {
-            "x": 4,
-            "y": 4
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "a3",
-          "team": "away",
-          "role": "F",
-          "label": "3",
-          "pos": {
-            "x": 1,
-            "y": 10
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "hd",
-          "team": "home",
-          "role": "D",
-          "label": "B",
-          "pos": {
-            "x": -11,
-            "y": 2.5
-          },
-          "heading": 0
-        },
-        {
-          "id": "qh0",
-          "team": "home",
-          "role": "F",
-          "label": "B",
-          "pos": {
-            "x": -11,
-            "y": 4.5
-          },
-          "heading": 0,
-          "idle": true
-        },
-        {
-          "id": "qh1",
-          "team": "home",
-          "role": "F",
-          "label": "B",
-          "pos": {
-            "x": -11,
-            "y": 6.5
-          },
-          "heading": 0,
-          "idle": true
-        },
-        {
-          "id": "qh2",
-          "team": "home",
-          "role": "F",
-          "label": "B",
-          "pos": {
-            "x": -11,
-            "y": 8.5
-          },
-          "heading": 0,
-          "idle": true
-        },
-        {
-          "id": "qa0",
-          "team": "away",
-          "role": "F",
-          "label": "B",
-          "pos": {
-            "x": 11,
-            "y": -4.5
-          },
-          "heading": 3.142,
-          "idle": true
-        },
-        {
-          "id": "qa1",
-          "team": "away",
-          "role": "F",
-          "label": "B",
-          "pos": {
-            "x": 11,
-            "y": -6.5
-          },
-          "heading": 3.142,
-          "idle": true
-        },
-        {
-          "id": "qa2",
-          "team": "away",
-          "role": "F",
-          "label": "B",
-          "pos": {
-            "x": 11,
-            "y": -8.5
-          },
-          "heading": 3.142,
-          "idle": true
-        }
-      ],
-      "pucks": [
-        {
-          "id": "k1",
-          "pos": {
-            "x": -0.3,
-            "y": -3.0
-          }
-        }
-      ],
-      "actions": [
-        {
-          "id": "a1",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "normal",
-          "path": [
-            {
-              "x": -1.5,
-              "y": -6
-            }
-          ]
-        },
-        {
-          "id": "a2",
-          "kind": "pass",
-          "playerId": "h1",
-          "toPlayerId": "hd"
-        },
-        {
-          "id": "a3",
-          "kind": "skate",
-          "playerId": "hd",
-          "speed": "fast",
-          "path": [
-            {
-              "x": -6,
-              "y": 1.5
-            },
-            {
-              "x": 2,
-              "y": 0
-            },
-            {
-              "x": 8,
-              "y": -1
-            }
-          ]
-        },
-        {
-          "id": "a4",
-          "kind": "skate",
-          "playerId": "h2",
-          "speed": "fast",
-          "path": [
-            {
-              "x": -1,
-              "y": 6
-            },
-            {
-              "x": 6,
-              "y": 8
-            }
-          ]
-        },
-        {
-          "id": "a5",
-          "kind": "skate",
-          "playerId": "h3",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 6,
-              "y": 10
-            },
-            {
-              "x": 10,
-              "y": 9
-            }
-          ]
-        },
-        {
-          "id": "a6",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 3,
-              "y": -8
-            },
-            {
-              "x": 6,
-              "y": -8
-            }
-          ]
-        }
-      ],
-      "notes": "Grupp 2, övning 1.\n3 mot 3 i mittzonen. Laget med pucken får passa sitt eget led vid blålinjen. Den som tar emot passen följer med upp i anfallet så att det blir 4 mot 3. När pucken byter lag åker den extra spelaren tillbaka till ledet och spelet blir åter 3 mot 3.\nFeedback: öppen ingång och avslut.",
-      "settings": {
-        "durationSec": 11,
-        "seed": 4,
-        "autonomous": true,
-        "homeAttacks": "right"
-      },
-      "focusId": "hd"
-    },
-    {
-      "id": "bu2-g2-2",
-      "name": "2 mot 1: backen hämtar och spelar upp",
-      "updatedAt": "2026-10-05T18:00:00.000Z",
-      "players": [
-        {
-          "id": "hg",
+          "id": "gl",
           "team": "home",
           "role": "G",
-          "label": "G",
+          "label": "MV",
           "pos": {
             "x": -25,
             "y": 0
@@ -302,106 +30,122 @@
           "heading": 0
         },
         {
-          "id": "ag",
-          "team": "away",
-          "role": "G",
-          "label": "G",
-          "pos": {
-            "x": 25,
-            "y": 0
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "hd",
+          "id": "t",
           "team": "home",
-          "role": "D",
-          "label": "B",
+          "role": "C",
+          "label": "T",
           "pos": {
-            "x": -18,
-            "y": 2
+            "x": -6.5,
+            "y": 8.5
           },
-          "heading": 0
+          "heading": 3.141592653589793
         },
         {
-          "id": "h1",
+          "id": "p1",
           "team": "home",
           "role": "F",
           "label": "1",
+          "pos": {
+            "x": -21.5,
+            "y": -4
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "p2",
+          "team": "home",
+          "role": "F",
+          "label": "2",
+          "pos": {
+            "x": -20,
+            "y": -4.9
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "p3",
+          "team": "home",
+          "role": "F",
+          "label": "3",
+          "pos": {
+            "x": -18.5,
+            "y": -5.8
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "p4",
+          "team": "home",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": -12,
+            "y": 13.3
+          },
+          "heading": 3.141592653589793,
+          "idle": true
+        },
+        {
+          "id": "p5",
+          "team": "home",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": -10.4,
+            "y": 13.3
+          },
+          "heading": 3.141592653589793,
+          "idle": true
+        },
+        {
+          "id": "p6",
+          "team": "home",
+          "role": "F",
+          "label": "6",
+          "pos": {
+            "x": -8.8,
+            "y": 13.3
+          },
+          "heading": 3.141592653589793,
+          "idle": true
+        },
+        {
+          "id": "p7",
+          "team": "home",
+          "role": "F",
+          "label": "7",
           "pos": {
             "x": -4,
             "y": -3
           },
-          "heading": 0
-        },
-        {
-          "id": "h2",
-          "team": "home",
-          "role": "F",
-          "label": "2",
-          "pos": {
-            "x": -4,
-            "y": 3
-          },
-          "heading": 0
-        },
-        {
-          "id": "ad",
-          "team": "away",
-          "role": "D",
-          "label": "B",
-          "pos": {
-            "x": 14,
-            "y": 6
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "qh0",
-          "team": "home",
-          "role": "F",
-          "label": "F",
-          "pos": {
-            "x": -2,
-            "y": -6
-          },
-          "heading": 0,
+          "heading": 3.141592653589793,
           "idle": true
         },
         {
-          "id": "qh1",
+          "id": "p8",
           "team": "home",
           "role": "F",
-          "label": "F",
+          "label": "8",
           "pos": {
-            "x": -2,
-            "y": -8
+            "x": -2.4,
+            "y": -3
           },
-          "heading": 0,
+          "heading": 3.141592653589793,
           "idle": true
         },
         {
-          "id": "qa0",
-          "team": "away",
+          "id": "p9",
+          "team": "home",
           "role": "F",
-          "label": "F",
+          "label": "9",
           "pos": {
-            "x": 2,
-            "y": 6
+            "x": -0.7999999999999998,
+            "y": -3
           },
-          "heading": 3.142,
-          "idle": true
-        },
-        {
-          "id": "qa1",
-          "team": "away",
-          "role": "F",
-          "label": "F",
-          "pos": {
-            "x": 2,
-            "y": 8
-          },
-          "heading": 3.142,
+          "heading": 3.141592653589793,
           "idle": true
         }
       ],
@@ -409,735 +153,4611 @@
         {
           "id": "k1",
           "pos": {
-            "x": -27.5,
-            "y": 9.5
-          }
+            "x": -5.9,
+            "y": 9.6
+          },
+          "spare": true
+        },
+        {
+          "id": "k2",
+          "pos": {
+            "x": -5.6,
+            "y": 9.6
+          },
+          "spare": true
+        },
+        {
+          "id": "k3",
+          "pos": {
+            "x": -5.3,
+            "y": 9.6
+          },
+          "spare": true
+        },
+        {
+          "id": "k4",
+          "pos": {
+            "x": -5.9,
+            "y": 9.9
+          },
+          "spare": true
+        },
+        {
+          "id": "k5",
+          "pos": {
+            "x": -5.6,
+            "y": 9.9
+          },
+          "spare": true
+        },
+        {
+          "id": "k6",
+          "pos": {
+            "x": -5.3,
+            "y": 9.9
+          },
+          "spare": true
+        },
+        {
+          "id": "k7",
+          "pos": {
+            "x": -5.9,
+            "y": 10.2
+          },
+          "spare": true
+        },
+        {
+          "id": "k8",
+          "pos": {
+            "x": -5.6,
+            "y": 10.2
+          },
+          "spare": true
+        },
+        {
+          "id": "k9",
+          "pos": {
+            "x": -5.3,
+            "y": 10.2
+          },
+          "spare": true
         }
       ],
       "actions": [
         {
-          "id": "a1",
+          "id": "w481",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 32.17
+        },
+        {
+          "id": "a573",
+          "playerId": "gr",
+          "kind": "drop"
+        },
+        {
+          "id": "w574",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 9999
+        },
+        {
+          "id": "w482",
+          "kind": "play",
+          "playerId": "gl",
+          "seconds": 9999
+        },
+        {
+          "id": "w483",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 0.27
+        },
+        {
+          "id": "a493",
+          "playerId": "t",
           "kind": "skate",
-          "playerId": "hd",
-          "speed": "fast",
+          "speed": "slow",
           "path": [
             {
-              "x": -23,
-              "y": 7
+              "x": -6.5,
+              "y": 8.5
             },
             {
-              "x": -27,
-              "y": 9.5
+              "x": -5.9,
+              "y": 9.3
             }
           ]
         },
         {
-          "id": "a2",
-          "kind": "skate",
-          "playerId": "hd",
-          "speed": "normal",
-          "path": [
-            {
-              "x": -25,
-              "y": 11
-            },
-            {
-              "x": -20,
-              "y": 12
-            }
-          ]
+          "id": "a494",
+          "playerId": "t",
+          "kind": "wait",
+          "seconds": 0.01,
+          "untilPuck": true
         },
         {
-          "id": "a3",
+          "id": "w495",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 2.17
+        },
+        {
+          "id": "a518",
+          "playerId": "t",
           "kind": "pass",
-          "playerId": "hd",
-          "toPlayerId": "h2"
+          "toPlayerId": "p1"
         },
         {
-          "id": "a4",
+          "id": "w519",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 13.91
+        },
+        {
+          "id": "a535",
+          "playerId": "t",
           "kind": "skate",
-          "playerId": "hd",
-          "speed": "normal",
+          "speed": "slow",
           "path": [
             {
-              "x": -15,
-              "y": 10
+              "x": -6.12,
+              "y": 9.07
             },
             {
-              "x": -12,
-              "y": 6
+              "x": -5.9,
+              "y": 9.3
             }
           ]
         },
         {
-          "id": "a5",
+          "id": "a536",
+          "playerId": "t",
+          "kind": "wait",
+          "seconds": 0.01,
+          "untilPuck": true
+        },
+        {
+          "id": "w537",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 2.67
+        },
+        {
+          "id": "a556",
+          "playerId": "t",
+          "kind": "pass",
+          "toPlayerId": "p2"
+        },
+        {
+          "id": "w557",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 12.47
+        },
+        {
+          "id": "a575",
+          "playerId": "t",
           "kind": "skate",
-          "playerId": "h2",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.12,
+              "y": 9.07
+            },
+            {
+              "x": -5.9,
+              "y": 9.3
+            }
+          ]
+        },
+        {
+          "id": "a576",
+          "playerId": "t",
+          "kind": "wait",
+          "seconds": 0.01,
+          "untilPuck": true
+        },
+        {
+          "id": "w577",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 2.67
+        },
+        {
+          "id": "a598",
+          "playerId": "t",
+          "kind": "pass",
+          "toPlayerId": "p3"
+        },
+        {
+          "id": "w599",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 16.01
+        },
+        {
+          "id": "a617",
+          "playerId": "t",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.12,
+              "y": 9.07
+            },
+            {
+              "x": -5.9,
+              "y": 9.3
+            }
+          ]
+        },
+        {
+          "id": "a618",
+          "playerId": "t",
+          "kind": "wait",
+          "seconds": 0.01,
+          "untilPuck": true
+        },
+        {
+          "id": "w619",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 2.67
+        },
+        {
+          "id": "a638",
+          "playerId": "t",
+          "kind": "pass",
+          "toPlayerId": "p7"
+        },
+        {
+          "id": "w639",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 9999
+        },
+        {
+          "id": "w484",
+          "kind": "wait",
+          "playerId": "p1",
+          "seconds": 0.27
+        },
+        {
+          "id": "a496",
+          "playerId": "p1",
+          "kind": "skate",
           "speed": "fast",
           "path": [
             {
-              "x": -9,
-              "y": 6
-            },
-            {
-              "x": -15,
-              "y": 9
-            },
-            {
-              "x": -17,
-              "y": 11
-            },
-            {
-              "x": -13,
-              "y": 12
-            }
-          ]
-        },
-        {
-          "id": "a6",
-          "kind": "skate",
-          "playerId": "h2",
-          "speed": "fast",
-          "path": [
-            {
-              "x": -5,
-              "y": 11
-            },
-            {
-              "x": 5,
-              "y": 10
-            }
-          ]
-        },
-        {
-          "id": "a7",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "normal",
-          "path": [
-            {
-              "x": -9,
+              "x": -21.5,
               "y": -4
             },
             {
-              "x": -14,
-              "y": -5
+              "x": -22.5,
+              "y": 2.5
             },
             {
-              "x": -14,
-              "y": -2
+              "x": -24,
+              "y": 8
             },
             {
-              "x": -9,
-              "y": -3
+              "x": -24.8,
+              "y": 10.6
             }
           ]
         },
         {
-          "id": "a8",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 0,
-              "y": -3
-            },
-            {
-              "x": 5,
-              "y": -3
-            }
-          ]
+          "id": "a497",
+          "playerId": "p1",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
         },
         {
-          "id": "a9",
+          "id": "a498",
+          "playerId": "p1",
           "kind": "skate",
-          "playerId": "ad",
           "speed": "normal",
           "path": [
             {
-              "x": 18,
-              "y": 9
+              "x": -24.8,
+              "y": 10.6
             },
             {
-              "x": 20,
-              "y": 6
-            },
-            {
-              "x": 17,
-              "y": 2
-            },
-            {
-              "x": 13,
-              "y": 1
+              "x": -22.5,
+              "y": 11.8
             }
           ]
         },
         {
-          "id": "a10",
+          "id": "a499",
+          "playerId": "p1",
+          "kind": "pass",
+          "toPlayerId": "p4"
+        },
+        {
+          "id": "w500",
           "kind": "wait",
-          "playerId": "ad",
-          "seconds": 3
+          "playerId": "p1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a525",
+          "playerId": "p1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -22.63,
+              "y": 12.29
+            },
+            {
+              "x": -22,
+              "y": 12.5
+            },
+            {
+              "x": -7.4,
+              "y": 13.3
+            },
+            {
+              "x": -8.8,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w526",
+          "kind": "wait",
+          "playerId": "p1",
+          "seconds": 8.67
+        },
+        {
+          "id": "a552",
+          "playerId": "p1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.14,
+              "y": 13.27
+            },
+            {
+              "x": -10.4,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w553",
+          "kind": "wait",
+          "playerId": "p1",
+          "seconds": 14.17
+        },
+        {
+          "id": "a590",
+          "playerId": "p1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -10.46,
+              "y": 13.31
+            },
+            {
+              "x": -12,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w591",
+          "kind": "wait",
+          "playerId": "p1",
+          "seconds": 17.94
+        },
+        {
+          "id": "a625",
+          "playerId": "p1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -11.94,
+              "y": 13.29
+            },
+            {
+              "x": -16.5,
+              "y": 12.8
+            }
+          ]
+        },
+        {
+          "id": "a626",
+          "playerId": "p1",
+          "kind": "wait",
+          "seconds": 8,
+          "untilPuck": true
+        },
+        {
+          "id": "a627",
+          "playerId": "p1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -16.5,
+              "y": 12.8
+            },
+            {
+              "x": -14,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "a628",
+          "playerId": "p1",
+          "kind": "pass",
+          "toPlayerId": "p4"
+        },
+        {
+          "id": "w629",
+          "kind": "wait",
+          "playerId": "p1",
+          "seconds": 9999
+        },
+        {
+          "id": "w485",
+          "kind": "wait",
+          "playerId": "p2",
+          "seconds": 0.31
+        },
+        {
+          "id": "a506",
+          "playerId": "p2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -20,
+              "y": -4.9
+            },
+            {
+              "x": -21.5,
+              "y": -4
+            }
+          ]
+        },
+        {
+          "id": "w507",
+          "kind": "wait",
+          "playerId": "p2",
+          "seconds": 15.74
+        },
+        {
+          "id": "a538",
+          "playerId": "p2",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -21.52,
+              "y": -3.99
+            },
+            {
+              "x": -22.5,
+              "y": 2.5
+            },
+            {
+              "x": -24,
+              "y": 8
+            },
+            {
+              "x": -24.8,
+              "y": 10.6
+            }
+          ]
+        },
+        {
+          "id": "a539",
+          "playerId": "p2",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a540",
+          "playerId": "p2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -24.8,
+              "y": 10.6
+            },
+            {
+              "x": -22.5,
+              "y": 11.8
+            }
+          ]
+        },
+        {
+          "id": "a541",
+          "playerId": "p2",
+          "kind": "pass",
+          "toPlayerId": "p5"
+        },
+        {
+          "id": "w542",
+          "kind": "wait",
+          "playerId": "p2",
+          "seconds": 0.01
+        },
+        {
+          "id": "a563",
+          "playerId": "p2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -22.55,
+              "y": 12.3
+            },
+            {
+              "x": -22,
+              "y": 12.5
+            },
+            {
+              "x": -7.4,
+              "y": 13.3
+            },
+            {
+              "x": -8.8,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w564",
+          "kind": "wait",
+          "playerId": "p2",
+          "seconds": 7.17
+        },
+        {
+          "id": "a592",
+          "playerId": "p2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.18,
+              "y": 13.27
+            },
+            {
+              "x": -10.4,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w593",
+          "kind": "wait",
+          "playerId": "p2",
+          "seconds": 17.74
+        },
+        {
+          "id": "a632",
+          "playerId": "p2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -10.46,
+              "y": 13.31
+            },
+            {
+              "x": -12,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w633",
+          "kind": "wait",
+          "playerId": "p2",
+          "seconds": 9999
+        },
+        {
+          "id": "w486",
+          "kind": "wait",
+          "playerId": "p3",
+          "seconds": 0.31
+        },
+        {
+          "id": "a508",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -18.5,
+              "y": -5.8
+            },
+            {
+              "x": -20,
+              "y": -4.9
+            }
+          ]
+        },
+        {
+          "id": "w509",
+          "kind": "wait",
+          "playerId": "p3",
+          "seconds": 15.77
+        },
+        {
+          "id": "a548",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -20.02,
+              "y": -4.89
+            },
+            {
+              "x": -21.5,
+              "y": -4
+            }
+          ]
+        },
+        {
+          "id": "w549",
+          "kind": "wait",
+          "playerId": "p3",
+          "seconds": 14.34
+        },
+        {
+          "id": "a578",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -21.56,
+              "y": -3.97
+            },
+            {
+              "x": -22.5,
+              "y": 2.5
+            },
+            {
+              "x": -24,
+              "y": 8
+            },
+            {
+              "x": -24.8,
+              "y": 10.6
+            }
+          ]
+        },
+        {
+          "id": "a579",
+          "playerId": "p3",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a580",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -24.8,
+              "y": 10.6
+            },
+            {
+              "x": -22.5,
+              "y": 11.8
+            }
+          ]
+        },
+        {
+          "id": "a581",
+          "playerId": "p3",
+          "kind": "pass",
+          "toPlayerId": "p6"
+        },
+        {
+          "id": "w582",
+          "kind": "wait",
+          "playerId": "p3",
+          "seconds": 0.01
+        },
+        {
+          "id": "a605",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -22.55,
+              "y": 12.27
+            },
+            {
+              "x": -22,
+              "y": 12.5
+            },
+            {
+              "x": -7.4,
+              "y": 13.3
+            },
+            {
+              "x": -8.8,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w606",
+          "kind": "wait",
+          "playerId": "p3",
+          "seconds": 10.67
+        },
+        {
+          "id": "a613",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -8.07,
+              "y": 13.28
+            },
+            {
+              "x": 3.9,
+              "y": 17.34
+            }
+          ]
+        },
+        {
+          "id": "a614",
+          "playerId": "p3",
+          "kind": "drop"
+        },
+        {
+          "id": "a615",
+          "playerId": "p3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 3.9,
+              "y": 17.34
+            },
+            {
+              "x": -8.8,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w616",
+          "kind": "wait",
+          "playerId": "p3",
+          "seconds": 9999
+        },
+        {
+          "id": "w487",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 0.27
+        },
+        {
+          "id": "a501",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -12,
+              "y": 13.3
+            },
+            {
+              "x": -16.5,
+              "y": 12.8
+            }
+          ]
+        },
+        {
+          "id": "a502",
+          "playerId": "p4",
+          "kind": "wait",
+          "seconds": 8,
+          "untilPuck": true
+        },
+        {
+          "id": "a503",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -16.5,
+              "y": 12.8
+            },
+            {
+              "x": -14,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "a504",
+          "playerId": "p4",
+          "kind": "pass",
+          "toPlayerId": "p7"
+        },
+        {
+          "id": "w505",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 0.01
+        },
+        {
+          "id": "a527",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -14.48,
+              "y": 12.6
+            },
+            {
+              "x": -10,
+              "y": 8
+            },
+            {
+              "x": -8,
+              "y": -1
+            },
+            {
+              "x": 0.6,
+              "y": -3
+            },
+            {
+              "x": -0.8,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w528",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 5.21
+        },
+        {
+          "id": "a531",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -0.05,
+              "y": -2.96
+            },
+            {
+              "x": 12.97,
+              "y": 7.37
+            }
+          ]
+        },
+        {
+          "id": "a532",
+          "playerId": "p4",
+          "kind": "drop"
+        },
+        {
+          "id": "a533",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 12.97,
+              "y": 7.37
+            },
+            {
+              "x": -0.8,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w534",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 0.01
+        },
+        {
+          "id": "a567",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -0.46,
+              "y": -2.74
+            },
+            {
+              "x": -2.4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w568",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 6.71
+        },
+        {
+          "id": "a594",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -2.46,
+              "y": -3
+            },
+            {
+              "x": -4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w595",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 21.97
+        },
+        {
+          "id": "a640",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -4.01,
+              "y": -3
+            },
+            {
+              "x": -12,
+              "y": -2
+            },
+            {
+              "x": -17,
+              "y": 1.5
+            },
+            {
+              "x": -14,
+              "y": 4.5
+            },
+            {
+              "x": -9,
+              "y": 4
+            }
+          ]
+        },
+        {
+          "id": "a641",
+          "playerId": "p4",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a642",
+          "playerId": "p4",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -6,
+              "y": 3.5
+            },
+            {
+              "x": 6,
+              "y": 3.33
+            },
+            {
+              "x": 17.64,
+              "y": 2.46
+            }
+          ]
+        },
+        {
+          "id": "a643",
+          "playerId": "p4",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w644",
+          "kind": "wait",
+          "playerId": "p4",
+          "seconds": 9999
+        },
+        {
+          "id": "w488",
+          "kind": "wait",
+          "playerId": "p5",
+          "seconds": 0.31
+        },
+        {
+          "id": "a510",
+          "playerId": "p5",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -10.4,
+              "y": 13.3
+            },
+            {
+              "x": -12,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w511",
+          "kind": "wait",
+          "playerId": "p5",
+          "seconds": 15.84
+        },
+        {
+          "id": "a543",
+          "playerId": "p5",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -11.9,
+              "y": 13.3
+            },
+            {
+              "x": -16.5,
+              "y": 12.8
+            }
+          ]
+        },
+        {
+          "id": "a544",
+          "playerId": "p5",
+          "kind": "wait",
+          "seconds": 8,
+          "untilPuck": true
+        },
+        {
+          "id": "a545",
+          "playerId": "p5",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -16.5,
+              "y": 12.8
+            },
+            {
+              "x": -14,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "a546",
+          "playerId": "p5",
+          "kind": "pass",
+          "toPlayerId": "p8"
+        },
+        {
+          "id": "w547",
+          "kind": "wait",
+          "playerId": "p5",
+          "seconds": 0.01
+        },
+        {
+          "id": "a565",
+          "playerId": "p5",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -14.48,
+              "y": 12.6
+            },
+            {
+              "x": -10,
+              "y": 8
+            },
+            {
+              "x": -8,
+              "y": -1
+            },
+            {
+              "x": 0.6,
+              "y": -3
+            },
+            {
+              "x": -0.8,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w566",
+          "kind": "wait",
+          "playerId": "p5",
+          "seconds": 3.77
+        },
+        {
+          "id": "a596",
+          "playerId": "p5",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -0.05,
+              "y": -2.96
+            },
+            {
+              "x": -2.4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w597",
+          "kind": "wait",
+          "playerId": "p5",
+          "seconds": 17.67
+        },
+        {
+          "id": "a634",
+          "playerId": "p5",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -2.46,
+              "y": -3.01
+            },
+            {
+              "x": -4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w635",
+          "kind": "wait",
+          "playerId": "p5",
+          "seconds": 9999
+        },
+        {
+          "id": "w489",
+          "kind": "wait",
+          "playerId": "p6",
+          "seconds": 0.31
+        },
+        {
+          "id": "a512",
+          "playerId": "p6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.8,
+              "y": 13.3
+            },
+            {
+              "x": -10.4,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w513",
+          "kind": "wait",
+          "playerId": "p6",
+          "seconds": 15.87
+        },
+        {
+          "id": "a550",
+          "playerId": "p6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -10.3,
+              "y": 13.3
+            },
+            {
+              "x": -12,
+              "y": 13.3
+            }
+          ]
+        },
+        {
+          "id": "w551",
+          "kind": "wait",
+          "playerId": "p6",
+          "seconds": 14.34
+        },
+        {
+          "id": "a583",
+          "playerId": "p6",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -12.02,
+              "y": 13.3
+            },
+            {
+              "x": -16.5,
+              "y": 12.8
+            }
+          ]
+        },
+        {
+          "id": "a584",
+          "playerId": "p6",
+          "kind": "wait",
+          "seconds": 8,
+          "untilPuck": true
+        },
+        {
+          "id": "a585",
+          "playerId": "p6",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -16.5,
+              "y": 12.8
+            },
+            {
+              "x": -14,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "a586",
+          "playerId": "p6",
+          "kind": "pass",
+          "toPlayerId": "p9"
+        },
+        {
+          "id": "w587",
+          "kind": "wait",
+          "playerId": "p6",
+          "seconds": 0.01
+        },
+        {
+          "id": "a607",
+          "playerId": "p6",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -14.48,
+              "y": 12.6
+            },
+            {
+              "x": -10,
+              "y": 8
+            },
+            {
+              "x": -8,
+              "y": -1
+            },
+            {
+              "x": 0.6,
+              "y": -3
+            },
+            {
+              "x": -0.8,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w608",
+          "kind": "wait",
+          "playerId": "p6",
+          "seconds": 7.31
+        },
+        {
+          "id": "a636",
+          "playerId": "p6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -0.05,
+              "y": -2.96
+            },
+            {
+              "x": -2.4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w637",
+          "kind": "wait",
+          "playerId": "p6",
+          "seconds": 9999
+        },
+        {
+          "id": "w490",
+          "kind": "wait",
+          "playerId": "p7",
+          "seconds": 4.31
+        },
+        {
+          "id": "a520",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -4,
+              "y": -3
+            },
+            {
+              "x": -12,
+              "y": -2
+            },
+            {
+              "x": -17,
+              "y": 1.5
+            },
+            {
+              "x": -14,
+              "y": 4.5
+            },
+            {
+              "x": -9,
+              "y": 4
+            }
+          ]
+        },
+        {
+          "id": "a521",
+          "playerId": "p7",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a522",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -6,
+              "y": 3.5
+            },
+            {
+              "x": 6,
+              "y": 3.34
+            },
+            {
+              "x": 18.67,
+              "y": 2.5
+            }
+          ]
+        },
+        {
+          "id": "a523",
+          "playerId": "p7",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w524",
+          "kind": "wait",
+          "playerId": "p7",
+          "seconds": 0.01
+        },
+        {
+          "id": "a529",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 18.37,
+              "y": 2.52
+            },
+            {
+              "x": 14,
+              "y": -12
+            },
+            {
+              "x": -10,
+              "y": -12
+            },
+            {
+              "x": -19.9,
+              "y": -5.8
+            },
+            {
+              "x": -18.5,
+              "y": -5.8
+            }
+          ]
+        },
+        {
+          "id": "w530",
+          "kind": "wait",
+          "playerId": "p7",
+          "seconds": 0.01
+        },
+        {
+          "id": "a569",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -19.04,
+              "y": -5.92
+            },
+            {
+              "x": -20,
+              "y": -4.9
+            }
+          ]
+        },
+        {
+          "id": "w570",
+          "kind": "wait",
+          "playerId": "p7",
+          "seconds": 5.71
+        },
+        {
+          "id": "a588",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -20.04,
+              "y": -4.86
+            },
+            {
+              "x": -21.5,
+              "y": -4
+            }
+          ]
+        },
+        {
+          "id": "w589",
+          "kind": "wait",
+          "playerId": "p7",
+          "seconds": 17.91
+        },
+        {
+          "id": "a620",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -21.46,
+              "y": -4.02
+            },
+            {
+              "x": -22.5,
+              "y": 2.5
+            },
+            {
+              "x": -24,
+              "y": 8
+            },
+            {
+              "x": -24.8,
+              "y": 10.6
+            }
+          ]
+        },
+        {
+          "id": "a621",
+          "playerId": "p7",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a622",
+          "playerId": "p7",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -24.8,
+              "y": 10.6
+            },
+            {
+              "x": -22.5,
+              "y": 11.8
+            }
+          ]
+        },
+        {
+          "id": "a623",
+          "playerId": "p7",
+          "kind": "pass",
+          "toPlayerId": "p1"
+        },
+        {
+          "id": "w624",
+          "kind": "wait",
+          "playerId": "p7",
+          "seconds": 9999
+        },
+        {
+          "id": "w491",
+          "kind": "wait",
+          "playerId": "p8",
+          "seconds": 0.31
+        },
+        {
+          "id": "a514",
+          "playerId": "p8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -2.4,
+              "y": -3
+            },
+            {
+              "x": -4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w515",
+          "kind": "wait",
+          "playerId": "p8",
+          "seconds": 19.91
+        },
+        {
+          "id": "a558",
+          "playerId": "p8",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3.9,
+              "y": -3
+            },
+            {
+              "x": -12,
+              "y": -2
+            },
+            {
+              "x": -17,
+              "y": 1.5
+            },
+            {
+              "x": -14,
+              "y": 4.5
+            },
+            {
+              "x": -9,
+              "y": 4
+            }
+          ]
+        },
+        {
+          "id": "a559",
+          "playerId": "p8",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a560",
+          "playerId": "p8",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -6,
+              "y": 3.5
+            },
+            {
+              "x": 6,
+              "y": 2.1
+            },
+            {
+              "x": 17.83,
+              "y": 1.69
+            }
+          ]
+        },
+        {
+          "id": "a561",
+          "playerId": "p8",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w562",
+          "kind": "wait",
+          "playerId": "p8",
+          "seconds": 0.01
+        },
+        {
+          "id": "a571",
+          "playerId": "p8",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 17.56,
+              "y": 1.7
+            },
+            {
+              "x": 14,
+              "y": -12
+            },
+            {
+              "x": -10,
+              "y": -12
+            },
+            {
+              "x": -19.9,
+              "y": -5.8
+            },
+            {
+              "x": -18.5,
+              "y": -5.8
+            }
+          ]
+        },
+        {
+          "id": "w572",
+          "kind": "wait",
+          "playerId": "p8",
+          "seconds": 0.01
+        },
+        {
+          "id": "a609",
+          "playerId": "p8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -19.04,
+              "y": -5.92
+            },
+            {
+              "x": -20,
+              "y": -4.9
+            }
+          ]
+        },
+        {
+          "id": "w610",
+          "kind": "wait",
+          "playerId": "p8",
+          "seconds": 8.07
+        },
+        {
+          "id": "a630",
+          "playerId": "p8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -20.04,
+              "y": -4.86
+            },
+            {
+              "x": -21.5,
+              "y": -4
+            }
+          ]
+        },
+        {
+          "id": "w631",
+          "kind": "wait",
+          "playerId": "p8",
+          "seconds": 9999
+        },
+        {
+          "id": "w492",
+          "kind": "wait",
+          "playerId": "p9",
+          "seconds": 0.31
+        },
+        {
+          "id": "a516",
+          "playerId": "p9",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -0.8,
+              "y": -3
+            },
+            {
+              "x": -2.4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w517",
+          "kind": "wait",
+          "playerId": "p9",
+          "seconds": 15.87
+        },
+        {
+          "id": "a554",
+          "playerId": "p9",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -2.3,
+              "y": -3
+            },
+            {
+              "x": -4,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w555",
+          "kind": "wait",
+          "playerId": "p9",
+          "seconds": 18.41
+        },
+        {
+          "id": "a600",
+          "playerId": "p9",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -4.03,
+              "y": -3
+            },
+            {
+              "x": -12,
+              "y": -2
+            },
+            {
+              "x": -17,
+              "y": 1.5
+            },
+            {
+              "x": -14,
+              "y": 4.5
+            },
+            {
+              "x": -9,
+              "y": 4
+            }
+          ]
+        },
+        {
+          "id": "a601",
+          "playerId": "p9",
+          "kind": "wait",
+          "seconds": 4,
+          "untilPuck": true
+        },
+        {
+          "id": "a602",
+          "playerId": "p9",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -6,
+              "y": 3.5
+            },
+            {
+              "x": 6,
+              "y": 2.15
+            },
+            {
+              "x": 18.86,
+              "y": 2.62
+            }
+          ]
+        },
+        {
+          "id": "a603",
+          "playerId": "p9",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w604",
+          "kind": "wait",
+          "playerId": "p9",
+          "seconds": 0.01
+        },
+        {
+          "id": "a611",
+          "playerId": "p9",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 18.55,
+              "y": 2.61
+            },
+            {
+              "x": 14,
+              "y": -12
+            },
+            {
+              "x": -10,
+              "y": -12
+            },
+            {
+              "x": -19.9,
+              "y": -5.8
+            },
+            {
+              "x": -18.5,
+              "y": -5.8
+            }
+          ]
+        },
+        {
+          "id": "w612",
+          "kind": "wait",
+          "playerId": "p9",
+          "seconds": 9999
         }
       ],
-      "notes": "Grupp 2, övning 2.\nStartar med en dump på målvakten, som lägger pucken i hörnet. Backen åker och hämtar, gör en shoulder check och passar upp till en forward. Forwards kommer på en båge för att simulera uppspel. Efter passen går forwards på anfall mot andra hållet. Motståndarbacken bågar efter sin egen passning och försvarar mot forwards som kommer.\nÖvningen körs från båda hållen samtidigt. Här visas ena hållet. Starta på signal.",
+      "notes": "Syfte: uppspel ur egen zon. Backen hämtar pucken i hörnet och spelar upp den till yttern vid sargen, yttern spelar vidare till centern som kommer i fart genom mitten.\nUpplägg: tränaren (T) spelar in pucken i hörnet. Backen åker från målet och hämtar den, tittar upp och passar yttern som står på sargen vid tekningspunkten. När backen har pucken svänger centern ner i mitten. Yttern passar centern i fart, och centern åker hela vägen och avslutar på andra målet.\nRotation: back → ytter → center → back. Nästa uppspel startar när pucken är död.",
       "settings": {
-        "durationSec": 12,
-        "seed": 1,
-        "autonomous": true,
-        "homeAttacks": "right"
-      },
-      "focusId": "hd"
+        "durationSec": 56,
+        "seed": 31,
+        "autonomous": false,
+        "homeAttacks": "right",
+        "offside": false
+      }
     },
     {
-      "id": "bu2-g2-3",
-      "name": "3 mot 2 med backcheck, blir 5 mot 5",
-      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "id": "bu2-g2-2",
+      "name": "2 mot 1: puckföraren läser backen",
+      "updatedAt": "2026-10-14T06:00:00.000Z",
       "players": [
         {
-          "id": "ag",
+          "id": "gr",
           "team": "away",
           "role": "G",
-          "label": "G",
+          "label": "MV",
           "pos": {
             "x": 25,
             "y": 0
           },
-          "heading": 3.142
+          "heading": 3.141592653589793
         },
         {
-          "id": "h1",
+          "id": "f1",
           "team": "home",
-          "role": "F",
-          "label": "C",
-          "pos": {
-            "x": 4,
-            "y": 0
-          },
-          "heading": 0
-        },
-        {
-          "id": "h2",
-          "team": "home",
-          "role": "F",
-          "label": "LW",
-          "pos": {
-            "x": 3,
-            "y": -8
-          },
-          "heading": 0
-        },
-        {
-          "id": "h3",
-          "team": "home",
-          "role": "F",
-          "label": "RW",
-          "pos": {
-            "x": 3,
-            "y": 8
-          },
-          "heading": 0
-        },
-        {
-          "id": "h4",
-          "team": "home",
-          "role": "D",
-          "label": "LD",
-          "pos": {
-            "x": -6,
-            "y": -5
-          },
-          "heading": 0
-        },
-        {
-          "id": "h5",
-          "team": "home",
-          "role": "D",
-          "label": "RD",
-          "pos": {
-            "x": -6,
-            "y": 5
-          },
-          "heading": 0
-        },
-        {
-          "id": "a4",
-          "team": "away",
-          "role": "D",
-          "label": "LD",
-          "pos": {
-            "x": 15,
-            "y": 5
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "a5",
-          "team": "away",
-          "role": "D",
-          "label": "RD",
-          "pos": {
-            "x": 15,
-            "y": -5
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "a1",
-          "team": "away",
           "role": "F",
           "label": "1",
           "pos": {
             "x": -3,
-            "y": -2
+            "y": -12.6
           },
-          "heading": 0
+          "heading": 0,
+          "idle": true
         },
         {
-          "id": "a2",
-          "team": "away",
+          "id": "f2",
+          "team": "home",
           "role": "F",
           "label": "2",
           "pos": {
-            "x": -3,
-            "y": 2
+            "x": -4.6,
+            "y": -12.6
           },
-          "heading": 0
+          "heading": 0,
+          "idle": true
         },
         {
-          "id": "t",
-          "team": "away",
-          "role": "C",
-          "label": "T",
+          "id": "f3",
+          "team": "home",
+          "role": "F",
+          "label": "3",
           "pos": {
-            "x": -1,
-            "y": 14.2
+            "x": -6.2,
+            "y": -12.6
           },
-          "heading": -1.57
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "f4",
+          "team": "home",
+          "role": "F",
+          "label": "4",
+          "pos": {
+            "x": -7.800000000000001,
+            "y": -12.6
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "f5",
+          "team": "home",
+          "role": "F",
+          "label": "5",
+          "pos": {
+            "x": -3,
+            "y": 12.6
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "f6",
+          "team": "home",
+          "role": "F",
+          "label": "6",
+          "pos": {
+            "x": -4.6,
+            "y": 12.6
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "f7",
+          "team": "home",
+          "role": "F",
+          "label": "7",
+          "pos": {
+            "x": -6.2,
+            "y": 12.6
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "f8",
+          "team": "home",
+          "role": "F",
+          "label": "8",
+          "pos": {
+            "x": -7.800000000000001,
+            "y": 12.6
+          },
+          "heading": 0,
+          "idle": true
+        },
+        {
+          "id": "b1",
+          "team": "away",
+          "role": "D",
+          "label": "9",
+          "pos": {
+            "x": 13,
+            "y": 13.2
+          },
+          "heading": 3.141592653589793,
+          "idle": true
+        },
+        {
+          "id": "b2",
+          "team": "away",
+          "role": "D",
+          "label": "10",
+          "pos": {
+            "x": 14.6,
+            "y": 13.2
+          },
+          "heading": 3.141592653589793,
+          "idle": true
+        },
+        {
+          "id": "b3",
+          "team": "away",
+          "role": "D",
+          "label": "11",
+          "pos": {
+            "x": 16.2,
+            "y": 13.2
+          },
+          "heading": 3.141592653589793,
+          "idle": true
         }
       ],
       "pucks": [
         {
           "id": "k1",
           "pos": {
-            "x": 4.7,
-            "y": 0.0
-          }
+            "x": -1.5,
+            "y": -13.3
+          },
+          "spare": true
+        },
+        {
+          "id": "k2",
+          "pos": {
+            "x": -1.2,
+            "y": -13.3
+          },
+          "spare": true
+        },
+        {
+          "id": "k3",
+          "pos": {
+            "x": -0.9,
+            "y": -13.3
+          },
+          "spare": true
+        },
+        {
+          "id": "k4",
+          "pos": {
+            "x": -1.5,
+            "y": -13
+          },
+          "spare": true
+        },
+        {
+          "id": "k5",
+          "pos": {
+            "x": -1.2,
+            "y": -13
+          },
+          "spare": true
+        },
+        {
+          "id": "k6",
+          "pos": {
+            "x": -0.9,
+            "y": -13
+          },
+          "spare": true
+        },
+        {
+          "id": "k7",
+          "pos": {
+            "x": -1.5,
+            "y": -12.7
+          },
+          "spare": true
+        },
+        {
+          "id": "k8",
+          "pos": {
+            "x": -1.2,
+            "y": -12.7
+          },
+          "spare": true
         }
       ],
       "actions": [
         {
-          "id": "a1",
+          "id": "w645",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 8.97
+        },
+        {
+          "id": "a691",
+          "playerId": "gr",
+          "kind": "drop"
+        },
+        {
+          "id": "w692",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 23.97
+        },
+        {
+          "id": "a775",
+          "playerId": "gr",
+          "kind": "drop"
+        },
+        {
+          "id": "w776",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 12.31
+        },
+        {
+          "id": "a818",
+          "playerId": "gr",
+          "kind": "drop"
+        },
+        {
+          "id": "w819",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 9999
+        },
+        {
+          "id": "w646",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 0.27
+        },
+        {
+          "id": "a657",
+          "playerId": "f1",
+          "kind": "wait",
+          "seconds": 1.2
+        },
+        {
+          "id": "a658",
+          "playerId": "f1",
           "kind": "skate",
-          "playerId": "h1",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -3,
+              "y": -12.6
+            },
+            {
+              "x": -1.2,
+              "y": -13.3
+            }
+          ]
+        },
+        {
+          "id": "a659",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -1.2,
+              "y": -13.3
+            },
+            {
+              "x": 1,
+              "y": -10.5
+            },
+            {
+              "x": 5.5,
+              "y": -9.05
+            },
+            {
+              "x": 11.39,
+              "y": -7.5
+            }
+          ]
+        },
+        {
+          "id": "a660",
+          "playerId": "f1",
+          "kind": "pass",
+          "toPlayerId": "f5"
+        },
+        {
+          "id": "a661",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 11.39,
+              "y": -7.5
+            },
+            {
+              "x": 15,
+              "y": -6.5
+            },
+            {
+              "x": 20,
+              "y": -4
+            },
+            {
+              "x": 22,
+              "y": -2.5
+            }
+          ]
+        },
+        {
+          "id": "a662",
+          "playerId": "f1",
+          "kind": "play",
+          "seconds": 2
+        },
+        {
+          "id": "w663",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a693",
+          "playerId": "f1",
+          "kind": "drop"
+        },
+        {
+          "id": "a694",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 25.91,
+              "y": 0.49
+            },
+            {
+              "x": 12,
+              "y": 12.5
+            },
+            {
+              "x": -9.2,
+              "y": 12.6
+            },
+            {
+              "x": -7.8,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w695",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a732",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.19,
+              "y": 12.6
+            },
+            {
+              "x": -6.2,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w733",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 6.37
+        },
+        {
+          "id": "a762",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.14,
+              "y": 12.59
+            },
+            {
+              "x": -4.6,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w763",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 11.67
+        },
+        {
+          "id": "a803",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.77,
+              "y": 12.6
+            },
+            {
+              "x": -3,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w804",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 12.14
+        },
+        {
+          "id": "a833",
+          "playerId": "f1",
+          "kind": "wait",
+          "seconds": 1.6
+        },
+        {
+          "id": "a834",
+          "playerId": "f1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3.02,
+              "y": 12.6
+            },
+            {
+              "x": 1,
+              "y": 11
+            },
+            {
+              "x": 6,
+              "y": 8.5
+            },
+            {
+              "x": 10.5,
+              "y": 6.5
+            },
+            {
+              "x": 15,
+              "y": 4
+            },
+            {
+              "x": 20,
+              "y": 2.5
+            }
+          ]
+        },
+        {
+          "id": "a835",
+          "playerId": "f1",
+          "kind": "wait",
+          "seconds": 1.6,
+          "untilPuck": true
+        },
+        {
+          "id": "a836",
+          "playerId": "f1",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "a837",
+          "playerId": "f1",
+          "kind": "play",
+          "seconds": 1.5
+        },
+        {
+          "id": "w838",
+          "kind": "wait",
+          "playerId": "f1",
+          "seconds": 9999
+        },
+        {
+          "id": "w647",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 0.31
+        },
+        {
+          "id": "a672",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.6,
+              "y": -12.6
+            },
+            {
+              "x": -3,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w673",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 11.61
+        },
+        {
+          "id": "a700",
+          "playerId": "f2",
+          "kind": "wait",
+          "seconds": 1.2
+        },
+        {
+          "id": "a701",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -3.1,
+              "y": -12.6
+            },
+            {
+              "x": -1.2,
+              "y": -13.3
+            }
+          ]
+        },
+        {
+          "id": "a702",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -1.2,
+              "y": -13.3
+            },
+            {
+              "x": 1,
+              "y": -10.5
+            },
+            {
+              "x": 5.5,
+              "y": -8.95
+            },
+            {
+              "x": 11.46,
+              "y": -7.21
+            }
+          ]
+        },
+        {
+          "id": "a703",
+          "playerId": "f2",
+          "kind": "pass",
+          "toPlayerId": "f6"
+        },
+        {
+          "id": "a704",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 11.46,
+              "y": -7.21
+            },
+            {
+              "x": 15,
+              "y": -6.5
+            },
+            {
+              "x": 20,
+              "y": -4
+            },
+            {
+              "x": 22,
+              "y": -2.5
+            }
+          ]
+        },
+        {
+          "id": "a705",
+          "playerId": "f2",
+          "kind": "play",
+          "seconds": 2
+        },
+        {
+          "id": "w706",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 0.01
+        },
+        {
+          "id": "a734",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 21.3,
+              "y": 3.99
+            },
+            {
+              "x": 12,
+              "y": 12.5
+            },
+            {
+              "x": -9.2,
+              "y": 12.6
+            },
+            {
+              "x": -7.8,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w735",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 0.01
+        },
+        {
+          "id": "a766",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.19,
+              "y": 12.62
+            },
+            {
+              "x": -6.2,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w767",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 8.24
+        },
+        {
+          "id": "a805",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.14,
+              "y": 12.61
+            },
+            {
+              "x": -4.6,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w806",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 12.27
+        },
+        {
+          "id": "a845",
+          "playerId": "f2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.77,
+              "y": 12.6
+            },
+            {
+              "x": -3,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w846",
+          "kind": "wait",
+          "playerId": "f2",
+          "seconds": 9999
+        },
+        {
+          "id": "w648",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 0.31
+        },
+        {
+          "id": "a674",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.2,
+              "y": -12.6
+            },
+            {
+              "x": -4.6,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w675",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 11.64
+        },
+        {
+          "id": "a715",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.7,
+              "y": -12.6
+            },
+            {
+              "x": -3,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w716",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 11.74
+        },
+        {
+          "id": "a744",
+          "playerId": "f3",
+          "kind": "wait",
+          "seconds": 1.2
+        },
+        {
+          "id": "a745",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -3.08,
+              "y": -12.6
+            },
+            {
+              "x": -1.2,
+              "y": -13.3
+            }
+          ]
+        },
+        {
+          "id": "a746",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -1.2,
+              "y": -13.3
+            },
+            {
+              "x": 1,
+              "y": -10.5
+            },
+            {
+              "x": 6,
+              "y": -9.29
+            },
+            {
+              "x": 12,
+              "y": -8.29
+            },
+            {
+              "x": 16,
+              "y": -5
+            },
+            {
+              "x": 19.5,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "a747",
+          "playerId": "f3",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "a748",
+          "playerId": "f3",
+          "kind": "play",
+          "seconds": 1.5
+        },
+        {
+          "id": "w749",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 1.21
+        },
+        {
+          "id": "a777",
+          "playerId": "f3",
+          "kind": "drop"
+        },
+        {
+          "id": "a778",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 25.41,
+              "y": 1.27
+            },
+            {
+              "x": 12,
+              "y": 12.5
+            },
+            {
+              "x": -9.2,
+              "y": 12.6
+            },
+            {
+              "x": -7.8,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w779",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 0.01
+        },
+        {
+          "id": "a814",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.18,
+              "y": 12.6
+            },
+            {
+              "x": -6.2,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w815",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 6.81
+        },
+        {
+          "id": "a847",
+          "playerId": "f3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.14,
+              "y": 12.59
+            },
+            {
+              "x": -4.6,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w848",
+          "kind": "wait",
+          "playerId": "f3",
+          "seconds": 9999
+        },
+        {
+          "id": "w649",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 0.31
+        },
+        {
+          "id": "a676",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -7.8,
+              "y": -12.6
+            },
+            {
+              "x": -6.2,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w677",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 11.64
+        },
+        {
+          "id": "a717",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.3,
+              "y": -12.6
+            },
+            {
+              "x": -4.6,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w718",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 11.77
+        },
+        {
+          "id": "a756",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.68,
+              "y": -12.6
+            },
+            {
+              "x": -3,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w757",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 11.57
+        },
+        {
+          "id": "a784",
+          "playerId": "f4",
+          "kind": "wait",
+          "seconds": 1.2
+        },
+        {
+          "id": "a785",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -3.06,
+              "y": -12.6
+            },
+            {
+              "x": -1.2,
+              "y": -13.3
+            }
+          ]
+        },
+        {
+          "id": "a786",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -1.2,
+              "y": -13.3
+            },
+            {
+              "x": 1,
+              "y": -10.5
+            },
+            {
+              "x": 5.5,
+              "y": -8.82
+            },
+            {
+              "x": 11.45,
+              "y": -7.18
+            }
+          ]
+        },
+        {
+          "id": "a787",
+          "playerId": "f4",
+          "kind": "pass",
+          "toPlayerId": "f8"
+        },
+        {
+          "id": "a788",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 11.45,
+              "y": -7.18
+            },
+            {
+              "x": 15,
+              "y": -6.5
+            },
+            {
+              "x": 20,
+              "y": -4
+            },
+            {
+              "x": 22,
+              "y": -2.5
+            }
+          ]
+        },
+        {
+          "id": "a789",
+          "playerId": "f4",
+          "kind": "play",
+          "seconds": 2
+        },
+        {
+          "id": "w790",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 0.01
+        },
+        {
+          "id": "a820",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 21.55,
+              "y": -2.61
+            },
+            {
+              "x": 12,
+              "y": 12.5
+            },
+            {
+              "x": -9.2,
+              "y": 12.6
+            },
+            {
+              "x": -7.8,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w821",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 0.01
+        },
+        {
+          "id": "a856",
+          "playerId": "f4",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.18,
+              "y": 12.6
+            },
+            {
+              "x": -6.2,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w857",
+          "kind": "wait",
+          "playerId": "f4",
+          "seconds": 9999
+        },
+        {
+          "id": "w650",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 0.27
+        },
+        {
+          "id": "a664",
+          "playerId": "f5",
+          "kind": "wait",
+          "seconds": 1.6
+        },
+        {
+          "id": "a665",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3,
+              "y": 12.6
+            },
+            {
+              "x": 1,
+              "y": 11
+            },
+            {
+              "x": 6,
+              "y": 8.5
+            },
+            {
+              "x": 10.5,
+              "y": 6.5
+            },
+            {
+              "x": 15,
+              "y": 4
+            },
+            {
+              "x": 20,
+              "y": 2.5
+            }
+          ]
+        },
+        {
+          "id": "a666",
+          "playerId": "f5",
+          "kind": "wait",
+          "seconds": 1.6,
+          "untilPuck": true
+        },
+        {
+          "id": "a667",
+          "playerId": "f5",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "a668",
+          "playerId": "f5",
+          "kind": "play",
+          "seconds": 1.5
+        },
+        {
+          "id": "w669",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 1.14
+        },
+        {
+          "id": "a696",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 21.63,
+              "y": 0.19
+            },
+            {
+              "x": 12,
+              "y": -12.5
+            },
+            {
+              "x": -9.2,
+              "y": -12.6
+            },
+            {
+              "x": -7.8,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w697",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 0.01
+        },
+        {
+          "id": "a730",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.15,
+              "y": -12.6
+            },
+            {
+              "x": -6.2,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w731",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 6.77
+        },
+        {
+          "id": "a758",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.15,
+              "y": -12.59
+            },
+            {
+              "x": -4.6,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w759",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 11.64
+        },
+        {
+          "id": "a799",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.65,
+              "y": -12.6
+            },
+            {
+              "x": -3,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w800",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 12.17
+        },
+        {
+          "id": "a826",
+          "playerId": "f5",
+          "kind": "wait",
+          "seconds": 1.2
+        },
+        {
+          "id": "a827",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": -3.03,
+              "y": -12.6
+            },
+            {
+              "x": -1.2,
+              "y": -13.3
+            }
+          ]
+        },
+        {
+          "id": "a828",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -1.2,
+              "y": -13.3
+            },
+            {
+              "x": 1,
+              "y": -10.5
+            },
+            {
+              "x": 5.5,
+              "y": -9.36
+            },
+            {
+              "x": 11.3,
+              "y": -7.46
+            }
+          ]
+        },
+        {
+          "id": "a829",
+          "playerId": "f5",
+          "kind": "pass",
+          "toPlayerId": "f1"
+        },
+        {
+          "id": "a830",
+          "playerId": "f5",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 11.3,
+              "y": -7.46
+            },
+            {
+              "x": 15,
+              "y": -6.5
+            },
+            {
+              "x": 20,
+              "y": -4
+            },
+            {
+              "x": 22,
+              "y": -2.5
+            }
+          ]
+        },
+        {
+          "id": "a831",
+          "playerId": "f5",
+          "kind": "play",
+          "seconds": 2
+        },
+        {
+          "id": "w832",
+          "kind": "wait",
+          "playerId": "f5",
+          "seconds": 9999
+        },
+        {
+          "id": "w651",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 0.31
+        },
+        {
+          "id": "a678",
+          "playerId": "f6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.6,
+              "y": 12.6
+            },
+            {
+              "x": -3,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w679",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 11.61
+        },
+        {
+          "id": "a707",
+          "playerId": "f6",
+          "kind": "wait",
+          "seconds": 1.6
+        },
+        {
+          "id": "a708",
+          "playerId": "f6",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3.1,
+              "y": 12.6
+            },
+            {
+              "x": 1,
+              "y": 11
+            },
+            {
+              "x": 6,
+              "y": 8.5
+            },
+            {
+              "x": 10.5,
+              "y": 6.5
+            },
+            {
+              "x": 15,
+              "y": 4
+            },
+            {
+              "x": 20,
+              "y": 2.5
+            }
+          ]
+        },
+        {
+          "id": "a709",
+          "playerId": "f6",
+          "kind": "wait",
+          "seconds": 1.6,
+          "untilPuck": true
+        },
+        {
+          "id": "a710",
+          "playerId": "f6",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "a711",
+          "playerId": "f6",
+          "kind": "play",
+          "seconds": 1.5
+        },
+        {
+          "id": "w712",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 1.21
+        },
+        {
+          "id": "a736",
+          "playerId": "f6",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 22.49,
+              "y": 3.75
+            },
+            {
+              "x": 12,
+              "y": -12.5
+            },
+            {
+              "x": -9.2,
+              "y": -12.6
+            },
+            {
+              "x": -7.8,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w737",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 0.01
+        },
+        {
+          "id": "a773",
+          "playerId": "f6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.19,
+              "y": -12.6
+            },
+            {
+              "x": -6.2,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w774",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 6.01
+        },
+        {
+          "id": "a801",
+          "playerId": "f6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.14,
+              "y": -12.59
+            },
+            {
+              "x": -4.6,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w802",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 12.27
+        },
+        {
+          "id": "a841",
+          "playerId": "f6",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.77,
+              "y": -12.6
+            },
+            {
+              "x": -3,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w842",
+          "kind": "wait",
+          "playerId": "f6",
+          "seconds": 9999
+        },
+        {
+          "id": "w652",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 0.31
+        },
+        {
+          "id": "a680",
+          "playerId": "f7",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.2,
+              "y": 12.6
+            },
+            {
+              "x": -4.6,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w681",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 11.64
+        },
+        {
+          "id": "a719",
+          "playerId": "f7",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.7,
+              "y": 12.6
+            },
+            {
+              "x": -3,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w720",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 11.74
+        },
+        {
+          "id": "a750",
+          "playerId": "f7",
+          "kind": "wait",
+          "seconds": 1.6
+        },
+        {
+          "id": "a751",
+          "playerId": "f7",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3.08,
+              "y": 12.6
+            },
+            {
+              "x": 1,
+              "y": 11
+            },
+            {
+              "x": 6,
+              "y": 8.5
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 18,
+              "y": 4
+            },
+            {
+              "x": 21.5,
+              "y": 3
+            }
+          ]
+        },
+        {
+          "id": "a752",
+          "playerId": "f7",
+          "kind": "play",
+          "seconds": 2.5
+        },
+        {
+          "id": "w753",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 0.04
+        },
+        {
+          "id": "a780",
+          "playerId": "f7",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.85,
+              "y": 2.48
+            },
+            {
+              "x": 12,
+              "y": -12.5
+            },
+            {
+              "x": -9.2,
+              "y": -12.6
+            },
+            {
+              "x": -7.8,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w781",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 0.01
+        },
+        {
+          "id": "a816",
+          "playerId": "f7",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.18,
+              "y": -12.6
+            },
+            {
+              "x": -6.2,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w817",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 6.74
+        },
+        {
+          "id": "a843",
+          "playerId": "f7",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.14,
+              "y": -12.59
+            },
+            {
+              "x": -4.6,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w844",
+          "kind": "wait",
+          "playerId": "f7",
+          "seconds": 9999
+        },
+        {
+          "id": "w653",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 0.31
+        },
+        {
+          "id": "a682",
+          "playerId": "f8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -7.8,
+              "y": 12.6
+            },
+            {
+              "x": -6.2,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w683",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 11.64
+        },
+        {
+          "id": "a721",
+          "playerId": "f8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -6.3,
+              "y": 12.6
+            },
+            {
+              "x": -4.6,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w722",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 11.77
+        },
+        {
+          "id": "a760",
+          "playerId": "f8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -4.68,
+              "y": 12.6
+            },
+            {
+              "x": -3,
+              "y": 12.6
+            }
+          ]
+        },
+        {
+          "id": "w761",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 11.57
+        },
+        {
+          "id": "a791",
+          "playerId": "f8",
+          "kind": "wait",
+          "seconds": 1.6
+        },
+        {
+          "id": "a792",
+          "playerId": "f8",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": -3.06,
+              "y": 12.6
+            },
+            {
+              "x": 1,
+              "y": 11
+            },
+            {
+              "x": 6,
+              "y": 8.5
+            },
+            {
+              "x": 10.5,
+              "y": 6.5
+            },
+            {
+              "x": 15,
+              "y": 4
+            },
+            {
+              "x": 20,
+              "y": 2.5
+            }
+          ]
+        },
+        {
+          "id": "a793",
+          "playerId": "f8",
+          "kind": "wait",
+          "seconds": 1.6,
+          "untilPuck": true
+        },
+        {
+          "id": "a794",
+          "playerId": "f8",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "a795",
+          "playerId": "f8",
+          "kind": "play",
+          "seconds": 1.5
+        },
+        {
+          "id": "w796",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 1.14
+        },
+        {
+          "id": "a822",
+          "playerId": "f8",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 25.15,
+              "y": 0
+            },
+            {
+              "x": 12,
+              "y": -12.5
+            },
+            {
+              "x": -9.2,
+              "y": -12.6
+            },
+            {
+              "x": -7.8,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w823",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 0.01
+        },
+        {
+          "id": "a858",
+          "playerId": "f8",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": -8.19,
+              "y": -12.6
+            },
+            {
+              "x": -6.2,
+              "y": -12.6
+            }
+          ]
+        },
+        {
+          "id": "w859",
+          "kind": "wait",
+          "playerId": "f8",
+          "seconds": 9999
+        },
+        {
+          "id": "w654",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.27
+        },
+        {
+          "id": "a670",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 13,
+              "y": 13.2
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 8.8,
+              "y": -0.02
+            }
+          ]
+        },
+        {
+          "id": "w671",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a688",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 8.98,
+              "y": 0.38
+            },
+            {
+              "x": 9.4,
+              "y": -3.2
+            },
+            {
+              "x": 10.6,
+              "y": -5.9
+            }
+          ]
+        },
+        {
+          "id": "a689",
+          "playerId": "b1",
+          "kind": "play",
+          "seconds": 4
+        },
+        {
+          "id": "w690",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.21
+        },
+        {
+          "id": "a698",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 23.72,
+              "y": 1.07
+            },
+            {
+              "x": 19,
+              "y": 11
+            },
+            {
+              "x": 17.6,
+              "y": 13.2
+            },
+            {
+              "x": 16.2,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w699",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a725",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 16.61,
+              "y": 13.04
+            },
+            {
+              "x": 14.6,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w726",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 10.94
+        },
+        {
+          "id": "a740",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 14.54,
+              "y": 13.2
+            },
+            {
+              "x": 7.35,
+              "y": 12.73
+            }
+          ]
+        },
+        {
+          "id": "a741",
+          "playerId": "b1",
+          "kind": "drop"
+        },
+        {
+          "id": "a742",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 7.35,
+              "y": 12.73
+            },
+            {
+              "x": 14.6,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w743",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a771",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 14.15,
+              "y": 13.17
+            },
+            {
+              "x": 13,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w772",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 7.21
+        },
+        {
+          "id": "a797",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 12.96,
+              "y": 13.19
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 8.8,
+              "y": -0.82
+            }
+          ]
+        },
+        {
+          "id": "w798",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a811",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 8.98,
+              "y": -0.37
+            },
+            {
+              "x": 9.4,
+              "y": -3.2
+            },
+            {
+              "x": 10.6,
+              "y": -5.9
+            }
+          ]
+        },
+        {
+          "id": "a812",
+          "playerId": "b1",
+          "kind": "play",
+          "seconds": 4
+        },
+        {
+          "id": "w813",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.31
+        },
+        {
+          "id": "a824",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 22.75,
+              "y": -4.14
+            },
+            {
+              "x": 19,
+              "y": 11
+            },
+            {
+              "x": 17.6,
+              "y": 13.2
+            },
+            {
+              "x": 16.2,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w825",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a851",
+          "playerId": "b1",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 16.62,
+              "y": 13.03
+            },
+            {
+              "x": 14.6,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w852",
+          "kind": "wait",
+          "playerId": "b1",
+          "seconds": 9999
+        },
+        {
+          "id": "w655",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 0.31
+        },
+        {
+          "id": "a684",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 14.6,
+              "y": 13.2
+            },
+            {
+              "x": 13,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w685",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 11.61
+        },
+        {
+          "id": "a713",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 13.1,
+              "y": 13.2
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 8.8,
+              "y": -0.59
+            }
+          ]
+        },
+        {
+          "id": "w714",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 0.01
+        },
+        {
+          "id": "a727",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 8.97,
+              "y": -0.2
+            },
+            {
+              "x": 9.4,
+              "y": -3.2
+            },
+            {
+              "x": 10.6,
+              "y": -5.9
+            }
+          ]
+        },
+        {
+          "id": "a728",
+          "playerId": "b2",
+          "kind": "play",
+          "seconds": 4
+        },
+        {
+          "id": "w729",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 0.34
+        },
+        {
+          "id": "a738",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 24.19,
+              "y": 4.22
+            },
+            {
+              "x": 19,
+              "y": 11
+            },
+            {
+              "x": 17.6,
+              "y": 13.2
+            },
+            {
+              "x": 16.2,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w739",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 0.01
+        },
+        {
+          "id": "a764",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 16.6,
+              "y": 13.05
+            },
+            {
+              "x": 14.6,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w765",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 11.94
+        },
+        {
+          "id": "a807",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 14.54,
+              "y": 13.2
+            },
+            {
+              "x": 13,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w808",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 12.21
+        },
+        {
+          "id": "a839",
+          "playerId": "b2",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 13.11,
+              "y": 13.19
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 8.8,
+              "y": -0.13
+            }
+          ]
+        },
+        {
+          "id": "w840",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 0.01
+        },
+        {
+          "id": "a853",
+          "playerId": "b2",
+          "kind": "skate",
           "speed": "fast",
           "path": [
             {
               "x": 9,
-              "y": 0
+              "y": 0.31
             },
             {
-              "x": 14,
-              "y": 1
+              "x": 9.4,
+              "y": -3.2
+            },
+            {
+              "x": 10.6,
+              "y": -5.9
             }
           ]
         },
         {
-          "id": "a2",
+          "id": "a854",
+          "playerId": "b2",
+          "kind": "play",
+          "seconds": 4
+        },
+        {
+          "id": "w855",
+          "kind": "wait",
+          "playerId": "b2",
+          "seconds": 9999
+        },
+        {
+          "id": "w656",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 0.31
+        },
+        {
+          "id": "a686",
+          "playerId": "b3",
           "kind": "skate",
-          "playerId": "h2",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 10,
-              "y": -9
-            },
-            {
-              "x": 16,
-              "y": -7
-            }
-          ]
-        },
-        {
-          "id": "a3",
-          "kind": "skate",
-          "playerId": "h3",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 10,
-              "y": 9
-            },
-            {
-              "x": 17,
-              "y": 7
-            }
-          ]
-        },
-        {
-          "id": "a4",
-          "kind": "skate",
-          "playerId": "a1",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 6,
-              "y": -2
-            },
-            {
-              "x": 14,
-              "y": -2
-            }
-          ]
-        },
-        {
-          "id": "a5",
-          "kind": "skate",
-          "playerId": "a2",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 6,
-              "y": 3
-            },
-            {
-              "x": 13,
-              "y": 3
-            }
-          ]
-        }
-      ],
-      "notes": "Grupp 2, övning 3.\nPå signal: tre forwards tar sig snabbt in på mål, 3 mot 2. Två forwards från motståndarlaget backcheckar och backarna följer med upp, så att det blir 5 mot 5.\nFeedback: ta sig in på mål, ingång, backcheck och hitta gubbe.",
-      "settings": {
-        "durationSec": 8,
-        "seed": 1,
-        "autonomous": true,
-        "homeAttacks": "right"
-      },
-      "focusId": "h1"
-    },
-    {
-      "id": "bu2-g2-4",
-      "name": "2 mot 2 i hörnet, pass till skytt",
-      "updatedAt": "2026-10-05T18:00:00.000Z",
-      "players": [
-        {
-          "id": "ag",
-          "team": "away",
-          "role": "G",
-          "label": "G",
-          "pos": {
-            "x": 25,
-            "y": 0
-          },
-          "heading": 3.142
-        },
-        {
-          "id": "t",
-          "team": "away",
-          "role": "C",
-          "label": "T",
-          "pos": {
-            "x": 13,
-            "y": 1
-          },
-          "heading": 0
-        },
-        {
-          "id": "s1",
-          "team": "home",
-          "role": "D",
-          "label": "S",
-          "pos": {
-            "x": 14,
-            "y": -8
-          },
-          "heading": 0
-        },
-        {
-          "id": "s2",
-          "team": "home",
-          "role": "D",
-          "label": "S",
-          "pos": {
-            "x": 15,
-            "y": 9
-          },
-          "heading": 0
-        },
-        {
-          "id": "h1",
-          "team": "home",
-          "role": "F",
-          "label": "1",
-          "pos": {
-            "x": 18,
-            "y": 4
-          },
-          "heading": 0
-        },
-        {
-          "id": "h2",
-          "team": "home",
-          "role": "F",
-          "label": "2",
-          "pos": {
-            "x": 19,
-            "y": -3
-          },
-          "heading": 0
-        },
-        {
-          "id": "a1",
-          "team": "away",
-          "role": "D",
-          "label": "1",
-          "pos": {
-            "x": 21,
-            "y": 3
-          },
-          "heading": 3.14
-        },
-        {
-          "id": "a2",
-          "team": "away",
-          "role": "D",
-          "label": "2",
-          "pos": {
-            "x": 22,
-            "y": -2
-          },
-          "heading": 3.14
-        },
-        {
-          "id": "qh0",
-          "team": "home",
-          "role": "F",
-          "label": "3",
-          "pos": {
-            "x": 11,
-            "y": 12
-          },
-          "heading": 0,
-          "idle": true
-        },
-        {
-          "id": "qh1",
-          "team": "home",
-          "role": "F",
-          "label": "4",
-          "pos": {
-            "x": 9,
-            "y": 12
-          },
-          "heading": 0,
-          "idle": true
-        },
-        {
-          "id": "qa0",
-          "team": "away",
-          "role": "F",
-          "label": "3",
-          "pos": {
-            "x": 11,
-            "y": 14
-          },
-          "heading": 3.142,
-          "idle": true
-        },
-        {
-          "id": "qa1",
-          "team": "away",
-          "role": "F",
-          "label": "4",
-          "pos": {
-            "x": 9,
-            "y": 14
-          },
-          "heading": 3.142,
-          "idle": true
-        }
-      ],
-      "pucks": [
-        {
-          "id": "k1",
-          "pos": {
-            "x": 13.7,
-            "y": 1.0
-          }
-        }
-      ],
-      "actions": [
-        {
-          "id": "a1",
-          "kind": "mark",
-          "playerId": "a1",
-          "targetId": "h1"
-        },
-        {
-          "id": "a2",
-          "kind": "mark",
-          "playerId": "a2",
-          "targetId": "h2"
-        },
-        {
-          "id": "a3",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 21,
-              "y": 8
-            },
-            {
-              "x": 23.5,
-              "y": 10.5
-            }
-          ]
-        },
-        {
-          "id": "a4",
-          "kind": "pass",
-          "playerId": "t",
-          "toPlayerId": "h1"
-        },
-        {
-          "id": "a5",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "normal",
-          "path": [
-            {
-              "x": 21,
-              "y": 11
-            },
-            {
-              "x": 19,
-              "y": 11.5
-            }
-          ]
-        },
-        {
-          "id": "a6",
-          "kind": "pass",
-          "playerId": "h1",
-          "toPlayerId": "s2"
-        },
-        {
-          "id": "a7",
-          "kind": "skate",
-          "playerId": "h1",
-          "speed": "fast",
-          "path": [
-            {
-              "x": 22,
-              "y": 4
-            },
-            {
-              "x": 23.6,
-              "y": 1.6
-            }
-          ]
-        },
-        {
-          "id": "a8",
-          "kind": "skate",
-          "playerId": "h2",
-          "speed": "normal",
-          "path": [
-            {
-              "x": 21,
-              "y": -2
-            },
-            {
-              "x": 23.6,
-              "y": -0.8
-            }
-          ]
-        },
-        {
-          "id": "a9",
-          "kind": "skate",
-          "playerId": "s2",
           "speed": "slow",
           "path": [
             {
-              "x": 16,
-              "y": 7
+              "x": 16.2,
+              "y": 13.2
+            },
+            {
+              "x": 14.6,
+              "y": 13.2
             }
           ]
         },
         {
-          "id": "a10",
-          "kind": "shoot",
-          "playerId": "s2",
-          "goal": "right"
+          "id": "w687",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 11.64
+        },
+        {
+          "id": "a723",
+          "playerId": "b3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 14.7,
+              "y": 13.2
+            },
+            {
+              "x": 13,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w724",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 11.71
+        },
+        {
+          "id": "a754",
+          "playerId": "b3",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 13.02,
+              "y": 13.2
+            },
+            {
+              "x": 12,
+              "y": 7
+            },
+            {
+              "x": 8.8,
+              "y": -0.96
+            }
+          ]
+        },
+        {
+          "id": "w755",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 0.01
+        },
+        {
+          "id": "a768",
+          "playerId": "b3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 8.97,
+              "y": -0.53
+            },
+            {
+              "x": 11.5,
+              "y": -2
+            },
+            {
+              "x": 15.5,
+              "y": -0.5
+            }
+          ]
+        },
+        {
+          "id": "a769",
+          "playerId": "b3",
+          "kind": "play",
+          "seconds": 3.77
+        },
+        {
+          "id": "w770",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 0.01
+        },
+        {
+          "id": "a782",
+          "playerId": "b3",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 22.96,
+              "y": 3.36
+            },
+            {
+              "x": 19,
+              "y": 11
+            },
+            {
+              "x": 17.6,
+              "y": 13.2
+            },
+            {
+              "x": 16.2,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w783",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 0.01
+        },
+        {
+          "id": "a809",
+          "playerId": "b3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 16.67,
+              "y": 13.02
+            },
+            {
+              "x": 14.6,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w810",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 12.24
+        },
+        {
+          "id": "a849",
+          "playerId": "b3",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 14.54,
+              "y": 13.2
+            },
+            {
+              "x": 13,
+              "y": 13.2
+            }
+          ]
+        },
+        {
+          "id": "w850",
+          "kind": "wait",
+          "playerId": "b3",
+          "seconds": 9999
         }
       ],
-      "notes": "Grupp 2, övning 4.\n2 mot 2 framför mål. Tränaren spelar in pucken. Målet är att passa upp till skyttarna och ta sig in på mål för skymning och returtagning. Kamp framför mål.\nFeedback: kamp framför mål, shoulder check, boxa ut.",
+      "notes": "Syfte: 2 mot 1. Anfallarna håller bredden och tvingar backen att välja. Backen ska möta tidigt och sätta press på puckföraren.\nUpplägg: två forwardsled vid sargen i mittzonen och backarna vid sargen inne i zonen. Backen åker upp till blålinjen direkt och väntar in anfallet. Den första i vänster led tar en puck och åker på sin kant. Den första i höger led håller bredden på andra kanten och går sedan mot bortre stolpen.\nBacken attackerar puckföraren redan vid blålinjen. Puckföraren passar då kamraten, som skjuter direkt vid bortre stolpen. Läser backen passningen och täcker mitten går puckföraren själv och skjuter.\nForwardarna byter led med varandra och backen ställer sig sist i backledet.",
       "settings": {
-        "durationSec": 7,
-        "seed": 1,
-        "autonomous": true,
-        "homeAttacks": "right"
-      },
-      "focusId": "h1"
+        "durationSec": 56,
+        "seed": 33,
+        "autonomous": false,
+        "homeAttacks": "right",
+        "offside": false
+      }
     },
     {
-      "id": "bu2-g2-5",
-      "name": "Powerplay 4 mot 2, max 3 s med pucken",
-      "updatedAt": "2026-10-05T18:00:00.000Z",
+      "id": "bu2-g2-3",
+      "name": "Powerplay 4 mot 2: pucken går runt boxen",
+      "updatedAt": "2026-10-14T06:00:00.000Z",
       "players": [
         {
-          "id": "ag",
+          "id": "gr",
           "team": "away",
           "role": "G",
-          "label": "G",
+          "label": "MV",
           "pos": {
             "x": 25,
             "y": 0
           },
-          "heading": 3.142
+          "heading": 3.141592653589793
         },
         {
-          "id": "h1",
+          "id": "t",
+          "team": "home",
+          "role": "C",
+          "label": "T",
+          "pos": {
+            "x": 8,
+            "y": -11
+          },
+          "heading": 0
+        },
+        {
+          "id": "p",
           "team": "home",
           "role": "D",
-          "label": "D",
+          "label": "4",
           "pos": {
-            "x": 11,
+            "x": 11.5,
             "y": 0
           },
           "heading": 0
         },
         {
-          "id": "h2",
+          "id": "l",
+          "team": "home",
+          "role": "F",
+          "label": "1",
+          "pos": {
+            "x": 16.5,
+            "y": -9.5
+          },
+          "heading": 0
+        },
+        {
+          "id": "r",
           "team": "home",
           "role": "F",
           "label": "2",
           "pos": {
-            "x": 17,
-            "y": -9
+            "x": 16.5,
+            "y": 9.5
           },
           "heading": 0
         },
         {
-          "id": "h3",
+          "id": "n",
           "team": "home",
           "role": "F",
           "label": "3",
-          "pos": {
-            "x": 17,
-            "y": 9
-          },
-          "heading": 0
-        },
-        {
-          "id": "h4",
-          "team": "home",
-          "role": "F",
-          "label": "4",
           "pos": {
             "x": 22.5,
             "y": 2
@@ -1145,7 +4765,7 @@
           "heading": 0
         },
         {
-          "id": "a1",
+          "id": "x1",
           "team": "away",
           "role": "F",
           "label": "1",
@@ -1153,79 +4773,1500 @@
             "x": 15,
             "y": -3
           },
-          "heading": 3.142
+          "heading": 3.141592653589793
         },
         {
-          "id": "a2",
+          "id": "x2",
           "team": "away",
-          "role": "F",
+          "role": "D",
           "label": "2",
           "pos": {
-            "x": 15,
-            "y": 3
+            "x": 20,
+            "y": 1.5
           },
-          "heading": 3.142
+          "heading": 3.141592653589793
         }
       ],
       "pucks": [
         {
           "id": "k1",
           "pos": {
-            "x": 11.7,
-            "y": 0.0
-          }
+            "x": 7.9,
+            "y": -12.2
+          },
+          "spare": true
+        },
+        {
+          "id": "k2",
+          "pos": {
+            "x": 8.2,
+            "y": -12.2
+          },
+          "spare": true
+        },
+        {
+          "id": "k3",
+          "pos": {
+            "x": 8.5,
+            "y": -12.2
+          },
+          "spare": true
+        },
+        {
+          "id": "k4",
+          "pos": {
+            "x": 7.9,
+            "y": -11.9
+          },
+          "spare": true
+        },
+        {
+          "id": "k5",
+          "pos": {
+            "x": 8.2,
+            "y": -11.9
+          },
+          "spare": true
+        },
+        {
+          "id": "k6",
+          "pos": {
+            "x": 8.5,
+            "y": -11.9
+          },
+          "spare": true
+        },
+        {
+          "id": "k7",
+          "pos": {
+            "x": 7.9,
+            "y": -11.6
+          },
+          "spare": true
+        },
+        {
+          "id": "k8",
+          "pos": {
+            "x": 8.2,
+            "y": -11.6
+          },
+          "spare": true
         }
       ],
       "actions": [
         {
-          "id": "a1",
-          "kind": "pass",
-          "playerId": "h1",
-          "toPlayerId": "h2"
+          "id": "w860",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 37.51
         },
         {
-          "id": "a2",
+          "id": "a977",
+          "playerId": "gr",
+          "kind": "drop"
+        },
+        {
+          "id": "w978",
+          "kind": "play",
+          "playerId": "gr",
+          "seconds": 9999
+        },
+        {
+          "id": "w861",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 0.31
+        },
+        {
+          "id": "a868",
+          "playerId": "t",
           "kind": "skate",
-          "playerId": "h3",
-          "speed": "normal",
+          "speed": "slow",
           "path": [
             {
-              "x": 19,
-              "y": 7
+              "x": 8,
+              "y": -11
+            },
+            {
+              "x": 8.4,
+              "y": -12
             }
           ]
         },
         {
-          "id": "a3",
+          "id": "a869",
+          "playerId": "t",
           "kind": "pass",
-          "playerId": "h2",
-          "toPlayerId": "h3"
+          "toPlayerId": "p"
         },
         {
-          "id": "a4",
-          "kind": "pass",
-          "playerId": "h3",
-          "toPlayerId": "h1"
+          "id": "w870",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 13.44
         },
         {
-          "id": "a5",
+          "id": "a917",
+          "playerId": "t",
           "kind": "skate",
-          "playerId": "h4",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 8.28,
+              "y": -11.69
+            },
+            {
+              "x": 8.4,
+              "y": -12
+            }
+          ]
+        },
+        {
+          "id": "a918",
+          "playerId": "t",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w919",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 11.17
+        },
+        {
+          "id": "a946",
+          "playerId": "t",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 8.28,
+              "y": -11.69
+            },
+            {
+              "x": 8.4,
+              "y": -12
+            }
+          ]
+        },
+        {
+          "id": "a947",
+          "playerId": "t",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w948",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 11.97
+        },
+        {
+          "id": "a987",
+          "playerId": "t",
+          "kind": "skate",
+          "speed": "slow",
+          "path": [
+            {
+              "x": 8.28,
+              "y": -11.69
+            },
+            {
+              "x": 8.4,
+              "y": -12
+            }
+          ]
+        },
+        {
+          "id": "a988",
+          "playerId": "t",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w989",
+          "kind": "wait",
+          "playerId": "t",
+          "seconds": 9999
+        },
+        {
+          "id": "w862",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 2.04
+        },
+        {
+          "id": "a875",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w876",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 5.37
+        },
+        {
+          "id": "a889",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w890",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 8.11
+        },
+        {
+          "id": "a922",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "l"
+        },
+        {
+          "id": "w923",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 11.51
+        },
+        {
+          "id": "a951",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w952",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 5.04
+        },
+        {
+          "id": "a963",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "l"
+        },
+        {
+          "id": "w964",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 6.87
+        },
+        {
+          "id": "a992",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "l"
+        },
+        {
+          "id": "w993",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 2.91
+        },
+        {
+          "id": "a1000",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w1001",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 2.27
+        },
+        {
+          "id": "a1008",
+          "playerId": "p",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w1009",
+          "kind": "wait",
+          "playerId": "p",
+          "seconds": 9999
+        },
+        {
+          "id": "w863",
+          "kind": "wait",
+          "playerId": "l",
+          "seconds": 11.11
+        },
+        {
+          "id": "a899",
+          "playerId": "l",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w900",
+          "kind": "wait",
+          "playerId": "l",
+          "seconds": 6.17
+        },
+        {
+          "id": "a926",
+          "playerId": "l",
+          "kind": "pass",
+          "toPlayerId": "n"
+        },
+        {
+          "id": "w927",
+          "kind": "wait",
+          "playerId": "l",
+          "seconds": 13.21
+        },
+        {
+          "id": "a961",
+          "playerId": "l",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w962",
+          "kind": "wait",
+          "playerId": "l",
+          "seconds": 3.17
+        },
+        {
+          "id": "a965",
+          "playerId": "l",
+          "kind": "pass",
+          "toPlayerId": "n"
+        },
+        {
+          "id": "w966",
+          "kind": "wait",
+          "playerId": "l",
+          "seconds": 6.61
+        },
+        {
+          "id": "a996",
+          "playerId": "l",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w997",
+          "kind": "wait",
+          "playerId": "l",
+          "seconds": 9999
+        },
+        {
+          "id": "w864",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 3.94
+        },
+        {
+          "id": "a879",
+          "playerId": "r",
+          "kind": "pass",
+          "toPlayerId": "n"
+        },
+        {
+          "id": "w880",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 5.04
+        },
+        {
+          "id": "a895",
+          "playerId": "r",
+          "kind": "pass",
+          "toPlayerId": "l"
+        },
+        {
+          "id": "w896",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 3.94
+        },
+        {
+          "id": "a905",
+          "playerId": "r",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w906",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 7.34
+        },
+        {
+          "id": "a934",
+          "playerId": "r",
+          "kind": "pass",
+          "toPlayerId": "n"
+        },
+        {
+          "id": "w935",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 8.04
+        },
+        {
+          "id": "a955",
+          "playerId": "r",
+          "kind": "pass",
+          "toPlayerId": "l"
+        },
+        {
+          "id": "w956",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 7.84
+        },
+        {
+          "id": "a975",
+          "playerId": "r",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w976",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 9.01
+        },
+        {
+          "id": "a1014",
+          "playerId": "r",
+          "kind": "shoot",
+          "goal": "right"
+        },
+        {
+          "id": "w1015",
+          "kind": "wait",
+          "playerId": "r",
+          "seconds": 9999
+        },
+        {
+          "id": "w865",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 5.61
+        },
+        {
+          "id": "a885",
+          "playerId": "n",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w886",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 7.34
+        },
+        {
+          "id": "a903",
+          "playerId": "n",
+          "kind": "skate",
           "speed": "normal",
           "path": [
             {
-              "x": 21.5,
+              "x": 22.5,
+              "y": 2
+            },
+            {
+              "x": 23.6,
+              "y": 1
+            }
+          ]
+        },
+        {
+          "id": "w904",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 0.41
+        },
+        {
+          "id": "a907",
+          "playerId": "n",
+          "kind": "drop"
+        },
+        {
+          "id": "w908",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 0.01
+        },
+        {
+          "id": "a909",
+          "playerId": "n",
+          "kind": "drop"
+        },
+        {
+          "id": "w910",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 0.01
+        },
+        {
+          "id": "a911",
+          "playerId": "n",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 23.56,
+              "y": 1.05
+            },
+            {
+              "x": 22.5,
+              "y": 2
+            }
+          ]
+        },
+        {
+          "id": "w912",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 3.67
+        },
+        {
+          "id": "a932",
+          "playerId": "n",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w933",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 3.34
+        },
+        {
+          "id": "a940",
+          "playerId": "n",
+          "kind": "drop"
+        },
+        {
+          "id": "w941",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 0.01
+        },
+        {
+          "id": "a942",
+          "playerId": "n",
+          "kind": "drop"
+        },
+        {
+          "id": "w943",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 12.74
+        },
+        {
+          "id": "a971",
+          "playerId": "n",
+          "kind": "pass",
+          "toPlayerId": "r"
+        },
+        {
+          "id": "w972",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 1.34
+        },
+        {
+          "id": "a973",
+          "playerId": "n",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 22.57,
+              "y": 1.91
+            },
+            {
+              "x": 23.6,
+              "y": 1
+            }
+          ]
+        },
+        {
+          "id": "w974",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 0.47
+        },
+        {
+          "id": "a983",
+          "playerId": "n",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 23.56,
+              "y": 1.05
+            },
+            {
+              "x": 22.5,
+              "y": 2
+            }
+          ]
+        },
+        {
+          "id": "w984",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 4.27
+        },
+        {
+          "id": "a1004",
+          "playerId": "n",
+          "kind": "pass",
+          "toPlayerId": "p"
+        },
+        {
+          "id": "w1005",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 2.71
+        },
+        {
+          "id": "a1012",
+          "playerId": "n",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 22.63,
+              "y": 1.91
+            },
+            {
+              "x": 23.6,
+              "y": 1
+            }
+          ]
+        },
+        {
+          "id": "w1013",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 5.11
+        },
+        {
+          "id": "a1016",
+          "playerId": "n",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 23.5,
+              "y": 1.13
+            },
+            {
+              "x": 21.88,
+              "y": -14.17
+            }
+          ]
+        },
+        {
+          "id": "a1017",
+          "playerId": "n",
+          "kind": "drop"
+        },
+        {
+          "id": "w1018",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 0.01
+        },
+        {
+          "id": "a1019",
+          "playerId": "n",
+          "kind": "drop"
+        },
+        {
+          "id": "w1020",
+          "kind": "wait",
+          "playerId": "n",
+          "seconds": 9999
+        },
+        {
+          "id": "w866",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 1.61
+        },
+        {
+          "id": "a871",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 15,
+              "y": -3
+            },
+            {
+              "x": 13.8,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w872",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 1.57
+        },
+        {
+          "id": "a881",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 13.78,
+              "y": 0.05
+            },
+            {
+              "x": 24.5,
+              "y": 0.86
+            }
+          ]
+        },
+        {
+          "id": "w882",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 0.57
+        },
+        {
+          "id": "a891",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 24.56,
+              "y": 0.88
+            },
+            {
+              "x": 18.13,
+              "y": 7.87
+            }
+          ]
+        },
+        {
+          "id": "w892",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 3.51
+        },
+        {
+          "id": "a913",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 18.09,
+              "y": 7.91
+            },
+            {
+              "x": 15,
               "y": -3
             }
           ]
+        },
+        {
+          "id": "w914",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 0.77
+        },
+        {
+          "id": "a928",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 14.98,
+              "y": -3.06
+            },
+            {
+              "x": 24.58,
+              "y": 0.79
+            }
+          ]
+        },
+        {
+          "id": "w929",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 0.01
+        },
+        {
+          "id": "a936",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 24.13,
+              "y": 0.57
+            },
+            {
+              "x": 9,
+              "y": 0.29
+            },
+            {
+              "x": 5.5,
+              "y": 0.23
+            }
+          ]
+        },
+        {
+          "id": "a937",
+          "playerId": "x1",
+          "kind": "drop"
+        },
+        {
+          "id": "a938",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 5.5,
+              "y": 0.23
+            },
+            {
+              "x": 15,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w939",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 1.24
+        },
+        {
+          "id": "a957",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 15.06,
+              "y": -3.02
+            },
+            {
+              "x": 18.13,
+              "y": -7.87
+            }
+          ]
+        },
+        {
+          "id": "w958",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 2.94
+        },
+        {
+          "id": "a967",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 18.16,
+              "y": -7.92
+            },
+            {
+              "x": 24.58,
+              "y": 0.79
+            }
+          ]
+        },
+        {
+          "id": "w968",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 0.11
+        },
+        {
+          "id": "a979",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "fast",
+          "path": [
+            {
+              "x": 24.65,
+              "y": 0.4
+            },
+            {
+              "x": 9,
+              "y": 0.2
+            },
+            {
+              "x": 5.5,
+              "y": 0.16
+            }
+          ]
+        },
+        {
+          "id": "a980",
+          "playerId": "x1",
+          "kind": "drop"
+        },
+        {
+          "id": "a981",
+          "playerId": "x1",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 5.5,
+              "y": 0.16
+            },
+            {
+              "x": 15,
+              "y": -3
+            }
+          ]
+        },
+        {
+          "id": "w982",
+          "kind": "wait",
+          "playerId": "x1",
+          "seconds": 9999
+        },
+        {
+          "id": "w867",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 1.61
+        },
+        {
+          "id": "a873",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20,
+              "y": 1.5
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w874",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.31
+        },
+        {
+          "id": "a877",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.27,
+              "y": 0.07
+            },
+            {
+              "x": 19.98,
+              "y": 2.38
+            }
+          ]
+        },
+        {
+          "id": "w878",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.61
+        },
+        {
+          "id": "a883",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.01,
+              "y": 2.43
+            },
+            {
+              "x": 20.88,
+              "y": 0.5
+            }
+          ]
+        },
+        {
+          "id": "w884",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.77
+        },
+        {
+          "id": "a887",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.9,
+              "y": 0.45
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w888",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.94
+        },
+        {
+          "id": "a893",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.27,
+              "y": 0
+            },
+            {
+              "x": 19.98,
+              "y": 2.38
+            }
+          ]
+        },
+        {
+          "id": "w894",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 1.04
+        },
+        {
+          "id": "a897",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20,
+              "y": 2.43
+            },
+            {
+              "x": 19.98,
+              "y": -2.37
+            }
+          ]
+        },
+        {
+          "id": "w898",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.34
+        },
+        {
+          "id": "a901",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.98,
+              "y": -2.4
+            },
+            {
+              "x": 19.98,
+              "y": 2.38
+            }
+          ]
+        },
+        {
+          "id": "w902",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.21
+        },
+        {
+          "id": "a915",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.98,
+              "y": 2.32
+            },
+            {
+              "x": 20,
+              "y": 1.5
+            }
+          ]
+        },
+        {
+          "id": "w916",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.04
+        },
+        {
+          "id": "a920",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.27,
+              "y": 1.84
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w921",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.51
+        },
+        {
+          "id": "a924",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.2,
+              "y": -0.06
+            },
+            {
+              "x": 19.98,
+              "y": -2.37
+            }
+          ]
+        },
+        {
+          "id": "w925",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.81
+        },
+        {
+          "id": "a930",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20,
+              "y": -2.43
+            },
+            {
+              "x": 20.89,
+              "y": 0.48
+            }
+          ]
+        },
+        {
+          "id": "w931",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 6.14
+        },
+        {
+          "id": "a944",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.91,
+              "y": 0.54
+            },
+            {
+              "x": 20,
+              "y": 1.5
+            }
+          ]
+        },
+        {
+          "id": "w945",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.07
+        },
+        {
+          "id": "a949",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.24,
+              "y": 1.24
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w950",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.87
+        },
+        {
+          "id": "a953",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.06,
+              "y": -0.03
+            },
+            {
+              "x": 19.98,
+              "y": 2.38
+            }
+          ]
+        },
+        {
+          "id": "w954",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.67
+        },
+        {
+          "id": "a959",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20,
+              "y": 2.43
+            },
+            {
+              "x": 19.98,
+              "y": -2.37
+            }
+          ]
+        },
+        {
+          "id": "w960",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 3.17
+        },
+        {
+          "id": "a969",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.98,
+              "y": -2.43
+            },
+            {
+              "x": 20.89,
+              "y": 0.48
+            }
+          ]
+        },
+        {
+          "id": "w970",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 1.74
+        },
+        {
+          "id": "a985",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.91,
+              "y": 0.54
+            },
+            {
+              "x": 20,
+              "y": 1.5
+            }
+          ]
+        },
+        {
+          "id": "w986",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.04
+        },
+        {
+          "id": "a990",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.3,
+              "y": 1.24
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w991",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.11
+        },
+        {
+          "id": "a994",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.08,
+              "y": 0.25
+            },
+            {
+              "x": 20.89,
+              "y": 0.48
+            }
+          ]
+        },
+        {
+          "id": "w995",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 1.01
+        },
+        {
+          "id": "a998",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 21.05,
+              "y": 0.47
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w999",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.14
+        },
+        {
+          "id": "a1002",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.41,
+              "y": 0.06
+            },
+            {
+              "x": 20.89,
+              "y": 0.48
+            }
+          ]
+        },
+        {
+          "id": "w1003",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.11
+        },
+        {
+          "id": "a1006",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 20.68,
+              "y": 0.36
+            },
+            {
+              "x": 19.23,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "w1007",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 0.07
+        },
+        {
+          "id": "a1010",
+          "playerId": "x2",
+          "kind": "skate",
+          "speed": "normal",
+          "path": [
+            {
+              "x": 19.51,
+              "y": 0.15
+            },
+            {
+              "x": 19.98,
+              "y": 2.38
+            }
+          ]
+        },
+        {
+          "id": "w1011",
+          "kind": "wait",
+          "playerId": "x2",
+          "seconds": 9999
         }
       ],
-      "notes": "Grupp 2, övning 5.\nDäck delar upp planen. 4 mot 2 på båda sidor. Försvararna ska få över pucken till sin anfallande sida. Powerplay-övning där målet är rörelse på liten yta med snabb puckrörelse. Max tre sekunder med pucken, annars ny puck. Alternativ: 3 mot 2.\nHär visas ena sidan.",
+      "notes": "Syfte: powerplay med snabb puckrörelse. Fyra anfallare i box (back på blålinjen, två på kanterna och en framför mål) mot två försvarare. Ingen håller pucken mer än cirka två sekunder.\nUpplägg: tränaren (T) spelar in pucken till backen. Pucken går runt i boxen: back–kant, kant–kant över, kant–mål och tillbaka. Försvararna flyttar sig efter pucken: den ena pressar puckföraren och den andra täcker slottet.\nEfter 5–7 passningar skjuter backen eller en kantspelare medan målspelaren skymmer målvakten. Vinner försvararna pucken spelar de ut den ur zonen. Sedan kommer en ny puck från T. Byt femma efter några försök.",
       "settings": {
-        "durationSec": 8,
-        "seed": 1,
-        "autonomous": true,
-        "homeAttacks": "right"
+        "durationSec": 60,
+        "seed": 35,
+        "autonomous": false,
+        "homeAttacks": "right",
+        "offside": false
       }
     }
   ]

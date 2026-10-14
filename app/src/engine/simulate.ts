@@ -7,6 +7,7 @@ import { avoidCones, separate, stepPlayer } from './kinematics'
 import { pathInfo, pointAt, project } from './path'
 import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, sub } from './vec'
 import {
+  benched,
   DT,
   hold,
   PASS_SPEED,
@@ -44,13 +45,19 @@ function stickPos(p: PlayerRt) {
   return add(p.pos, fromAngle(p.heading, STICK_REACH))
 }
 
+function scriptedIds(s: Scenario) {
+  return new Set([...s.actions, ...(s.rounds ?? []).flatMap((r) => r.actions)].map((a) => a.playerId))
+}
+
 function initialCarriers(s: Scenario): Map<string, string> {
   const out = new Map<string, string>()
   const taken = new Set<string>()
+  const scripted = scriptedIds(s)
   for (const k of s.pucks) {
+    if (k.spare) continue
     let best: string | null = null
     let bestD = 1.6
-    for (const p of s.players.filter((q) => !q.idle)) {
+    for (const p of s.players.filter((q) => !q.idle || scripted.has(q.id))) {
       if (taken.has(p.id)) continue
       const d = dist(p.pos, k.pos)
       if (d < bestD) {
@@ -67,7 +74,8 @@ function initialCarriers(s: Scenario): Map<string, string> {
 }
 
 export function createWorld(s: Scenario): World {
-  const players: PlayerRt[] = s.players.filter((p) => !p.idle).map((p) => ({
+  const scripted = scriptedIds(s)
+  const players: PlayerRt[] = s.players.filter((p) => !p.idle || scripted.has(p.id)).map((p) => ({
     id: p.id,
     team: p.team,
     role: p.role,
@@ -82,6 +90,7 @@ export function createWorld(s: Scenario): World {
     lastDecision: -1,
     lastPoke: -1,
     backward: false,
+    queue: !!p.idle,
   }))
   const carriers = initialCarriers(s)
   const pucks: PuckRt[] = s.pucks.map((k) => {
@@ -98,9 +107,10 @@ export function createWorld(s: Scenario): World {
       lastTeam: carrier?.team ?? null,
       scripted: false,
       wasInZone: {},
+      spare: !!k.spare,
     }
   })
-  return { t: 0, players, pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
+  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings) }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -168,18 +178,48 @@ function cornerSpeed(info: ReturnType<typeof pathInfo>, s: number) {
 
 function awaitingPass(w: World, p: PlayerRt) {
   if (w.pucks.some((k) => k.intended === p.id && k.carrierId === null && !k.inGoal)) return true
-  return w.players.some((q) => q.team === p.team && q.actions.slice(q.idx).some((a) => a.kind === 'pass' && a.toPlayerId === p.id))
+  return w.roster.some((q) => q.team === p.team && q.actions.slice(q.idx).some((a) => a.kind === 'pass' && a.toPlayerId === p.id))
 }
+
+function receive(w: World, p: PlayerRt): Intent | null {
+  const incoming = w.pucks.find((k) => k.intended === p.id && k.carrierId === null && !k.inGoal && len(k.vel) > 2)
+  if (!incoming) return null
+  const dir = norm(incoming.vel)
+  const ahead = Math.max(0, dot(sub(p.pos, incoming.pos), dir))
+  const meet = add(incoming.pos, mul(dir, ahead))
+  return dist(meet, p.pos) > 0.5 ? { target: meet, speed: SPEEDS.normal, face: incoming.pos, scripted: true } : null
+}
+
+const playing = (p: PlayerRt) => p.actions[p.idx]?.kind === 'play'
 
 function scriptIntent(w: World, p: PlayerRt): Intent | null {
   for (let guard = 0; guard < 20 && p.idx < p.actions.length; guard++) {
     const a: Action = p.actions[p.idx]
     if (a.kind === 'wait') {
+      if (w.t - p.idxStart >= a.seconds || (a.untilPuck && puckCarriedBy(w, p.id))) {
+        advance(w, p)
+        continue
+      }
+      if (a.untilPuck) return receive(w, p) ?? hold(p, focusPuck(w, p)?.pos)
+      return hold(p, focusPuck(w, p)?.pos)
+    }
+    if (a.kind === 'play') {
       if (w.t - p.idxStart >= a.seconds) {
         advance(w, p)
         continue
       }
-      return hold(p)
+      return null
+    }
+    if (a.kind === 'drop') {
+      const k = w.pool.find((q) => q.carrierId === p.id)
+      if (k) {
+        k.carrierId = null
+        k.vel = { x: 0, y: 0 }
+        k.intended = null
+        k.spare = true
+      }
+      advance(w, p)
+      continue
     }
     if (a.kind === 'skate') {
       const info = pathInfo(a.path)
@@ -211,7 +251,8 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
     const puck = puckCarriedBy(w, p.id)
     if (puck) {
       if (a.kind === 'pass') {
-        const to = playerById(w, a.toPlayerId)
+        const to = w.roster.find((q) => q.id === a.toPlayerId)
+        if (to && benched(to)) return hold(p, to.pos)
         if (to) doPass(w, p, puck, to, true)
       } else {
         const goal = (a.goalId && w.goals.find((g) => g.id === a.goalId)) || nearestGoal(w.goals, p.pos, a.goal)
@@ -220,11 +261,13 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
       advance(w, p)
       continue
     }
+    const meet = receive(w, p)
+    if (meet) return meet
     if (!awaitingPass(w, p) && w.t - p.idxStart > 4) {
       advance(w, p)
       continue
     }
-    if (w.scenario.settings.autonomous) return botDecision(w, p).intent
+    if (w.scenario.settings.autonomous && !p.queue && p.role !== 'C') return botDecision(w, p).intent
     const loose = focusPuck(w, p)
     return hold(p, loose?.pos)
   }
@@ -243,7 +286,7 @@ function playerIntent(w: World, p: PlayerRt): Intent {
   const scripted = scriptIntent(w, p)
   if (scripted) return scripted
   if (p.role === 'C') return hold(p, focusPuck(w, p)?.pos)
-  if (w.scenario.settings.autonomous) {
+  if (w.scenario.settings.autonomous || playing(p)) {
     const d = botDecision(w, p)
     applyAct(w, p, d.act)
     return d.intent
@@ -264,7 +307,7 @@ function takePuck(w: World, puck: PuckRt, p: PlayerRt, kind: 'pickup' | 'steal' 
 
 function stepPuck(w: World, puck: PuckRt) {
   if (puck.inGoal) return
-  const carrier = playerById(w, puck.carrierId)
+  const carrier = w.roster.find((p) => p.id === puck.carrierId)
   if (carrier) {
     puck.pos = stickPos(carrier)
     puck.vel = { ...carrier.vel }
@@ -273,6 +316,10 @@ function stepPuck(w: World, puck: PuckRt) {
 
   const prev = puck.pos
   const speed = len(puck.vel)
+  if (puck.intended && speed < 1.5) {
+    puck.intended = null
+    puck.scripted = false
+  }
   if (speed > 0) {
     const ns = Math.max(0, speed - PUCK_FRICTION * DT)
     puck.vel = mul(puck.vel, ns / speed)
@@ -331,6 +378,8 @@ function stepPuck(w: World, puck: PuckRt) {
     if (fast) continue
     if (p.role === 'C' && puck.intended !== p.id) continue
     if (puck.scripted && puck.intended && puck.intended !== p.id) continue
+    const route = p.actions[p.idx]
+    if (route?.kind === 'skate' && puck.intended !== p.id && dist(route.path[route.path.length - 1], puck.pos) > 2.5) continue
     const r = puck.intended === p.id ? RECEIVER_RADIUS : puck.intended ? INTERCEPT_RADIUS : PICKUP_RADIUS
     if (d < r && d < bestD) {
       best = p
@@ -355,9 +404,25 @@ function stepPuck(w: World, puck: PuckRt) {
   takePuck(w, puck, best, 'pickup')
 }
 
+function collectSpare(w: World, puck: PuckRt, all: PuckRt[]) {
+  for (const p of w.players) {
+    const a = p.actions[p.idx]
+    if (all.some((k) => k.carrierId === p.id) || dist(p.pos, puck.pos) > (p.role === 'C' ? 1.6 : 1.3)) continue
+    if (p.role === 'C' && a?.kind === 'pass') {
+      puck.spare = false
+      takePuck(w, puck, p, 'pickup')
+      return
+    }
+    if (!(a?.kind === 'skate' && [a, p.actions[p.idx - 1]].some((b) => b?.kind === 'skate' && dist(b.path[b.path.length - 1], puck.pos) < 1.5))) continue
+    puck.spare = false
+    takePuck(w, puck, p, 'pickup')
+    return
+  }
+}
+
 function canPoke(w: World, p: PlayerRt) {
   const a = p.actions[p.idx]
-  if (a?.kind === 'mark') return true
+  if (a?.kind === 'mark' || a?.kind === 'play') return true
   return !a && w.scenario.settings.autonomous
 }
 
@@ -365,7 +430,7 @@ function pokeChecks(w: World) {
   for (const puck of w.pucks) {
     const carrier = playerById(w, puck.carrierId)
     if (!carrier || carrier.role === 'G' || carrier.role === 'C' || w.t - carrier.holdSince < 0.4) continue
-    if (carrier.idx < carrier.actions.length) continue
+    if (carrier.idx < carrier.actions.length && !playing(carrier)) continue
     for (const o of w.players) {
       if (o.team === carrier.team || o.role === 'G' || o.role === 'C' || puckCarriedBy(w, o.id) || !canPoke(w, o)) continue
       if (w.t - o.lastPoke < POKE_INTERVAL) continue
@@ -394,23 +459,38 @@ function pokeChecks(w: World) {
 
 function snapshot(w: World): Frame {
   const players: Frame['players'] = {}
-  for (const p of w.players) players[p.id] = { x: p.pos.x, y: p.pos.y, h: p.heading }
+  for (const p of w.roster) players[p.id] = benched(p) ? { x: p.pos.x, y: p.pos.y, h: p.heading, q: 1 } : { x: p.pos.x, y: p.pos.y, h: p.heading }
   const pucks: Frame['pucks'] = {}
-  for (const k of w.pucks) pucks[k.id] = { x: k.pos.x, y: k.pos.y, c: k.carrierId }
+  for (const k of w.pucks) pucks[k.id] = k.spare || k.inGoal ? { x: k.pos.x, y: k.pos.y, c: null, s: 1 } : { x: k.pos.x, y: k.pos.y, c: k.carrierId }
   return { t: w.t, players, pucks }
 }
 
 export function step(w: World) {
-  const intents = w.players.map((p) => keepOnside(w, p, playerIntent(w, p)))
-  w.players.forEach((p, i) => {
+  const all = w.roster
+  const allPucks = w.pucks
+  const parked = allPucks.filter((k) => k.carrierId && all.some((p) => p.id === k.carrierId && benched(p)))
+  w.pucks = allPucks.filter((k) => !parked.includes(k) && !k.spare)
+  w.players = all.filter((p) => !benched(p))
+  const intents = all.map((p) => (benched(p) ? scriptIntent(w, p) ?? hold(p) : keepOnside(w, p, playerIntent(w, p))))
+  all.forEach((p, i) => {
     const it = intents[i]
     const spaced = it.speed > 0 ? separate(p, w.players, it.target, it.scripted) : it.target
     const target = it.speed > 0 ? avoidWalls(p.pos, avoidCones(p, spaced, w.cones), w.walls) : spaced
     stepPlayer(p, { ...it, target }, DT, w.field, w.cones, w.walls)
   })
+  w.players = all.filter((p) => !benched(p))
   for (const k of w.pucks) stepPuck(w, k)
+  for (const k of allPucks) if (k.spare) collectSpare(w, k, allPucks)
   pokeChecks(w)
   for (const k of w.pucks) detectOffside(w, k, k.wasInZone)
+  for (const k of parked) {
+    const c = all.find((p) => p.id === k.carrierId)
+    if (!c) continue
+    k.pos = stickPos(c)
+    k.vel = { x: 0, y: 0 }
+  }
+  w.players = all
+  w.pucks = allPucks
   w.t += DT
 }
 
@@ -422,7 +502,7 @@ function startRound(w: World, round: Round) {
     for (const k of w.pucks) k.wasInZone = {}
   }
   const actions = round.actions
-  for (const p of w.players) {
+  for (const p of w.roster) {
     p.actions = actions.filter((a) => a.playerId === p.id)
     p.idx = 0
     p.idxStart = w.t

@@ -397,6 +397,44 @@ describe('simulate', () => {
     expect(r.frames.at(-1)!.pucks.k.c).toBe('a')
   })
 
+  it('a queue player waits out of the play and then joins', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.players[1].idle = true
+    s.actions.push(
+      { id: 'w1', kind: 'wait', playerId: 'b', seconds: 2 },
+      { id: 'p1', kind: 'pass', playerId: 'a', toPlayerId: 'b' },
+    )
+    const r = simulate(s)
+    expect(r.frames[30].players.b.q).toBe(1)
+    expect(r.frames[90].players.b.q).toBeUndefined()
+    expect(r.events.find((e) => e.kind === 'pass')!.t).toBeGreaterThan(1.9)
+    expect(r.events.some((e) => e.kind === 'pickup' && e.playerId === 'b')).toBe(true)
+  })
+
+  it('bots leave spare pucks alone until a scripted skater collects one', () => {
+    const s = base()
+    s.settings.autonomous = true
+    s.pucks.push({ id: 'sp', pos: { x: -2, y: 10 }, spare: true })
+    s.actions.push({ id: 's1', kind: 'skate', playerId: 'b', speed: 'normal', path: [s.players[1].pos, { x: -2, y: 10 }] })
+    const r = simulate(s)
+    expect(r.events.some((e) => e.kind === 'pickup' && e.playerId === 'b')).toBe(true)
+    const t = template('3v2')
+    t.settings.autonomous = true
+    t.pucks.push({ id: 'sp', pos: { x: -20, y: 12 }, spare: true })
+    const r2 = simulate(t)
+    expect(r2.frames.at(-1)!.pucks.sp).toEqual(r2.frames[0].pucks.sp)
+  })
+
+  it('can turn off offside for warm-up drills', () => {
+    const s = base()
+    s.settings.offside = false
+    s.players[1].pos = { x: 0, y: 8 }
+    s.actions.push({ id: 's1', kind: 'skate', playerId: 'b', speed: 'fast', path: [{ x: 0, y: 8 }, { x: 15, y: 8 }] })
+    const r = simulate(s)
+    expect(r.frames.at(-1)!.players.b.x).toBeGreaterThan(12)
+  })
+
   it('coach only takes pucks passed to him', () => {
     const s = base()
     s.settings.autonomous = true

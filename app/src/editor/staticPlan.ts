@@ -45,11 +45,13 @@ export function roundAt(s: Scenario, t: number): number {
 export function initialCarrierMap(s: Scenario): Map<string, string> {
   const byPuck = new Map<string, string>()
   const taken = new Set<string>()
+  const scripted = new Set([...s.actions, ...(s.rounds ?? []).flatMap((r) => r.actions)].map((a) => a.playerId))
   for (const k of s.pucks) {
+    if (k.spare) continue
     let best: string | null = null
     let bestD = 1.6
     for (const p of s.players) {
-      if (p.idle) continue
+      if (p.idle && !scripted.has(p.id)) continue
       if (taken.has(p.id)) continue
       const d = dist(p.pos, k.pos)
       if (d < bestD) {
@@ -136,4 +138,31 @@ export function editContext(s: Scenario, round: number, sim: SimResult): EditCon
     actions: info.actions,
     plan: staticPlan(info.actions, pos, carriers, goalsOf(s), (a) => goalCenter(field, a.goal)),
   }
+}
+
+const LONG_SCRIPT = 6
+const LATE_START = 1.5
+const UNTIL_FURTHER = 3
+
+export function openingActions(actions: Action[]): Action[] {
+  const byPlayer = new Map<string, Action[]>()
+  for (const a of actions) byPlayer.set(a.playerId, [...(byPlayer.get(a.playerId) ?? []), a])
+  const keep = new Set<string>()
+  for (const list of byPlayer.values()) {
+    if (list.length <= LONG_SCRIPT) {
+      for (const a of list) keep.add(a.id)
+      continue
+    }
+    let moved = false
+    for (const a of list) {
+      if (a.kind === 'wait') {
+        if (moved || a.seconds > LATE_START) break
+        continue
+      }
+      if (a.kind === 'play' || a.kind === 'drop') break
+      moved = true
+      keep.add(a.id)
+    }
+  }
+  return actions.filter((a) => keep.has(a.id) && !(a.kind === 'wait' && a.seconds > UNTIL_FURTHER))
 }

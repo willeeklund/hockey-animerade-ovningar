@@ -11,7 +11,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 - **Spelyta:** hel rink i IIHF-mått (60 × 30 m) eller zonspel, där man spelar på bredden i en zon med burarna mot varandra. Zonspelsplanen är 30 × 20,5 m och slutar två meter före blålinjen. Burarna står i höjd med tekningscirklarnas mitt, 3 m från sargen.
 - **Objekt:** spelare för två lag, målvakter, puckar, koner, målburar och skumsarg (2 m långa bitar som delar av isen; spelarna åker runt och puckar studsar mot dem).
 - **Målburar:** ställ ut extra målburar var som helst med verktyget Målbur. Markera en målbur, även de vanliga, för att flytta den, vrida den 90° eller ta bort den (knappen eller Delete). Ett lag anfaller målburarna på sin anfallssida.
-- **Instruktioner:** rita åkvägar (lugnt, normalt eller fullt tempo), passningar och skott. Linjerna ritas enligt hockeystandard: vågig linje med puck, streckad för pass och dubbel för skott.
+- **Instruktioner:** rita åkvägar (lugnt, normalt eller fullt tempo), passningar och skott. I JSON finns dessutom *vänta på pucken* (`wait` med `untilPuck`), *spela fritt* (`play`, spelaren beter sig som en bot i ett visst antal sekunder) och *lägg undan pucken* (`drop`, pucken blir en reservpuck). De används av de inbyggda övningarna. Linjerna ritas enligt hockeystandard: vågig linje med puck, streckad för pass och dubbel för skott.
 - **Autonoma botar:**
   - Puckföraren söker mål, skjuter eller passar.
   - Har laget ingen målbur att anfalla blir det passningsmatch: laget håller pucken inom laget, spelarna utan puck söker en ledig stor yta och puckföraren passar en fri lagkamrat. Motståndarna pressar puckföraren och stänger passningsvägarna.
@@ -19,11 +19,11 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
   - Försvararna pressar och täcker.
   - Målvakten följer pucken.
   - Alla åker runt koner.
-  - Alla följer offsideregeln: spelare utan puck väntar vid offensiv blålinje och anpassar farten efter puckföraren tills pucken har passerat linjen. Hamnar någon ändå offside visas det på tidslinjen.
+  - Alla följer offsideregeln (utom i övningar med `offside: false`, till exempel uppvärmningar): spelare utan puck väntar vid offensiv blålinje och anpassar farten efter puckföraren tills pucken har passerat linjen. Hamnar någon ändå offside visas det på tidslinjen.
 - **Markering:** ange att en spelare ska markera en motståndare. Markeraren följer sin spelare på målsidan med lagom avstånd (gap control), både när du flyttar motståndaren i ritläget och när övningen spelas upp. Principerna beskrivs i [MARKERING.md](MARKERING.md).
 - **Huvudperson:** välj en spelare som scenens huvudperson. Den får en guldring och en guldfärgad svans, så att genomgången kan följa just den spelarens resa.
 - **Rundor:** pausa mitt i ett förlopp och ge nästa runda instruktioner utifrån läget just då. En runda kan byta lagens anfallsriktning, till exempel när försvararna vinner pucken och blir anfallare mot samma mål.
-- **Tränare och kö:** en tränare (T) står still, tar bara emot pass som är riktade till honom och passar när du ritar det. Spelare som står i kö syns blekta och deltar inte i förloppet.
+- **Tränare och kö:** en tränare (T) står still, tar bara emot pass som är riktade till honom och passar när du ritar det. Spelare som står i kö syns blekta och deltar inte i förloppet. En köspelare som har instruktioner står blekt i kön så länge den väntar, och botarna låter den vara. När väntan är slut kliver den in i övningen, och en ny väntan skickar den tillbaka till kön. Köspelare kan ha en egen puck med sig i kön. Den syns inte för botarna förrän spelaren kliver in. Puckar som är markerade som reservpuckar (`spare`) ligger kvar tills en spelare åker dit enligt sin instruktion och plockar upp en, eller tills en tränare utan puck tar en ur högen bredvid sig.
 - **Beskrivning:** varje scenario kan ha en text om syfte och upplägg. I helskärm visas namnet uppe till vänster, och beskrivningen fälls ut med ⓘ.
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Trimma slutet:** dra den röda markeringen ⟧ i slutet av tidslinjen åt vänster för att korta scenen, eller förbi slutet åt höger för att förlänga den (ungefär en sekund per 20 pixlar, högst 30 s åt gången). Du kan också pausa och trycka ✂ Sluta här. Scenen stannar vid slutet och startar om från början när du trycker play igen.

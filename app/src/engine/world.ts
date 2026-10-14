@@ -24,6 +24,7 @@ export interface PlayerRt {
   lastDecision: number
   lastPoke: number
   backward: boolean
+  queue: boolean
 }
 
 export interface PuckRt {
@@ -37,6 +38,7 @@ export interface PuckRt {
   lastTeam: Team | null
   scripted: boolean
   wasInZone: Partial<Record<Team, boolean>>
+  spare: boolean
 }
 
 export interface Intent {
@@ -50,7 +52,9 @@ export interface Intent {
 export interface World {
   t: number
   players: PlayerRt[]
+  roster: PlayerRt[]
   pucks: PuckRt[]
+  pool: PuckRt[]
   cones: Vec[]
   walls: WallSet
   goals: Goal[]
@@ -66,6 +70,11 @@ export function playerById(w: World, id: string | null) {
 
 export function puckCarriedBy(w: World, playerId: string) {
   return w.pucks.find((k) => k.carrierId === playerId)
+}
+
+export const benched = (p: PlayerRt) => {
+  const a = p.actions[p.idx]
+  return p.queue && a?.kind === 'wait' && !a.untilPuck
 }
 
 export function hold(p: PlayerRt, face?: Vec): Intent {
