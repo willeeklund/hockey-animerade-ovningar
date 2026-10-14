@@ -29,6 +29,52 @@ export interface EditContext {
   pucks: Record<string, Vec>
   actions: Action[]
   plan: StaticPlan
+  focusT: number
+  now: Record<string, Vec & { h: number }>
+  nowPucks: Record<string, Vec>
+  nowCarriers: Set<string>
+  simGeom: Record<string, { from: Vec; to?: Vec }>
+}
+
+const RECEIVE_WINDOW = 4
+
+export function actionDone(sim: SimResult, a: Action): number | undefined {
+  const t = sim.actionEnds[a.id]
+  if (t === undefined) return t
+  if (a.kind !== 'pass') return t + sim.dt
+  return (sim.events.find((e) => e.kind === 'pickup' && e.t >= t && e.t < t + RECEIVE_WINDOW)?.t ?? t) + sim.dt
+}
+
+const frameAtT = (sim: SimResult, t: number) => sim.frames[Math.max(0, Math.min(sim.frames.length - 1, frameIndex(t)))]
+
+function simGeometry(sim: SimResult, actions: Action[]) {
+  const out: EditContext['simGeom'] = {}
+  const prevEnd: Record<string, number | undefined> = {}
+  for (const a of actions) {
+    const before = prevEnd[a.playerId]
+    prevEnd[a.playerId] = sim.actionEnds[a.id]
+    if (a.kind === 'skate') {
+      const from = before !== undefined ? frameAtT(sim, before).players[a.playerId] : undefined
+      if (from) out[a.id] = { from }
+      continue
+    }
+    if (a.kind !== 'pass' && a.kind !== 'shoot') continue
+    const t = sim.actionEnds[a.id]
+    if (t === undefined) continue
+    const f = frameAtT(sim, t)
+    const from = f.players[a.playerId]
+    if (!from) continue
+    if (a.kind === 'shoot') {
+      out[a.id] = { from }
+      continue
+    }
+    const done = actionDone(sim, a)!
+    const g = frameAtT(sim, done)
+    const caught = Object.values(g.pucks).find((k) => k.c === a.toPlayerId)
+    const to = caught ?? g.players[a.toPlayerId]
+    out[a.id] = { from, to: to ? { x: to.x, y: to.y } : undefined }
+  }
+  return out
 }
 
 export function roundsOf(s: Scenario): RoundInfo[] {
@@ -129,6 +175,24 @@ export function editContext(s: Scenario, round: number, sim: SimResult): EditCon
     }
   }
 
+  const next = roundsOf(s)[info.index + 1]
+  const roundEnd = next ? next.startT : sim.duration
+  const last = info.actions.at(-1)
+  const focusT = last ? Math.max(info.startT, Math.min(roundEnd, actionDone(sim, last) ?? roundEnd)) : info.startT
+  const f = frameAtT(sim, focusT)
+  const now: EditContext['now'] = {}
+  for (const p of s.players) {
+    const fp = f.players[p.id]
+    now[p.id] = fp ? { x: fp.x, y: fp.y, h: fp.h } : { ...pos[p.id], h: heading[p.id] }
+  }
+  const nowPucks: Record<string, Vec> = {}
+  const nowCarriers = new Set<string>()
+  for (const k of s.pucks) {
+    const fk = f.pucks[k.id]
+    nowPucks[k.id] = fk ? { x: fk.x, y: fk.y } : pucks[k.id]
+    if (fk?.c && !fk.s) nowCarriers.add(fk.c)
+  }
+
   return {
     round: info.index,
     startT: info.startT,
@@ -137,6 +201,11 @@ export function editContext(s: Scenario, round: number, sim: SimResult): EditCon
     pucks,
     actions: info.actions,
     plan: staticPlan(info.actions, pos, carriers, goalsOf(s), (a) => goalCenter(field, a.goal)),
+    focusT,
+    now,
+    nowPucks,
+    nowCarriers,
+    simGeom: simGeometry(sim, info.actions),
   }
 }
 

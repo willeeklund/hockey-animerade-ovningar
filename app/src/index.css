@@ -432,3 +432,20 @@ textarea.notes { width: 100%; resize: vertical; font: inherit; font-size: 13px; 
 .home-screen-hint button { flex: none; padding: 2px 8px; background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.4); }
 .app.presenting.idle .home-screen-hint { opacity: 0; pointer-events: none; }
 
+
+.look-ahead {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(15, 39, 66, 0.85);
+  color: #fff;
+  font-size: 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

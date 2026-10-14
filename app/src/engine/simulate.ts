@@ -29,6 +29,7 @@ export interface SimResult {
   events: SimEvent[]
   dt: number
   duration: number
+  actionEnds: Record<string, number>
 }
 
 const PUCK_FRICTION = 0.9
@@ -122,7 +123,7 @@ export function createWorld(s: Scenario): World {
       freeSince: null,
     }
   })
-  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings), tidy: s.pucks.some((k) => k.spare) }
+  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings), tidy: s.pucks.some((k) => k.spare), actionEnds: {} }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -185,6 +186,8 @@ function nextKind(p: PlayerRt) {
 }
 
 function advance(w: World, p: PlayerRt) {
+  const a = p.actions[p.idx]
+  if (a) w.actionEnds[a.id] ??= w.t
   p.idx++
   p.idxStart = w.t
   p.pathS = 0
@@ -240,7 +243,7 @@ function scriptIntent(w: World, p: PlayerRt): Intent | null {
     }
     if (a.kind === 'play') {
       if (w.t - p.idxStart >= a.seconds) {
-        if (!p.actions.slice(p.idx).some((b) => b.kind === 'pass' || b.kind === 'shoot')) dropPuck(w, p)
+        if (!a.keepPuck && !p.actions.slice(p.idx).some((b) => b.kind === 'pass' || b.kind === 'shoot')) dropPuck(w, p)
         advance(w, p)
         continue
       }
@@ -566,5 +569,5 @@ export function simulate(s: Scenario): SimResult {
     step(w)
     frames.push(snapshot(w))
   }
-  return { frames, events: w.events, dt: DT, duration: n * DT }
+  return { frames, events: w.events, dt: DT, duration: n * DT, actionEnds: w.actionEnds }
 }

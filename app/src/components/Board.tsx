@@ -10,7 +10,7 @@ import { dist, wrapAngle } from '../engine/vec'
 import { clampToField, defendSide, DIVIDER, fieldOf, goalAcross, goalNormal, goalPoint, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
 import type { Action, Frame, Goal, Player, Vec } from '../model/types'
 import { editContext, initialCarrierMap, openingActions, roundAt, type EditContext } from '../editor/staticPlan'
-import { useEditor } from '../editor/store'
+import { useEditor, type NewAction } from '../editor/store'
 import { RinkLines } from './RinkLines'
 
 const TEAM_COLOR = { home: 'var(--home)', away: 'var(--away)' }
@@ -18,7 +18,7 @@ const PAD = 1.5
 
 type Drag =
   | { kind: 'move'; id: string; pucks: string[] }
-  | { kind: 'draw'; playerId: string; pts: Vec[] }
+  | { kind: 'draw'; playerId: string; pts: Vec[]; timed: boolean }
   | { kind: 'divider'; from: Vec; to: Vec }
   | { kind: 'aim'; playerId: string; goalId: string; start: Vec; aim: number; moved: boolean }
   | null
@@ -220,6 +220,56 @@ function AimView({ goal, from, aim, goalie }: { goal: Goal; from: Vec; aim: numb
   )
 }
 
+const INSTRUCTION_TOOLS = new Set(['skate', 'pass', 'shoot', 'mark'])
+const MIN_LEAD = 0.15
+const GHOST_MIN = 1
+
+const TRAIL_OPACITY = 0.28
+const TRAIL_SELECTED_OPACITY = 0.6
+const GHOST_OPACITY = 0.18
+
+function LookAhead({ sim, ctx, players, selectedId }: { sim: SimResult; ctx: EditContext; players: Player[]; selectedId: string | null }) {
+  const i0 = Math.round(ctx.startT / sim.dt)
+  const i1 = Math.round(ctx.focusT / sim.dt)
+  const step = Math.max(1, Math.round(0.1 / sim.dt))
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {players.map((p) => {
+        const start = ctx.pos[p.id]
+        const now = ctx.now[p.id]
+        if (!start || !now || dist(start, now) < GHOST_MIN) return null
+        const drawn = ctx.actions.some((a) => a.playerId === p.id && a.kind === 'skate')
+        const pts: Vec[] = []
+        for (let i = i0; i <= i1; i += step) {
+          const fp = sim.frames[i]?.players[p.id]
+          if (fp) pts.push(fp)
+        }
+        pts.push(now)
+        const id = `look-${p.id}`
+        const peak = p.id === selectedId ? TRAIL_SELECTED_OPACITY : TRAIL_OPACITY
+        return (
+          <g key={p.id}>
+            {!drawn && (
+              <>
+                <defs>
+                  <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={start.x} y1={start.y} x2={now.x} y2={now.y}>
+                    <stop offset="0" style={{ stopColor: TEAM_COLOR[p.team], stopOpacity: 0.04 }} />
+                    <stop offset="1" style={{ stopColor: TEAM_COLOR[p.team], stopOpacity: peak }} />
+                  </linearGradient>
+                </defs>
+                <polyline points={pts2(pts)} fill="none" stroke={`url(#${id})`} strokeWidth={0.12} strokeDasharray="0.3 0.25" strokeLinecap="round" strokeLinejoin="round" />
+              </>
+            )}
+            <g opacity={GHOST_OPACITY}>
+              <PlayerGlyph p={p} x={start.x} y={start.y} h={ctx.heading[p.id] ?? p.heading} faded={false} selected={false} pending={false} />
+            </g>
+          </g>
+        )
+      })}
+    </g>
+  )
+}
+
 function PlayerGlyph({ p, x, y, h, faded, selected, pending }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean }) {
   if (p.role === 'G') return <GoalieGlyph p={p} x={x} y={y} h={h} faded={faded} selected={selected} pending={pending} />
   const fill = p.role === 'C' ? '#334155' : TEAM_COLOR[p.team]
@@ -291,6 +341,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const ctx = useMemo(() => editContext(scenario, shownRound, sim), [scenario, shownRound, sim])
   const frame = useMemo(() => (editing ? null : frameAt(sim, time)), [editing, sim, time])
   const firstRound = ctx.round === 0
+  const lookAhead = (c: EditContext) => INSTRUCTION_TOOLS.has(tool) && c.focusT > c.startT + 0.05
+  const ahead = editing && lookAhead(ctx)
 
   const toM = (e: PointerEvent): Vec => {
     const svg = svgRef.current!
@@ -305,7 +357,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     let best: Player | undefined
     let bestD = 1.3
     for (const pl of scenario.players) {
-      const cands = useEnd ? [c.plan.endPos[pl.id], c.pos[pl.id]] : [c.pos[pl.id]]
+      const cands = lookAhead(c) ? [c.now[pl.id]] : useEnd ? [c.plan.endPos[pl.id], c.pos[pl.id]] : [c.pos[pl.id]]
       for (const q of cands) {
         if (!q) continue
         const d = dist(q, p)
@@ -331,9 +383,24 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       return dist(p, closestOnSegment(p, a, b)) < 0.6
     })
 
+  const carriersOf = (c: EditContext) => (lookAhead(c) ? c.nowCarriers : c.plan.carriers)
+  const startOf = (c: EditContext, id: string): Vec => (lookAhead(c) ? c.now[id] : c.plan.endPos[id])
+
   const passer = (c: EditContext) => {
-    if (selectedId && c.plan.carriers.has(selectedId)) return selectedId
-    return c.plan.carriers.size === 1 ? [...c.plan.carriers][0] : undefined
+    const carriers = carriersOf(c)
+    if (selectedId && carriers.has(selectedId)) return selectedId
+    return carriers.size === 1 ? [...carriers][0] : undefined
+  }
+
+  const addTimed = (a: NewAction, timed = true) => {
+    const c = currentContext()
+    const mine = c.actions.filter((x) => x.playerId === a.playerId)
+    const ends = mine.map((x) => sim.actionEnds[x.id])
+    const lastEnd = mine.length === 0 ? c.startT : ends.every((t) => t !== undefined) ? Math.max(...(ends as number[])) : Infinity
+    const gap = timed ? c.focusT - lastEnd : 0
+    const seconds = Math.round(gap * 100) / 100
+    const lead: NewAction[] = gap > MIN_LEAD ? [scenario.settings.autonomous ? { kind: 'play', playerId: a.playerId, seconds, keepPuck: true } : { kind: 'wait', playerId: a.playerId, seconds }] : []
+    st.addActions([...lead, a])
   }
 
   useEffect(() => {
@@ -414,18 +481,19 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     }
 
     if (tool === 'skate') {
-      const hp = hitPlayer(c, p, true) ?? scenario.players.find((x) => x.id === selectedId)
+      const ghost = lookAhead(c) ? scenario.players.find((pl) => !c.actions.some((a) => a.playerId === pl.id) && dist(c.pos[pl.id], p) < 1.3 && dist(c.pos[pl.id], c.now[pl.id]) > GHOST_MIN) : undefined
+      const hp = ghost ?? hitPlayer(c, p, true) ?? scenario.players.find((x) => x.id === selectedId)
       if (!hp) return st.setMessage('Börja dra från en spelare')
       st.select(hp.id)
       st.setMessage(null)
-      setDrag({ kind: 'draw', playerId: hp.id, pts: [c.plan.endPos[hp.id]] })
+      setDrag({ kind: 'draw', playerId: hp.id, pts: [ghost ? c.pos[hp.id] : startOf(c, hp.id)], timed: !ghost })
       capture()
       return
     }
 
     if (tool === 'pass' || tool === 'shoot') {
       const hp = hitPlayer(c, p, true)
-      const switchTo = hp && c.plan.carriers.has(hp.id) && hp.id !== pending?.fromId ? hp : undefined
+      const switchTo = hp && carriersOf(c).has(hp.id) && hp.id !== pending?.fromId ? hp : undefined
       const fromId = switchTo ? undefined : pending?.kind === tool ? pending.fromId : passer(c)
       if (!fromId) {
         if (!hp) return
@@ -437,7 +505,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       }
       if (tool === 'pass') {
         if (!hp || hp.id === fromId) return
-        st.addAction({ kind: 'pass', playerId: fromId, toPlayerId: hp.id })
+        addTimed({ kind: 'pass', playerId: fromId, toPlayerId: hp.id })
       } else {
         const goal = nearestGoal(goals, p)
         if (!goal) return st.setMessage('Det finns ingen målbur att skjuta på.')
@@ -501,7 +569,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     if (drag?.kind === 'divider') st.addDividers(drag.from, drag.to)
     if (drag?.kind === 'aim') {
       const goal = goals.find((g) => g.id === drag.goalId)
-      if (goal) st.addAction({ kind: 'shoot', playerId: drag.playerId, goal: goalSide(goal), goalId: goal.id, ...(drag.moved ? { aim: Math.round(drag.aim * 100) / 100 } : {}) })
+      if (goal) addTimed({ kind: 'shoot', playerId: drag.playerId, goal: goalSide(goal), goalId: goal.id, ...(drag.moved ? { aim: Math.round(drag.aim * 100) / 100 } : {}) })
       st.setPending(null)
       st.setMessage(null)
     }
@@ -510,7 +578,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
       const length = raw.reduce((acc, q, i) => (i ? acc + dist(raw[i - 1], q) : 0), 0)
       if (length > 1) {
         const path = chaikin(simplify(raw, 0.15), 2).slice(1)
-        st.addAction({ kind: 'skate', playerId: drag.playerId, path, speed: st.drawSpeed })
+        addTimed({ kind: 'skate', playerId: drag.playerId, path, speed: st.drawSpeed }, drag.timed)
       }
     }
     setDrag(null)
@@ -536,6 +604,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const posOf = (p: Player) => {
     const f = frame?.players[p.id]
     if (f) return f
+    if (ahead && ctx.now[p.id]) return ctx.now[p.id]
     const q = ctx.pos[p.id] ?? p.pos
     return { x: q.x, y: q.y, h: ctx.heading[p.id] ?? p.heading }
   }
@@ -545,14 +614,14 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const aimView = (() => {
     if (drag?.kind !== 'aim') return null
     const goal = goals.find((g) => g.id === drag.goalId)
-    const from = ctx.plan.endPos[drag.playerId]
+    const from = startOf(ctx, drag.playerId)
     if (!goal || !from) return null
     const shooterTeam = teamOf(drag.playerId)
-    const gk = scenario.players.find((q) => q.role === 'G' && q.team !== shooterTeam && ctx.pos[q.id] && nearestGoal(goals, ctx.pos[q.id]) === goal)
-    return <AimView goal={goal} from={from} aim={drag.moved ? drag.aim : 0} goalie={gk ? { p: gk, pos: ctx.pos[gk.id] } : undefined} />
+    const gk = scenario.players.find((q) => q.role === 'G' && q.team !== shooterTeam && posOf(q) && nearestGoal(goals, posOf(q)) === goal)
+    return <AimView goal={goal} from={from} aim={drag.moved ? drag.aim : 0} goalie={gk ? { p: gk, pos: posOf(gk) } : undefined} />
   })()
 
-  const shotFrom = editing && tool === 'shoot' && pending?.kind === 'shoot' && goals.length === 1 ? ctx.plan.endPos[pending.fromId] : undefined
+  const shotFrom = editing && tool === 'shoot' && pending?.kind === 'shoot' && goals.length === 1 ? startOf(ctx, pending.fromId) : undefined
 
   return (
     <div className="board-wrap">
@@ -588,7 +657,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
             {openingActions(ctx.actions).map((a) => {
               const g = ctx.plan.geom[a.id]
               if (!g || (!editing && a.kind === 'wait')) return null
-              return <ActionShape key={a.id} a={a} from={g.from} to={g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
+              const live = editing ? ctx.simGeom[a.id] : undefined
+              return <ActionShape key={a.id} a={a} from={live?.from ?? g.from} to={live?.to ?? g.to} withPuck={g.withPuck} color={TEAM_COLOR[teamOf(a.playerId)]} />
             })}
           </g>
         )}
@@ -669,6 +739,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {frame && <ShotLanes frame={frame} players={scenario.players} goals={goals} />}
 
+        {ahead && <LookAhead sim={sim} ctx={ctx} players={scenario.players} selectedId={selectedId} />}
+
         {scenario.players.map((p) => {
           const q = posOf(p)
           const first = scenario.actions.find((a) => a.playerId === p.id)
@@ -679,7 +751,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {scenario.pucks.map((k) => {
           const f = frame?.pucks[k.id]
-          const q = f ?? ctx.pucks[k.id] ?? k.pos
+          const q = f ?? (ahead ? ctx.nowPucks[k.id] : undefined) ?? ctx.pucks[k.id] ?? k.pos
           const spare = f ? !!f.s : !!k.spare
           return <circle key={k.id} cx={q.x} cy={q.y} r={spare ? 0.26 : 0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} opacity={spare ? 0.3 : 1} />
         })}
@@ -688,6 +760,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {aimView}
       </svg>
+      {ahead && <div className="look-ahead">Läget vid {ctx.focusT.toFixed(1)} s, när senaste instruktionen är klar</div>}
     </div>
   )
 }

@@ -78,6 +78,7 @@ interface EditorState {
   updatePlayer: (id: string, patch: Partial<Player>) => void
   removeObject: (id: string) => void
   addAction: (a: NewAction) => void
+  addActions: (list: NewAction[]) => void
   addMark: (markerId: string, targetId: string) => void
   setFocus: (id: string | null) => void
   clearActions: (playerId: string) => void
@@ -338,6 +339,7 @@ export const useEditor = create<EditorState>((set, get) => {
       if (get().selectedId === id) set({ selectedId: null })
     },
     addAction: (a) => mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, { ...a, id: uid() } as Action])),
+    addActions: (list) => mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, ...list.map((a) => ({ ...a, id: uid() }) as Action)])),
     clearActions: (playerId) => mutate((s) => mapRoundActions(s, get().activeRound, notBy(playerId))),
     resetPlayer: (playerId) => mutate((s) => mapAllActions(s, (as) => as.filter((a) => a.playerId !== playerId))),
     addMark: (markerId, targetId) =>

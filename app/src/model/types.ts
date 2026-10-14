@@ -44,7 +44,7 @@ export type Action =
   | { id: string; kind: 'pass'; playerId: string; toPlayerId: string }
   | { id: string; kind: 'shoot'; playerId: string; goal: Side; goalId?: string; aim?: number }
   | { id: string; kind: 'wait'; playerId: string; seconds: number; untilPuck?: boolean }
-  | { id: string; kind: 'play'; playerId: string; seconds: number }
+  | { id: string; kind: 'play'; playerId: string; seconds: number; keepPuck?: boolean }
   | { id: string; kind: 'drop'; playerId: string }
   | { id: string; kind: 'mark'; playerId: string; targetId: string }
 

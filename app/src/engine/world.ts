@@ -66,6 +66,7 @@ export interface World {
   scenario: Scenario
   field: Field
   tidy: boolean
+  actionEnds: Record<string, number>
 }
 
 export function playerById(w: World, id: string | null) {
