@@ -224,20 +224,21 @@ function AimView({ goal, from, aim, goalie }: { goal: Goal; from: Vec; aim: numb
 const INSTRUCTION_TOOLS = new Set(['skate', 'pass', 'shoot', 'mark'])
 const MIN_LEAD = 0.15
 const GHOST_MIN = 1
+const PREVIEW_RATE = 0.5
 
 const TRAIL_OPACITY = 0.28
 const TRAIL_SELECTED_OPACITY = 0.6
 const GHOST_OPACITY = 0.18
 
-function LookAhead({ sim, ctx, players, selectedId, detailed }: { sim: SimResult; ctx: EditContext; players: Player[]; selectedId: string | null; detailed: boolean }) {
+function LookAhead({ sim, ctx, at, players, selectedId, detailed }: { sim: SimResult; ctx: EditContext; at: Frame; players: Player[]; selectedId: string | null; detailed: boolean }) {
   const i0 = Math.round(ctx.startT / sim.dt)
-  const i1 = Math.round(ctx.focusT / sim.dt)
+  const i1 = Math.floor(at.t / sim.dt)
   const step = Math.max(1, Math.round(0.1 / sim.dt))
   return (
     <g style={{ pointerEvents: 'none' }}>
       {players.map((p) => {
         const start = ctx.pos[p.id]
-        const now = ctx.now[p.id]
+        const now = at.players[p.id]
         if (!start || !now || dist(start, now) < GHOST_MIN) return null
         const drawn = ctx.actions.some((a) => a.playerId === p.id && a.kind === 'skate')
         const pts: Vec[] = []
@@ -343,8 +344,35 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const ctx = useMemo(() => editContext(scenario, shownRound, sim), [scenario, shownRound, sim])
   const frame = useMemo(() => (editing ? null : frameAt(sim, time)), [editing, sim, time])
   const firstRound = ctx.round === 0
-  const lookAhead = (c: EditContext) => INSTRUCTION_TOOLS.has(tool) && c.focusT > c.startT + 0.05
+  const lookAhead = (c: EditContext) => !st.simultaneous && INSTRUCTION_TOOLS.has(tool) && c.focusT > c.startT + 0.05
   const ahead = editing && lookAhead(ctx)
+  const previewing = st.previewing
+  const shownT = Math.max(ctx.startT, Math.min(ctx.focusT, time))
+  const aheadFrame = useMemo(() => (ahead ? frameAt(sim, shownT) : null), [ahead, sim, shownT])
+
+  useEffect(() => {
+    if (!editing || previewing) return
+    const target = ahead ? ctx.focusT : ctx.startT
+    if (Math.abs(time - target) > 1e-6) useEditor.getState().setTime(target)
+  }, [editing, previewing, ahead, ctx.startT, ctx.focusT, time])
+
+  useEffect(() => {
+    if (!editing || !previewing) return
+    if (!ahead) return useEditor.getState().endPreview()
+    let raf = 0
+    let last: number | null = null
+    let t = ctx.startT
+    useEditor.getState().setTime(t)
+    const tick = (now: number) => {
+      t += Math.min(0.1, (now - (last ?? now)) / 1000) * PREVIEW_RATE
+      last = now
+      if (t >= ctx.focusT) return useEditor.getState().endPreview()
+      useEditor.getState().setTime(t)
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [editing, previewing, ahead, ctx.startT, ctx.focusT])
 
   const toM = (e: PointerEvent): Vec => {
     const svg = svgRef.current!
@@ -399,7 +427,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     const mine = c.actions.filter((x) => x.playerId === a.playerId)
     const ends = mine.map((x) => sim.actionEnds[x.id])
     const lastEnd = mine.length === 0 ? c.startT : ends.every((t) => t !== undefined) ? Math.max(...(ends as number[])) : Infinity
-    const gap = timed ? c.focusT - lastEnd : 0
+    const gap = timed && lookAhead(c) ? c.focusT - lastEnd : 0
     const seconds = Math.round(gap * 100) / 100
     const lead: NewAction[] = gap > MIN_LEAD ? [scenario.settings.autonomous ? { kind: 'play', playerId: a.playerId, seconds, keepPuck: true } : { kind: 'wait', playerId: a.playerId, seconds }] : []
     st.addActions([...lead, a])
@@ -424,6 +452,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
     const inside = clampToField(field, p, 0.6).pos
     if (st.presenting) return st.idle && playing ? undefined : st.togglePlay(sim.duration)
     if (playing) return st.setPlaying(false)
+    if (previewing) st.endPreview()
 
     if (!editing) {
       if (tool === 'skate' || tool === 'pass' || tool === 'shoot' || tool === 'mark') {
@@ -606,7 +635,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
   const posOf = (p: Player) => {
     const f = frame?.players[p.id]
     if (f) return f
-    if (ahead && ctx.now[p.id]) return ctx.now[p.id]
+    const a = aheadFrame?.players[p.id]
+    if (a) return a
     const q = ctx.pos[p.id] ?? p.pos
     return { x: q.x, y: q.y, h: ctx.heading[p.id] ?? p.heading }
   }
@@ -741,7 +771,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {frame && showDetails && <ShotLanes frame={frame} players={scenario.players} goals={goals} />}
 
-        {ahead && <LookAhead sim={sim} ctx={ctx} players={showDetails ? scenario.players : scenario.players.filter((p) => p.role !== 'G')} selectedId={selectedId} detailed={showDetails} />}
+        {aheadFrame && <LookAhead sim={sim} ctx={ctx} at={aheadFrame} players={showDetails ? scenario.players : scenario.players.filter((p) => p.role !== 'G')} selectedId={selectedId} detailed={showDetails} />}
 
         {scenario.players.map((p) => {
           const q = posOf(p)
@@ -764,8 +794,8 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
         })}
 
         {scenario.pucks.map((k) => {
-          const f = frame?.pucks[k.id]
-          const q = f ?? (ahead ? ctx.nowPucks[k.id] : undefined) ?? ctx.pucks[k.id] ?? k.pos
+          const f = frame?.pucks[k.id] ?? aheadFrame?.pucks[k.id]
+          const q = f ?? ctx.pucks[k.id] ?? k.pos
           const spare = f ? !!f.s : !!k.spare
           return <circle key={k.id} cx={q.x} cy={q.y} r={spare ? 0.26 : 0.32} fill="#0a0a0a" stroke="#fff" strokeWidth={0.06} opacity={spare ? 0.3 : 1} />
         })}
@@ -774,7 +804,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
 
         {aimView}
       </svg>
-      {ahead && <div className="look-ahead">Läget vid {ctx.focusT.toFixed(1)} s, när senaste instruktionen är klar</div>}
+      {ahead && <div className="look-ahead">{previewing ? `Spelar upp vad som händer · ${shownT.toFixed(1)} s` : `Läget vid ${ctx.focusT.toFixed(1)} s, när senaste instruktionen är klar`}</div>}
     </div>
   )
 }

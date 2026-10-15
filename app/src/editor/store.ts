@@ -28,11 +28,13 @@ interface EditorState {
   future: Scenario[]
   tool: Tool
   drawSpeed: SpeedKey
+  simultaneous: boolean
   selectedId: string | null
   pending: Pending
   message: string | null
   time: number
   playing: boolean
+  previewing: boolean
   rate: number
   showPaths: boolean
   showTrails: boolean
@@ -64,6 +66,7 @@ interface EditorState {
   present: (id: string) => void
   setTool: (t: Tool) => void
   setDrawSpeed: (s: SpeedKey) => void
+  setSimultaneous: (on: boolean) => void
   select: (id: string | null) => void
   setPending: (p: Pending) => void
   setMessage: (m: string | null) => void
@@ -94,6 +97,7 @@ interface EditorState {
   loadTemplate: (k: TemplateKey) => void
   setTime: (t: number) => void
   setPlaying: (p: boolean) => void
+  endPreview: () => void
   togglePlay: (duration: number) => void
   scrub: (t: number) => void
   selectRound: (index: number) => void
@@ -151,6 +155,7 @@ export const useEditor = create<EditorState>((set, get) => {
         activeRound,
         time: roundStart(scenario, activeRound),
         playing: false,
+        previewing: false,
         editing: true,
         templateKey: null,
       }
@@ -158,7 +163,7 @@ export const useEditor = create<EditorState>((set, get) => {
 
   const restore = (scenario: Scenario, activeRound: number) => {
     const r = clampRound(scenario, activeRound)
-    return { scenario, activeRound: r, time: roundStart(scenario, r), playing: false, editing: true, pending: null }
+    return { scenario, activeRound: r, time: roundStart(scenario, r), playing: false, previewing: false, editing: true, pending: null }
   }
 
   return {
@@ -167,11 +172,13 @@ export const useEditor = create<EditorState>((set, get) => {
     future: [],
     tool: 'select',
     drawSpeed: 'normal',
+    simultaneous: false,
     selectedId: null,
     pending: null,
     message: null,
     time: 0,
     playing: false,
+    previewing: false,
     rate: 1,
     showPaths: true,
     showTrails: true,
@@ -282,6 +289,7 @@ export const useEditor = create<EditorState>((set, get) => {
 
     setTool: (tool) => set({ tool, pending: null, message: null }),
     setDrawSpeed: (drawSpeed) => set({ drawSpeed }),
+    setSimultaneous: (simultaneous) => set({ simultaneous, previewing: false }),
     select: (selectedId) => set({ selectedId }),
     setPending: (pending) => set({ pending }),
     setMessage: (message) => set({ message }),
@@ -340,17 +348,25 @@ export const useEditor = create<EditorState>((set, get) => {
       }))
       if (get().selectedId === id) set({ selectedId: null })
     },
-    addAction: (a) => mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, { ...a, id: uid() } as Action])),
-    addActions: (list) => mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, ...list.map((a) => ({ ...a, id: uid() }) as Action)])),
+    addAction: (a) => {
+      mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, { ...a, id: uid() } as Action]))
+      set({ previewing: true })
+    },
+    addActions: (list) => {
+      mutate((s) => mapRoundActions(s, get().activeRound, (as) => [...as, ...list.map((a) => ({ ...a, id: uid() }) as Action)]))
+      set({ previewing: true })
+    },
     clearActions: (playerId) => mutate((s) => mapRoundActions(s, get().activeRound, notBy(playerId))),
     resetPlayer: (playerId) => mutate((s) => mapAllActions(s, (as) => as.filter((a) => a.playerId !== playerId))),
-    addMark: (markerId, targetId) =>
+    addMark: (markerId, targetId) => {
       mutate((s) =>
         mapRoundActions(s, get().activeRound, (as) => [
           ...as.filter((a) => !(a.kind === 'mark' && a.playerId === markerId)),
           { id: uid(), kind: 'mark', playerId: markerId, targetId },
         ]),
-      ),
+      )
+      set({ previewing: true })
+    },
     updateSettings: (patch) => mutate((s) => ({ ...s, settings: { ...s.settings, ...patch } })),
     setLayout: (layout) =>
       mutate((s) => {
@@ -392,14 +408,16 @@ export const useEditor = create<EditorState>((set, get) => {
       set({ templateKey: k })
     },
     setTime: (time) => set({ time }),
-    setPlaying: (playing) => set((st) => ({ playing, editing: playing ? false : st.editing })),
+    setPlaying: (playing) => set((st) => ({ playing, previewing: false, editing: playing ? false : st.editing })),
+    endPreview: () => set({ previewing: false }),
     togglePlay: (duration) =>
       set((st) => {
         if (st.playing) return { playing: false }
-        const time = st.time >= duration - DT / 2 ? 0 : st.time
-        return { playing: true, editing: false, time, pending: null }
+        const from = st.editing ? roundStart(st.scenario, st.activeRound) : st.time
+        const time = from >= duration - DT / 2 ? 0 : from
+        return { playing: true, previewing: false, editing: false, time, pending: null }
       }),
-    scrub: (time) => set({ time, playing: false, editing: false, pending: null }),
+    scrub: (time) => set({ time, playing: false, previewing: false, editing: false, pending: null }),
     selectRound: (index) => set((st) => restore(st.scenario, index)),
     deleteRound: (index) => {
       if (index === 0) return

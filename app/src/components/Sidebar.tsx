@@ -142,6 +142,7 @@ export function Sidebar() {
   const { tool, drawSpeed, scenario, message } = st
   const active = ALL_TOOLS.find((t) => t.id === tool)
   const canPlace = placementAllowed(st)
+  const instructing = tool === 'skate' || tool === 'pass' || tool === 'shoot' || tool === 'mark'
   const toolButton = (t: ToolDef) => {
     const blocked = PLACE_TOOLS.has(t.id) && !canPlace
     return (
@@ -163,6 +164,15 @@ export function Sidebar() {
     <aside className="sidebar">
       <section className="panel">
         <h3>Verktyg</h3>
+        <p className="tool-group">Instruktioner</p>
+        <div className="seg" title="Efter varandra: varje ny instruktion startar när den förra är klar, och förloppet spelas upp. Samtidigt: alla instruktioner startar från rundans början.">
+          <button className={st.simultaneous ? '' : 'on'} disabled={!instructing} onClick={() => st.setSimultaneous(false)}>
+            Efter varandra
+          </button>
+          <button className={st.simultaneous ? 'on' : ''} disabled={!instructing} onClick={() => st.setSimultaneous(true)}>
+            Samtidigt
+          </button>
+        </div>
         <p className="tool-group">Spelare</p>
         <div className="tools">{PLAYER_TOOLS.map(toolButton)}</div>
         <p className="tool-group">Föremål</p>
