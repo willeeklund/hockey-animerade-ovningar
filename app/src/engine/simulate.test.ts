@@ -254,6 +254,37 @@ describe('simulate', () => {
     }
   })
 
+  it('floorball templates stay on the floorball rink and produce shots', () => {
+    for (const key of ['fbSneak', 'fbGiveGo', 'fb3v2', 'fb5v5', 'fbDiamond', 'fbBox'] as const) {
+      const s = applyMarks(template(key))
+      expect(s.settings.layout).toBe('floorball')
+      const r = simulate(s)
+      for (const f of r.frames) for (const p of Object.values(f.players)) {
+        expect(clampToField(FIELDS.floorball, p, 0.4).normal).toBeNull()
+      }
+      expect(r.events.some((e) => e.kind === 'shot')).toBe(true)
+    }
+  })
+
+  it('the sneaking floorball forward gets the pass in front of goal with the defenders out wide', () => {
+    const r = simulate(applyMarks(template('fbSneak')))
+    const pickup = r.events.find((e) => e.kind === 'pickup' && e.playerId === 'h3')!
+    const f = r.frames[Math.round(pickup.t / r.dt)]
+    expect(dist(f.players.h3, { x: FIELDS.floorball.goalLineX, y: 0 })).toBeLessThan(5)
+    for (const id of ['a1', 'a2']) expect(Math.abs(f.players[id].y)).toBeGreaterThan(3)
+    expect(r.events.find((e) => e.kind === 'shot')?.playerId).toBe('h3')
+  })
+
+  it('the 4 vs 4 floorball formations play through to a shot without losing the ball', () => {
+    for (const [key, shooter] of [['fbDiamond', 'h3'], ['fbBox', 'h3']] as const) {
+      const r = simulate(applyMarks(template(key)))
+      const shot = r.events.find((e) => e.kind === 'shot')!
+      expect(shot.playerId).toBe(shooter)
+      expect(r.events.some((e) => e.kind === 'steal' && e.t < shot.t)).toBe(false)
+      expect(r.events.filter((e) => e.kind === 'pass' && e.t < shot.t).length).toBeGreaterThanOrEqual(2)
+    }
+  })
+
   it('a new round keeps everything before it and then follows the new instructions', () => {
     const s = template('3v2')
     s.settings.durationSec = 6

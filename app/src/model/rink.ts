@@ -1,4 +1,4 @@
-import type { Goal, Layout, Scenario, Side, Team, Vec, ScenarioSettings } from './types'
+import type { Goal, Layout, Scenario, Side, Team, TeamColor, Vec, ScenarioSettings } from './types'
 
 export const RINK = {
   halfLength: 30,
@@ -19,6 +19,8 @@ export const RINK = {
   endToDot: 10,
 }
 
+export const FLOORBALL = { centerR: 3, cornerR: 1, goalLineX: 16.5 }
+
 export const DIVIDER = { length: 2, thickness: 0.2 }
 
 export interface Field {
@@ -34,8 +36,21 @@ export interface Field {
 
 export const FIELDS: Record<Layout, Field> = {
   full: { layout: 'full', halfLength: 30, halfWidth: 15, cornerTop: RINK.cornerR, cornerBottom: RINK.cornerR, goalLineX: RINK.goalLineX, blueLineX: RINK.blueLineX, goalY: 0 },
+  floorball: { layout: 'floorball', halfLength: 20, halfWidth: 10, cornerTop: FLOORBALL.cornerR, cornerBottom: FLOORBALL.cornerR, goalLineX: FLOORBALL.goalLineX, blueLineX: null, goalY: 0 },
   zone: { layout: 'zone', halfLength: 15, halfWidth: RINK.zoneDepth / 2, cornerTop: 0, cornerBottom: RINK.cornerR, goalLineX: 12, blueLineX: null, goalY: RINK.zoneDepth / 2 - RINK.endToDot },
 }
+
+export const TEAM_COLORS: Record<TeamColor, { label: string; fill: string; ink: string }> = {
+  red: { label: 'Röd', fill: '#d62828', ink: '#fff' },
+  blue: { label: 'Blå', fill: '#1d4ed8', ink: '#fff' },
+  green: { label: 'Grön', fill: '#15803d', ink: '#fff' },
+  black: { label: 'Svart', fill: '#111827', ink: '#fff' },
+  yellow: { label: 'Gul', fill: '#eab308', ink: '#111' },
+}
+
+export const DEFAULT_TEAM_COLOR: Record<Team, TeamColor> = { home: 'red', away: 'blue' }
+
+export const teamColorOf = (settings: Pick<ScenarioSettings, 'colors'>, team: Team) => settings.colors?.[team] ?? DEFAULT_TEAM_COLOR[team]
 
 export const fieldOf = (settings: Pick<ScenarioSettings, 'layout'>) => FIELDS[settings.layout ?? 'full']
 

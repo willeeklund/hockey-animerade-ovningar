@@ -1,8 +1,8 @@
 import { PLACE_TOOLS, placementAllowed, useEditor, type Tool } from '../editor/store'
 import { PlaylistPanel } from './PlaylistPanel'
 import { TEMPLATE_GROUPS, TEMPLATE_NAMES } from '../editor/templates'
-import { goalsOf } from '../model/rink'
-import type { Role, SpeedKey } from '../model/types'
+import { goalsOf, TEAM_COLORS, teamColorOf } from '../model/rink'
+import type { Layout, Role, SpeedKey, Team, TeamColor } from '../model/types'
 
 interface ToolDef {
   id: Tool
@@ -28,8 +28,8 @@ const OBJECT_TOOLS: ToolDef[] = [
 ]
 
 const ADD_PLAYER_TOOLS: ToolDef[] = [
-  { id: 'home', label: 'Lag A (röd)', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
-  { id: 'away', label: 'Lag B (blå)', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
+  { id: 'home', label: 'Lag A', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
+  { id: 'away', label: 'Lag B', icon: '●', hint: 'Klicka på isen för att lägga ut en spelare' },
   { id: 'goalie', label: 'Målvakt', icon: 'G', hint: 'Klicka på den halva där målvakten ska stå' },
   { id: 'coach', label: 'Tränare', icon: 'T', hint: 'Klicka på isen för att lägga ut en tränare. Tränaren står still och passar bara när du ritar det.' },
 ]
@@ -45,6 +45,43 @@ const SPEEDS: { id: SpeedKey; label: string }[] = [
   { id: 'normal', label: 'Normal' },
   { id: 'fast', label: 'Fullt' },
 ]
+
+const LAYOUTS: { id: Layout; label: string; hint: string }[] = [
+  { id: 'full', label: 'Hel rink', hint: 'Hela rinken i IIHF-mått.' },
+  { id: 'zone', label: 'Zonspel', hint: 'En zon där man spelar på bredden, med målen mot varandra vid sargerna.' },
+  { id: 'floorball', label: 'Innebandy', hint: 'En innebandyplan, 40 × 20 m.' },
+]
+
+const TEAMS: { id: Team; label: string }[] = [
+  { id: 'home', label: 'Lag A' },
+  { id: 'away', label: 'Lag B' },
+]
+
+function TeamColors() {
+  const st = useEditor()
+  const { settings } = st.scenario
+  return (
+    <>
+      {TEAMS.map((t) => (
+        <div key={t.id} className="row team-colors">
+          {t.label}
+          <div className="swatches">
+            {(Object.keys(TEAM_COLORS) as TeamColor[]).map((c) => (
+              <button
+                key={c}
+                className={`swatch ${teamColorOf(settings, t.id) === c ? 'on' : ''}`}
+                style={{ background: TEAM_COLORS[c].fill }}
+                title={TEAM_COLORS[c].label}
+                aria-label={`${t.label} ${TEAM_COLORS[c].label}`}
+                onClick={() => st.updateSettings({ colors: { ...settings.colors, [t.id]: c } })}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
 
 const ROLES: { id: Role; label: string }[] = [
   { id: 'F', label: 'Forward' },
@@ -220,16 +257,13 @@ export function Sidebar() {
       <section className="panel">
         <h3>Mallar</h3>
         <div className="seg">
-          <button className={layout === 'full' ? 'on' : ''} onClick={() => st.setLayout('full')}>
-            Hel rink
-          </button>
-          <button className={layout === 'zone' ? 'on' : ''} onClick={() => st.setLayout('zone')}>
-            Zonspel
-          </button>
+          {LAYOUTS.map((l) => (
+            <button key={l.id} className={layout === l.id ? 'on' : ''} onClick={() => st.setLayout(l.id)}>
+              {l.label}
+            </button>
+          ))}
         </div>
-        <p className="hint small">
-          {layout === 'zone' ? 'En zon där man spelar på bredden, med målen mot varandra vid sargerna.' : 'Hela rinken i IIHF-mått.'}
-        </p>
+        <p className="hint small">{LAYOUTS.find((l) => l.id === layout)?.hint}</p>
         <div className="templates">
           {TEMPLATE_GROUPS[layout].map((k) => (
             <button key={k} onClick={() => st.loadTemplate(k)}>
@@ -238,6 +272,11 @@ export function Sidebar() {
           ))}
         </div>
       </section>
+
+      <details className="panel collapsible">
+        <summary>Lagfärger</summary>
+        <TeamColors />
+      </details>
 
       <PlaylistPanel />
 

@@ -14,6 +14,7 @@ import { useEditor, type NewAction } from '../editor/store'
 import { RinkLines } from './RinkLines'
 
 const TEAM_COLOR = { home: 'var(--home)', away: 'var(--away)' }
+const TEAM_INK = { home: 'var(--home-ink)', away: 'var(--away-ink)' }
 const PAD = 1.5
 
 type Drag =
@@ -281,7 +282,7 @@ function PlayerGlyph({ p, x, y, h, faded, selected, pending, detailed = false }:
       {(selected || pending) && <circle r={1.45} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
       <line x1={0} y1={0} x2={Math.cos(h) * HEADING_LEN} y2={Math.sin(h) * HEADING_LEN} stroke="#3b2a1a" strokeWidth={0.09} strokeLinecap="round" opacity={0.75} />
       <circle r={0.95} fill={fill} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
-      <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill="#fff" style={{ pointerEvents: 'none' }}>
+      <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill={p.role === 'C' ? '#fff' : TEAM_INK[p.team]} style={{ pointerEvents: 'none' }}>
         {p.label}
       </text>
     </g>
@@ -291,12 +292,12 @@ function PlayerGlyph({ p, x, y, h, faded, selected, pending, detailed = false }:
 const FOCUS_COLOR = '#facc15'
 const GOAL_RED = '#c8102e'
 
-function GoalGlyph({ g, selected }: { g: Goal; selected: boolean }) {
+function GoalGlyph({ g, selected, crease = true }: { g: Goal; selected: boolean; crease?: boolean }) {
   const w = RINK.goalHalfWidth
   const c = RINK.creaseR
   return (
     <g transform={`translate(${g.pos.x} ${g.pos.y}) rotate(${(g.angle * 180) / Math.PI})`} style={{ cursor: 'pointer' }}>
-      <path d={`M 0 ${-c} A ${c} ${c} 0 0 1 0 ${c} Z`} fill="#bfe3f7" stroke={GOAL_RED} strokeWidth={0.05} />
+      {crease && <path d={`M 0 ${-c} A ${c} ${c} 0 0 1 0 ${c} Z`} fill="#bfe3f7" stroke={GOAL_RED} strokeWidth={0.05} />}
       <rect x={-RINK.goalDepth} y={-w} width={RINK.goalDepth} height={w * 2} rx={0.3} fill="#fff" stroke={GOAL_RED} strokeWidth={0.12} />
       <path d={`M 0 ${-w} V ${w}`} stroke={GOAL_RED} strokeWidth={0.15} />
       {selected && <circle cx={0.2} r={2.3} fill="none" stroke="#facc15" strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
@@ -681,7 +682,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
         </defs>
         <RinkLines field={field} />
         {goals.map((g) => (
-          <GoalGlyph key={g.id} g={g} selected={g.id === selectedId} />
+          <GoalGlyph key={g.id} g={g} selected={g.id === selectedId} crease={field.layout !== 'floorball'} />
         ))}
 
         {showPaths && (

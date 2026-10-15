@@ -33,3 +33,13 @@ describe('presentation', () => {
     useEditor.getState().exitPresentation()
   })
 })
+
+describe('templates', () => {
+  it('keep the chosen team colors when switching template', () => {
+    useEditor.getState().updateSettings({ colors: { home: 'green', away: 'yellow' } })
+    useEditor.getState().loadTemplate('fbDiamond')
+    expect(useEditor.getState().scenario.settings.colors).toEqual({ home: 'green', away: 'yellow' })
+    useEditor.getState().loadTemplate('empty')
+    expect(useEditor.getState().scenario.settings.colors).toEqual({ home: 'green', away: 'yellow' })
+  })
+})

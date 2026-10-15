@@ -4,7 +4,8 @@ export type Team = 'home' | 'away'
 export type Role = 'F' | 'D' | 'G' | 'C'
 export type Side = 'left' | 'right'
 export type SpeedKey = 'slow' | 'normal' | 'fast'
-export type Layout = 'full' | 'zone'
+export type Layout = 'full' | 'zone' | 'floorball'
+export type TeamColor = 'red' | 'blue' | 'green' | 'black' | 'yellow'
 
 export interface Player {
   id: string
@@ -62,6 +63,7 @@ export interface ScenarioSettings {
   homeAttacks: Side
   layout?: Layout
   offside?: boolean
+  colors?: Partial<Record<Team, TeamColor>>
 }
 
 export interface Scenario {

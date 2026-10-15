@@ -404,7 +404,9 @@ export const useEditor = create<EditorState>((set, get) => {
       }),
     load: (scenario) => set({ ...restore(applyMarks(scenario), 0), past: [], future: [], selectedId: null, templateKey: null }),
     loadTemplate: (k) => {
-      get().load(k === 'empty' ? emptyScenario() : template(k))
+      const next = k === 'empty' ? emptyScenario() : template(k)
+      const { colors } = get().scenario.settings
+      get().load(colors ? { ...next, settings: { ...next.settings, colors } } : next)
       set({ templateKey: k })
     },
     setTime: (time) => set({ time }),

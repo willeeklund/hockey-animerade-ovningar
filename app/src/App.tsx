@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { CONFIG } from './config'
 import { Board } from './components/Board'
 import { Library } from './components/Library'
@@ -7,6 +7,7 @@ import { Sidebar } from './components/Sidebar'
 import { StageCorner } from './components/StageCorner'
 import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
+import { TEAM_COLORS, teamColorOf } from './model/rink'
 import { placementAllowed, useEditor, type Tool } from './editor/store'
 
 const IDLE_MS = 2500
@@ -23,6 +24,9 @@ export default function App() {
   const presenting = useEditor((s) => s.presenting)
   const playing = useEditor((s) => s.playing)
   const sim = useMemo(() => simulate(scenario), [scenario])
+  const home = TEAM_COLORS[teamColorOf(scenario.settings, 'home')]
+  const away = TEAM_COLORS[teamColorOf(scenario.settings, 'away')]
+  const teamVars = { '--home': home.fill, '--home-ink': home.ink, '--away': away.fill, '--away-ink': away.ink } as CSSProperties
   const idle = useEditor((s) => s.idle)
   const idleTimer = useRef(0)
 
@@ -124,7 +128,7 @@ export default function App() {
 
   if (presenting) {
     return (
-      <div className={`app presenting ${idle && playing ? 'idle' : ''}`}>
+      <div className={`app presenting ${idle && playing ? 'idle' : ''}`} style={teamVars}>
         <main className="stage">
           <Board sim={sim} corner={<StageCorner />} />
           <Timeline sim={sim} compact />
@@ -134,7 +138,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app" style={teamVars}>
       <header className="top">
         <h1>
           <span className="logo">🏒</span> Animerade hockeyövningar

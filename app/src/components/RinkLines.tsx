@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { RINK, type Field } from '../model/rink'
+import { FLOORBALL, RINK, type Field } from '../model/rink'
 
 const R = RINK
 const RED = '#c8102e'
@@ -110,8 +110,23 @@ function ZoneRink({ field }: { field: Field }) {
   )
 }
 
+function FloorballRink({ field }: { field: Field }) {
+  const hx = field.halfLength
+  const hy = field.halfWidth
+  const r = FLOORBALL.cornerR
+  return (
+    <g>
+      <rect x={-hx} y={-hy} width={hx * 2} height={hy * 2} rx={r} fill="#fff" />
+      <circle cx={0} cy={0} r={FLOORBALL.centerR} fill="none" stroke="#1f2937" strokeWidth={0.06} />
+      <rect x={-hx} y={-hy} width={hx * 2} height={hy * 2} rx={r} fill="none" stroke="#1f2937" strokeWidth={0.25} />
+    </g>
+  )
+}
+
 function RinkLinesImpl({ field }: { field: Field }) {
-  return field.layout === 'zone' ? <ZoneRink field={field} /> : <FullRink />
+  if (field.layout === 'zone') return <ZoneRink field={field} />
+  if (field.layout === 'floorball') return <FloorballRink field={field} />
+  return <FullRink />
 }
 
 export const RinkLines = memo(RinkLinesImpl)
