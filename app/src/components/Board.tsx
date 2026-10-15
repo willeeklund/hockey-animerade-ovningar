@@ -15,6 +15,8 @@ import { RinkLines } from './RinkLines'
 
 const TEAM_COLOR = { home: 'var(--home)', away: 'var(--away)' }
 const TEAM_INK = { home: 'var(--home-ink)', away: 'var(--away-ink)' }
+const NEUTRAL_COLOR = '#9ca3af'
+const colorOf = (p: Pick<Player, 'team' | 'neutral'>) => (p.neutral ? NEUTRAL_COLOR : TEAM_COLOR[p.team])
 const PAD = 1.5
 
 type Drag =
@@ -82,7 +84,7 @@ function ActionShape({ a, from, to, withPuck, color }: { a: Action; from: Vec; t
 const GOALIE_DRAW_SCALE = 1.6
 
 function GoalieGlyph({ p, x, y, h, faded, selected, pending, drawScale = GOALIE_DRAW_SCALE }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean; drawScale?: number }) {
-  const fill = TEAM_COLOR[p.team]
+  const fill = colorOf(p)
   const r = GOALIE_REACH
   const c = GOALIE_CORE
   return (
@@ -256,8 +258,8 @@ function LookAhead({ sim, ctx, at, players, selectedId, detailed }: { sim: SimRe
               <>
                 <defs>
                   <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={start.x} y1={start.y} x2={now.x} y2={now.y}>
-                    <stop offset="0" style={{ stopColor: TEAM_COLOR[p.team], stopOpacity: 0.04 }} />
-                    <stop offset="1" style={{ stopColor: TEAM_COLOR[p.team], stopOpacity: peak }} />
+                    <stop offset="0" style={{ stopColor: colorOf(p), stopOpacity: 0.04 }} />
+                    <stop offset="1" style={{ stopColor: colorOf(p), stopOpacity: peak }} />
                   </linearGradient>
                 </defs>
                 <polyline points={pts2(pts)} fill="none" stroke={`url(#${id})`} strokeWidth={0.12} strokeDasharray="0.3 0.25" strokeLinecap="round" strokeLinejoin="round" />
@@ -276,13 +278,13 @@ function LookAhead({ sim, ctx, at, players, selectedId, detailed }: { sim: SimRe
 function PlayerGlyph({ p, x, y, h, faded, selected, pending, detailed = false }: { p: Player; x: number; y: number; h: number; faded: boolean; selected: boolean; pending: boolean; detailed?: boolean }) {
   if (detailed && p.role === 'G') return <GoalieGlyph p={p} x={x} y={y} h={h} faded={faded} selected={selected} pending={pending} />
   const goalie = p.role === 'G'
-  const fill = p.role === 'C' ? '#334155' : TEAM_COLOR[p.team]
+  const fill = p.role === 'C' ? '#334155' : colorOf(p)
   return (
     <g transform={`translate(${x} ${y})`} style={{ cursor: 'pointer' }} opacity={faded ? 0.45 : 1}>
       {(selected || pending) && <circle r={1.45} fill="none" stroke={pending ? '#f97316' : '#facc15'} strokeWidth={0.18} strokeDasharray="0.4 0.25" />}
       <line x1={0} y1={0} x2={Math.cos(h) * HEADING_LEN} y2={Math.sin(h) * HEADING_LEN} stroke="#3b2a1a" strokeWidth={0.09} strokeLinecap="round" opacity={0.75} />
       <circle r={0.95} fill={fill} stroke={goalie ? '#111' : '#fff'} strokeWidth={goalie ? 0.22 : 0.14} />
-      <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill={p.role === 'C' ? '#fff' : TEAM_INK[p.team]} style={{ pointerEvents: 'none' }}>
+      <text y={0.32} textAnchor="middle" fontSize={p.label.length > 2 ? 0.65 : 0.85} fontWeight={700} fill={p.role === 'C' || p.neutral ? '#fff' : TEAM_INK[p.team]} style={{ pointerEvents: 'none' }}>
         {p.label}
       </text>
     </g>
@@ -628,7 +630,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
         const f = sim.frames[i]?.players[p.id]
         if (f) pts.push(f)
       }
-      return { id: p.id, team: p.team, pts }
+      return { id: p.id, color: colorOf(p), pts }
     })
   }, [editing, showTrails, showDetails, time, sim, scenario.players])
 
@@ -763,7 +765,7 @@ export function Board({ sim, corner }: { sim: SimResult; corner?: ReactNode }) {
             key={tr.id}
             points={pts2(tr.pts)}
             fill="none"
-            stroke={tr.id === scenario.focusId ? FOCUS_COLOR : TEAM_COLOR[tr.team]}
+            stroke={tr.id === scenario.focusId ? FOCUS_COLOR : tr.color}
             strokeOpacity={tr.id === scenario.focusId ? 0.9 : 0.35}
             strokeWidth={0.35}
             strokeLinecap="round"

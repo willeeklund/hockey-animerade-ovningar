@@ -285,6 +285,28 @@ describe('simulate', () => {
     }
   })
 
+  it('the coach drill alternates three attacks through the coach and ends with a sneaking goal', () => {
+    const r = simulate(applyMarks(template('fbCoach')))
+    const got = r.events.filter((e) => e.kind === 'pickup').map((e) => e.playerId)
+    expect(got).toEqual(['h1', 'c', 'h2', 'a4', 'c', 'a2', 'h1', 'c', 'h1', 'h4'])
+    const shot = r.events.find((e) => e.kind === 'shot')!
+    expect(shot.playerId).toBe('h4')
+    expect(r.events.some((e) => e.kind === 'goal' && e.t > shot.t)).toBe(true)
+    const f = r.frames[Math.round(shot.t / r.dt)]
+    for (const id of ['a3', 'a4']) expect(dist(f.players[id], f.players.h4)).toBeGreaterThan(3)
+    const wide = (ids: string[]) => Math.max(...r.frames.flatMap((q) => ids.map((id) => Math.abs(q.players[id].y))))
+    expect(wide(['h1', 'h2'])).toBeGreaterThan(7.5)
+    expect(wide(['a1', 'a2'])).toBeGreaterThan(7.5)
+    const moving = (from: number, to: number, ids: string[]) => {
+      const span = r.frames.slice(Math.round(from / r.dt), Math.round(to / r.dt))
+      const counts = span.slice(1).map((q, i) => ids.filter((id) => dist(q.players[id], span[i].players[id]) / r.dt > 1).length)
+      return counts.reduce((a, b) => a + b, 0) / counts.length
+    }
+    expect(moving(0.5, 4.5, ['h1', 'h2', 'h3', 'h4'])).toBeGreaterThan(2.5)
+    expect(moving(5.5, 12, ['a1', 'a2', 'a3', 'a4'])).toBeGreaterThan(2.5)
+    expect(moving(13, 19.5, ['h1', 'h2', 'h3', 'h4'])).toBeGreaterThan(2.5)
+  })
+
   it('a new round keeps everything before it and then follows the new instructions', () => {
     const s = template('3v2')
     s.settings.durationSec = 6

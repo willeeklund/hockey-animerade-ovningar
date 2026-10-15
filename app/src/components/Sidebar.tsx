@@ -73,7 +73,7 @@ function TeamColors() {
                 style={{ background: TEAM_COLORS[c].fill }}
                 title={TEAM_COLORS[c].label}
                 aria-label={`${t.label} ${TEAM_COLORS[c].label}`}
-                onClick={() => st.updateSettings({ colors: { ...settings.colors, [t.id]: c } })}
+                onClick={() => st.setTeamColor(t.id, c)}
               />
             ))}
           </div>
@@ -135,12 +135,17 @@ function SelectedPanel() {
             ))}
           </div>
           <div className="seg">
-            <button className={p.team === 'home' ? 'on' : ''} onClick={() => updatePlayer(p.id, { team: 'home' })}>
+            <button className={p.team === 'home' && !p.neutral ? 'on' : ''} onClick={() => updatePlayer(p.id, { team: 'home', neutral: undefined })}>
               Lag A
             </button>
-            <button className={p.team === 'away' ? 'on' : ''} onClick={() => updatePlayer(p.id, { team: 'away' })}>
+            <button className={p.team === 'away' && !p.neutral ? 'on' : ''} onClick={() => updatePlayer(p.id, { team: 'away', neutral: undefined })}>
               Lag B
             </button>
+            {p.role === 'G' && (
+              <button className={p.neutral ? 'on' : ''} title="Grå målvakt som räddar för båda lagen" onClick={() => updatePlayer(p.id, { neutral: true })}>
+                Neutral
+              </button>
+            )}
           </div>
           <button disabled={!count} onClick={inRound(() => clearActions(p.id))}>
             Rensa rörelser ({count})

@@ -15,6 +15,7 @@ export interface PlayerRt {
   id: string
   team: Team
   role: Role
+  neutral?: boolean
   pos: Vec
   vel: Vec
   heading: number

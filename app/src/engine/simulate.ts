@@ -94,6 +94,7 @@ export function createWorld(s: Scenario): World {
     id: p.id,
     team: p.team,
     role: p.role,
+    neutral: p.neutral,
     pos: { ...p.pos },
     vel: { x: 0, y: 0 },
     heading: p.heading,

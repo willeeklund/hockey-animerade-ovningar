@@ -91,7 +91,7 @@ export function goalieIntent(w: World, p: PlayerRt, k: PuckRt | undefined): Inte
   const g = refOf(goal)
   if (!puck) return { target: add(g.pos, mul(g.n, 0.8)), speed: 3, face: add(g.pos, mul(g.n, 10)) }
   const carrier = playerById(w, k?.carrierId ?? null)
-  const alone = carrier && carrier.team !== p.team && skaters(w, p.team).every((q) => depthOf(g, q.pos) > depthOf(g, carrier.pos))
+  const alone = carrier && (p.neutral || carrier.team !== p.team) && skaters(w, p.neutral ? other(carrier.team) : p.team).every((q) => depthOf(g, q.pos) > depthOf(g, carrier.pos))
   const challenge = !!alone && depthOf(g, puck) < 16
   return { target: goalieSpot(g, puck, challenge), speed: challenge ? 5 : 4, face: puck }
 }

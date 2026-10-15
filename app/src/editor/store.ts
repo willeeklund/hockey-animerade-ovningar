@@ -1,10 +1,10 @@
 import { create } from 'zustand'
 import { DT } from '../engine/world'
 import { clampToField, DEFAULT_GOAL_IDS, defaultGoals, FIELDS, goalsOf } from '../model/rink'
-import type { Action, Goal, Layout, Player, Role, Scenario, ScenarioSettings, Side, SpeedKey, Team, TrainingPass, Vec } from '../model/types'
+import type { Action, Goal, Layout, Player, Role, Scenario, ScenarioSettings, Side, SpeedKey, Team, TeamColor, TrainingPass, Vec } from '../model/types'
 import { add, fromAngle, sub } from '../engine/vec'
 import { layoutDividers } from './dividers'
-import { MY_PASS, SHARED_PASS, playlistItems, readLibrary, readPassSource, readPlaylist, writeLibrary, writePassSource, writePlaylist, type Playlist } from './storage'
+import { MY_PASS, SHARED_PASS, playlistItems, readLibrary, readPassSource, readPlaylist, readTeamColors, writeLibrary, writePassSource, writePlaylist, writeTeamColors, type Playlist } from './storage'
 import { applyMarks } from './marks'
 import { initialCarrierMap } from './staticPlan'
 import { emptyScenario, template, uid, type TemplateKey } from './templates'
@@ -88,6 +88,7 @@ interface EditorState {
   clearActions: (playerId: string) => void
   resetPlayer: (playerId: string) => void
   updateSettings: (patch: Partial<ScenarioSettings>) => void
+  setTeamColor: (team: Team, color: TeamColor) => void
   setLayout: (layout: Layout) => void
   rename: (name: string) => void
   setNotes: (notes: string) => void
@@ -143,6 +144,9 @@ const notInvolving = (id: string) => (as: Action[]) =>
 
 const notBy = (id: string) => (as: Action[]) => as.filter((a) => a.playerId !== id && !(a.kind === 'pass' && a.toPlayerId === id))
 
+const withColors = (s: Scenario, colors: ScenarioSettings['colors'] | null | undefined): Scenario =>
+  colors ? { ...s, settings: { ...s.settings, colors } } : s
+
 export const useEditor = create<EditorState>((set, get) => {
   const mutate = (fn: (s: Scenario) => Scenario, checkpoint = true) =>
     set((st) => {
@@ -167,7 +171,7 @@ export const useEditor = create<EditorState>((set, get) => {
   }
 
   return {
-    scenario: template('3v2'),
+    scenario: withColors(template('3v2'), readTeamColors()),
     past: [],
     future: [],
     tool: 'select',
@@ -368,6 +372,11 @@ export const useEditor = create<EditorState>((set, get) => {
       set({ previewing: true })
     },
     updateSettings: (patch) => mutate((s) => ({ ...s, settings: { ...s.settings, ...patch } })),
+    setTeamColor: (team, color) => {
+      const colors = { ...get().scenario.settings.colors, [team]: color }
+      writeTeamColors(colors)
+      get().updateSettings({ colors })
+    },
     setLayout: (layout) =>
       mutate((s) => {
         const f = FIELDS[layout]
@@ -405,8 +414,7 @@ export const useEditor = create<EditorState>((set, get) => {
     load: (scenario) => set({ ...restore(applyMarks(scenario), 0), past: [], future: [], selectedId: null, templateKey: null }),
     loadTemplate: (k) => {
       const next = k === 'empty' ? emptyScenario() : template(k)
-      const { colors } = get().scenario.settings
-      get().load(colors ? { ...next, settings: { ...next.settings, colors } } : next)
+      get().load(withColors(next, readTeamColors() ?? get().scenario.settings.colors))
       set({ templateKey: k })
     },
     setTime: (time) => set({ time }),

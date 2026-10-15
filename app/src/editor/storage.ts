@@ -1,8 +1,9 @@
-import type { Scenario } from '../model/types'
+import type { Scenario, ScenarioSettings } from '../model/types'
 
 const LIBRARY_KEY = 'hockey-vision.scenarios'
 const PLAYLIST_KEY = 'hockey-vision.playlist'
 const PASS_SOURCE_KEY = 'hockey-vision.pass-source'
+const TEAM_COLORS_KEY = 'hockey-vision.team-colors'
 
 export interface Playlist {
   name: string
@@ -36,6 +37,9 @@ export const readPlaylist = () => read<Playlist>(PLAYLIST_KEY, { name: '', ids: 
 export const writePlaylist = (p: Playlist) => write(PLAYLIST_KEY, p)
 export const readPassSource = () => read<string>(PASS_SOURCE_KEY, MY_PASS)
 export const writePassSource = (id: string) => write(PASS_SOURCE_KEY, id)
+
+export const readTeamColors = () => read<ScenarioSettings['colors'] | null>(TEAM_COLORS_KEY, null)
+export const writeTeamColors = (colors: ScenarioSettings['colors']) => write(TEAM_COLORS_KEY, colors)
 
 export const MY_PASS = 'mine'
 export const SHARED_PASS = 'shared'

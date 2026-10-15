@@ -1,4 +1,4 @@
-import { FIELDS } from '../model/rink'
+import { DEFAULT_GOAL_IDS, FIELDS } from '../model/rink'
 import type { Layout, Player, Role, Scenario, Team } from '../model/types'
 
 const ZONE_GOAL_Y = FIELDS.zone.goalY
@@ -28,6 +28,7 @@ export type TemplateKey =
   | 'fb5v5'
   | 'fbDiamond'
   | 'fbBox'
+  | 'fbCoach'
 
 export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   empty: 'Tom rink',
@@ -52,15 +53,17 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   fb5v5: '5 mot 5',
   fbDiamond: '4 mot 4, diamant',
   fbBox: '4 mot 4, 2-2',
+  fbCoach: '4 mot 4 via tränaren, ett mål',
 }
 
 export const TEMPLATE_GROUPS: Record<Layout, TemplateKey[]> = {
   full: ['empty', '2v1', '3v2', '1v1gap', 'breakaway', 'breakout', '5v5', 'pp54', 'mark3v3', 'slalom'],
   zone: ['emptyZone', 'zone1v1', 'zone2v2', 'zone3v2', 'zone3v3'],
-  floorball: ['emptyFloorball', 'fbSneak', 'fbGiveGo', 'fb3v2', 'fb5v5', 'fbDiamond', 'fbBox'],
+  floorball: ['emptyFloorball', 'fbSneak', 'fbGiveGo', 'fb3v2', 'fb5v5', 'fbDiamond', 'fbBox', 'fbCoach'],
 }
 
 const FB_GOALIE_X = FIELDS.floorball.goalLineX - 1
+const COACH_X = -0.2 * FIELDS.floorball.halfLength
 
 function fbBoxDefence(): Player[] {
   return [
@@ -329,6 +332,108 @@ export function template(key: TemplateKey): Scenario {
     ]
     s.notes =
       'Klassisk 2-2: två backar (VB, HB) och två forwards (VF, HF). Backarna flyttar bollen över planen för att byta sida, HB spelar upp HF längs kanten. HF tar sig in i zonen och VF går mot mål för att ta emot och avsluta.'
+  } else if (key === 'fbCoach') {
+    s.settings.autonomous = false
+    s.settings.durationSec = 9
+    s.goals = [{ id: DEFAULT_GOAL_IDS.right, pos: { x: FIELDS.floorball.goalLineX, y: 0 }, angle: Math.PI }]
+    s.players = [
+      { ...pl('c', 'home', 'C', 'T', COACH_X, -8), heading: Math.PI / 2 },
+      { ...pl('g', 'away', 'G', 'G', FB_GOALIE_X, 0), neutral: true },
+      pl('h1', 'home', 'F', '1', 0, -5),
+      pl('h2', 'home', 'F', '2', 1, 5),
+      pl('h3', 'home', 'F', '3', 7, -7),
+      pl('h4', 'home', 'F', '4', 8, 7),
+      pl('a1', 'away', 'F', '1', 3, -3),
+      pl('a2', 'away', 'F', '2', 4, 3),
+      pl('a3', 'away', 'D', '3', 11, -3),
+      pl('a4', 'away', 'D', '4', 11.5, 2.5),
+    ]
+    s.pucks = [{ id: 'k1', pos: { x: COACH_X, y: -7.3 } }]
+    s.actions = [
+      { id: 'c1', kind: 'pass', playerId: 'c', toPlayerId: 'h1' },
+      { id: 'c2', kind: 'skate', playerId: 'c', speed: 'normal', path: [{ x: COACH_X, y: -2 }] },
+      { id: 'c3', kind: 'pass', playerId: 'c', toPlayerId: 'h2' },
+      { id: 'h1a', kind: 'pass', playerId: 'h1', toPlayerId: 'c' },
+      { id: 'h1b', kind: 'skate', playerId: 'h1', speed: 'normal', path: [{ x: 5, y: -8 }, { x: 10, y: -8.5 }] },
+      { id: 'h1b2', kind: 'skate', playerId: 'h1', speed: 'slow', path: [{ x: 13, y: -6 }, { x: 12, y: -3 }] },
+      { id: 'h1b3', kind: 'skate', playerId: 'h1', speed: 'slow', path: [{ x: 9, y: -4 }] },
+      { id: 'h2a', kind: 'skate', playerId: 'h2', speed: 'normal', path: [{ x: 0, y: 7 }] },
+      { id: 'h2b', kind: 'wait', playerId: 'h2', seconds: 1 },
+      { id: 'h2c', kind: 'skate', playerId: 'h2', speed: 'normal', path: [{ x: 5, y: 8 }, { x: 9, y: 7 }] },
+      { id: 'h2d', kind: 'pass', playerId: 'h2', toPlayerId: 'a4' },
+      { id: 'h3a', kind: 'skate', playerId: 'h3', speed: 'slow', path: [{ x: 11, y: -5 }, { x: 14, y: -2 }] },
+      { id: 'h3a2', kind: 'skate', playerId: 'h3', speed: 'slow', path: [{ x: 12, y: -4.5 }] },
+      { id: 'h4a', kind: 'skate', playerId: 'h4', speed: 'slow', path: [{ x: 13, y: 8 }, { x: 15, y: 5.5 }] },
+      { id: 'h4a2', kind: 'skate', playerId: 'h4', speed: 'slow', path: [{ x: 13, y: 7 }] },
+      { id: 'a1a', kind: 'mark', playerId: 'a1', targetId: 'h1' },
+      { id: 'a2a', kind: 'mark', playerId: 'a2', targetId: 'h2' },
+      { id: 'a3a', kind: 'mark', playerId: 'a3', targetId: 'h3' },
+      { id: 'a4a', kind: 'skate', playerId: 'a4', speed: 'slow', path: [{ x: 11, y: 3.5 }] },
+    ]
+    s.rounds = [
+      {
+        id: 'r2',
+        startT: 5,
+        homeAttacks: 'left',
+        actions: [
+          { id: 'a4b', kind: 'pass', playerId: 'a4', toPlayerId: 'c' },
+          { id: 'a4c', kind: 'skate', playerId: 'a4', speed: 'normal', path: [{ x: 12, y: 6 }, { x: 14, y: 7.5 }] },
+          { id: 'a4c2', kind: 'skate', playerId: 'a4', speed: 'slow', path: [{ x: 11, y: 7 }, { x: 13, y: 4 }] },
+          { id: 'a4c3', kind: 'skate', playerId: 'a4', speed: 'slow', path: [{ x: 15, y: 6 }] },
+          { id: 'c3b', kind: 'wait', playerId: 'c', seconds: 3, untilPuck: true },
+          { id: 'c4', kind: 'skate', playerId: 'c', speed: 'normal', path: [{ x: COACH_X, y: 4 }] },
+          { id: 'c5', kind: 'pass', playerId: 'c', toPlayerId: 'a2' },
+          { id: 'a2b', kind: 'skate', playerId: 'a2', speed: 'fast', path: [{ x: 1, y: 7 }] },
+          { id: 'a2c', kind: 'wait', playerId: 'a2', seconds: 1 },
+          { id: 'a2d', kind: 'skate', playerId: 'a2', speed: 'normal', path: [{ x: 5, y: 6.5 }, { x: 9, y: 6 }] },
+          { id: 'a2e', kind: 'pass', playerId: 'a2', toPlayerId: 'h1' },
+          { id: 'a1b', kind: 'skate', playerId: 'a1', speed: 'slow', path: [{ x: 7, y: -9 }, { x: 5, y: -7.5 }] },
+          { id: 'a1b2', kind: 'skate', playerId: 'a1', speed: 'normal', path: [{ x: 10, y: -9.3 }, { x: 13, y: -7 }] },
+          { id: 'a1b3', kind: 'skate', playerId: 'a1', speed: 'slow', path: [{ x: 11, y: -4 }, { x: 13, y: -2 }] },
+          { id: 'a3b', kind: 'skate', playerId: 'a3', speed: 'slow', path: [{ x: 9, y: -2 }, { x: 13, y: -1 }] },
+          { id: 'a3b2', kind: 'skate', playerId: 'a3', speed: 'slow', path: [{ x: 14, y: -4 }, { x: 11, y: -3 }] },
+          { id: 'a3b3', kind: 'skate', playerId: 'a3', speed: 'slow', path: [{ x: 13, y: -1 }, { x: 15, y: -3 }] },
+          { id: 'a3b4', kind: 'skate', playerId: 'a3', speed: 'slow', path: [{ x: 12, y: -4.5 }] },
+          { id: 'h2e', kind: 'mark', playerId: 'h2', targetId: 'a2' },
+          { id: 'h3b', kind: 'mark', playerId: 'h3', targetId: 'a3' },
+          { id: 'h4b', kind: 'mark', playerId: 'h4', targetId: 'a4' },
+          { id: 'h1c', kind: 'skate', playerId: 'h1', speed: 'normal', path: [{ x: 10, y: -3 }, { x: 11, y: 1 }] },
+        ],
+      },
+      {
+        id: 'r3',
+        startT: 12.6,
+        homeAttacks: 'right',
+        actions: [
+          { id: 'h1d', kind: 'pass', playerId: 'h1', toPlayerId: 'c' },
+          { id: 'h1e', kind: 'skate', playerId: 'h1', speed: 'fast', path: [{ x: 0, y: -6 }] },
+          { id: 'h1f', kind: 'wait', playerId: 'h1', seconds: 0.5 },
+          { id: 'h1g', kind: 'skate', playerId: 'h1', speed: 'normal', path: [{ x: 6, y: -8.5 }, { x: 11, y: -8.5 }] },
+          { id: 'h1h', kind: 'pass', playerId: 'h1', toPlayerId: 'h4' },
+          { id: 'c5b', kind: 'wait', playerId: 'c', seconds: 3, untilPuck: true },
+          { id: 'c6', kind: 'skate', playerId: 'c', speed: 'normal', path: [{ x: COACH_X, y: -3 }] },
+          { id: 'c7', kind: 'pass', playerId: 'c', toPlayerId: 'h1' },
+          { id: 'h2f', kind: 'skate', playerId: 'h2', speed: 'normal', path: [{ x: 8, y: 8 }, { x: 12, y: 8 }] },
+          { id: 'h2g', kind: 'skate', playerId: 'h2', speed: 'slow', path: [{ x: 9, y: 6 }, { x: 7, y: 7.5 }] },
+          { id: 'h2h', kind: 'skate', playerId: 'h2', speed: 'slow', path: [{ x: 11, y: 8.5 }, { x: 14, y: 7 }] },
+          { id: 'h2i', kind: 'skate', playerId: 'h2', speed: 'slow', path: [{ x: 12, y: 8 }] },
+          { id: 'h3c', kind: 'skate', playerId: 'h3', speed: 'normal', path: [{ x: 7, y: -3 }] },
+          { id: 'h3d', kind: 'skate', playerId: 'h3', speed: 'slow', path: [{ x: 9, y: -1 }, { x: 6, y: -4 }] },
+          { id: 'h3e', kind: 'skate', playerId: 'h3', speed: 'slow', path: [{ x: 8, y: -2 }, { x: 10, y: -4 }] },
+          { id: 'h4c', kind: 'skate', playerId: 'h4', speed: 'normal', path: [{ x: 5, y: 2 }] },
+          { id: 'h4d', kind: 'skate', playerId: 'h4', speed: 'slow', path: [{ x: 3, y: 4 }, { x: 5, y: 1 }] },
+          { id: 'h4d2', kind: 'wait', playerId: 'h4', seconds: 2.1 },
+          { id: 'h4e', kind: 'skate', playerId: 'h4', speed: 'fast', path: [{ x: 10, y: 2 }, { x: 13.5, y: 0.5 }] },
+          { id: 'h4f', kind: 'shoot', playerId: 'h4', goal: 'right' },
+          { id: 'a1c', kind: 'mark', playerId: 'a1', targetId: 'h1' },
+          { id: 'a2f', kind: 'mark', playerId: 'a2', targetId: 'h3' },
+          { id: 'a3c', kind: 'mark', playerId: 'a3', targetId: 'h1' },
+          { id: 'a4d', kind: 'mark', playerId: 'a4', targetId: 'h2' },
+        ],
+      },
+    ]
+    s.notes =
+      'Fyra mot fyra mot ett mål. Målvakten (grå) räddar för båda lagen. Tränaren (T) står en bit bakom mittlinjen och spelar in bollen. Laget som vinner bollen passar först till tränaren och får sedan tillbaka den och anfaller. Bryter försvararna måste de också gå via tränaren innan de får anfalla. Anfall 1: Lag A tappar bollen när 4:an bryter. Anfall 2: Lag B anfaller och Lag A:s 1:a bryter. Anfall 3: Lag A:s 4:a smyger in framför mål medan backarna tittar på bollen och glömmer att vrida på huvudet, och gör mål.'
   } else if (key === 'slalom') {
     s.players = [pl('h1', 'home', 'F', '9', -6, 0), awayG]
     s.pucks = [{ id: 'k1', pos: { x: -5.3, y: 0 } }]

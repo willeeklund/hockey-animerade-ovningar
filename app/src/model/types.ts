@@ -15,6 +15,7 @@ export interface Player {
   pos: Vec
   heading: number
   idle?: boolean
+  neutral?: boolean
 }
 
 export interface Puck {
