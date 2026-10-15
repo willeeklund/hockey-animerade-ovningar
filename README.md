@@ -104,9 +104,13 @@ npm ci
 
 ### Starta appen
 
+Från repots rot:
+
 ```bash
-npm run dev
+make dev
 ```
+
+`make dev` installerar beroendena först om de saknas eller om `package-lock.json` har ändrats. Står du i `app/` fungerar `npm run dev` också.
 
 Öppna adressen som visas i terminalen, normalt http://localhost:5173. Sidan laddas om automatiskt när du sparar en fil.
 
