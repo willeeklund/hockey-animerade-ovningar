@@ -60,15 +60,58 @@
           }
         }
       ],
-      "actions": [],
+      "actions": [
+        {
+          "id": "h1-deke",
+          "kind": "skate",
+          "playerId": "h1",
+          "path": [
+            {
+              "x": -4,
+              "y": -2
+            },
+            {
+              "x": -1.5,
+              "y": -1.8
+            },
+            {
+              "x": 0.5,
+              "y": -1.2
+            },
+            {
+              "x": 2,
+              "y": 0.3
+            },
+            {
+              "x": 3.8,
+              "y": 1.4
+            },
+            {
+              "x": 6,
+              "y": 1.3
+            },
+            {
+              "x": 7.5,
+              "y": 0.8
+            }
+          ],
+          "speed": "normal"
+        },
+        {
+          "id": "h1-skott",
+          "kind": "shoot",
+          "playerId": "h1",
+          "goal": "right"
+        }
+      ],
       "settings": {
-        "durationSec": 4.4,
+        "durationSec": 4.2,
         "seed": 1,
         "autonomous": true,
         "homeAttacks": "right",
         "layout": "zone"
       },
-      "notes": "Zonspel 1 mot 1 på tvären. Anfallaren går rakt på mål och försvararen spelar som bot."
+      "notes": "Zonspel 1 mot 1 på tvären. Försvararen åker rakt mot anfallaren utan att angla, så anfallaren kan dra sig in förbi och avsluta på mål."
     },
     {
       "id": "zon-1v1-angling",
