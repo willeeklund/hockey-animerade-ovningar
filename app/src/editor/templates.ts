@@ -2,6 +2,15 @@ import { DEFAULT_GOAL_IDS, FIELDS } from '../model/rink'
 import type { Layout, Player, Role, Scenario, Team } from '../model/types'
 
 const ZONE_GOAL_Y = FIELDS.zone.goalY
+const GOALIE_SWAP_START = 3.5
+const GOALIE_SWAP_BREAKAWAY = [
+  { x: 0, y: -10 },
+  { x: -8, y: -12 },
+  { x: -12, y: -6 },
+  { x: -9, y: 0 },
+  { x: -13, y: 3 },
+  { x: -17, y: 1 },
+]
 
 export const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -11,6 +20,7 @@ export type TemplateKey =
   | '3v2'
   | '1v1gap'
   | 'breakaway'
+  | 'goalieSwap'
   | 'breakout'
   | '5v5'
   | 'pp54'
@@ -36,6 +46,7 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
   '3v2': '3 mot 2',
   '1v1gap': '1 mot 1, gap control',
   breakaway: 'Friläge',
+  goalieSwap: 'Passa runt, friläge och målvaktsbyte',
   breakout: 'Uppspel mot forechecking',
   '5v5': '5 mot 5 (anfall)',
   pp54: 'Powerplay 5 mot 4',
@@ -57,7 +68,7 @@ export const TEMPLATE_NAMES: Record<TemplateKey, string> = {
 }
 
 export const TEMPLATE_GROUPS: Record<Layout, TemplateKey[]> = {
-  full: ['empty', '2v1', '3v2', '1v1gap', 'breakaway', 'breakout', '5v5', 'pp54', 'mark3v3', 'slalom'],
+  full: ['empty', '2v1', '3v2', '1v1gap', 'breakaway', 'goalieSwap', 'breakout', '5v5', 'pp54', 'mark3v3', 'slalom'],
   zone: ['emptyZone', 'zone1v1', 'zone2v2', 'zone3v2', 'zone3v3'],
   floorball: ['emptyFloorball', 'fbSneak', 'fbGiveGo', 'fb3v2', 'fb5v5', 'fbDiamond', 'fbBox', 'fbCoach'],
 }
@@ -221,6 +232,41 @@ export function template(key: TemplateKey): Scenario {
   } else if (key === 'breakaway') {
     s.players = [pl('h1', 'home', 'F', '9', -2, -4), pl('a1', 'away', 'D', '4', -9, -1), awayG]
     s.pucks = [{ id: 'k1', pos: { x: -1.3, y: -4 } }]
+  } else if (key === 'goalieSwap') {
+    s.settings.homeAttacks = 'left'
+    s.settings.durationSec = 14.5
+    s.players = [
+      pl('h1', 'home', 'F', '9', 4, -6),
+      pl('h2', 'home', 'F', '17', 4, 6),
+      pl('h3', 'home', 'F', '22', 11, 0),
+      { ...pl('hg', 'home', 'G', 'G', 25, 0), heading: Math.PI },
+      { ...pl('ag', 'away', 'G', 'G', -25, 0), heading: 0 },
+    ]
+    s.pucks = [{ id: 'k1', pos: { x: 4.7, y: -6 } }]
+    s.actions = [
+      { id: 'p1', kind: 'pass', playerId: 'h1', toPlayerId: 'h2' },
+      { id: 'w2', kind: 'wait', playerId: 'h2', seconds: 10, untilPuck: true },
+      { id: 'p2', kind: 'pass', playerId: 'h2', toPlayerId: 'h3' },
+      { id: 'w3', kind: 'wait', playerId: 'h3', seconds: 10, untilPuck: true },
+      { id: 'p3', kind: 'pass', playerId: 'h3', toPlayerId: 'h1' },
+      { id: 'w1', kind: 'wait', playerId: 'h1', seconds: 10, untilPuck: true },
+      { id: 'p4', kind: 'pass', playerId: 'h1', toPlayerId: 'h2' },
+      { id: 'w4', kind: 'wait', playerId: 'h2', seconds: 10, untilPuck: true },
+      { id: 'p5', kind: 'pass', playerId: 'h2', toPlayerId: 'h3' },
+      { id: 'h2s', kind: 'wait', playerId: 'h2', seconds: 30 },
+      { id: 'w5', kind: 'wait', playerId: 'h3', seconds: 10, untilPuck: true },
+      { id: 'p6', kind: 'pass', playerId: 'h3', toPlayerId: 'h1' },
+      { id: 'h3s', kind: 'wait', playerId: 'h3', seconds: 30 },
+      { id: 'w6', kind: 'wait', playerId: 'h1', seconds: 10, untilPuck: true },
+      { id: 's1', kind: 'skate', playerId: 'h1', speed: 'normal', path: GOALIE_SWAP_BREAKAWAY },
+      { id: 'x1', kind: 'shoot', playerId: 'h1', goal: 'left' },
+      { id: 'wa', kind: 'wait', playerId: 'ag', seconds: GOALIE_SWAP_START },
+      { id: 'sa', kind: 'skate', playerId: 'ag', speed: 'fast', path: [{ x: -20, y: 8 }, { x: 0, y: 11 }, { x: 18, y: 8 }, { x: 24, y: 2 }, { x: 25, y: 0 }] },
+      { id: 'wh', kind: 'wait', playerId: 'hg', seconds: GOALIE_SWAP_START },
+      { id: 'sh', kind: 'skate', playerId: 'hg', speed: 'fast', path: [{ x: 20, y: -8 }, { x: 0, y: -12.5 }, { x: -18, y: -8 }, { x: -24, y: -2 }, { x: -25, y: 0 }] },
+    ]
+    s.notes =
+      'Röda passar runt i triangeln 9 → 17 → 22 två varv. När 9 får tillbaka pucken blir det friläge mot vänster mål. Samtidigt byter målvakterna mål: blå målvakt åker från vänster till höger mål och röd målvakt från höger till vänster. 9 åker en båge och väntar in röd målvakt innan skottet. Hinner målvakten komma på plats?'
   } else if (key === 'fbSneak') {
     s.players = [
       pl('h1', 'home', 'F', '1', 7, -6),

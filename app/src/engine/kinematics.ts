@@ -85,7 +85,7 @@ function turnToward(p: PlayerRt, dir: Vec | null, dt: number, rate = STAND_TURN_
 function stepGoalie(p: PlayerRt, intent: Intent, dt: number, field: Field, cones: Vec[], walls?: WallSet) {
   const toT = sub(intent.target, p.pos)
   const d = len(toT)
-  const speed = Math.min(intent.speed, Math.sqrt(2 * GOALIE_ACCEL * 0.5 * d))
+  const speed = intent.scripted ? intent.speed : Math.min(intent.speed, Math.sqrt(2 * GOALIE_ACCEL * 0.5 * d))
   const want = d > 0.05 ? mul(toT, speed / d) : { x: 0, y: 0 }
   const dv = sub(want, p.vel)
   const maxDv = GOALIE_ACCEL * dt

@@ -27,6 +27,7 @@ https://willeeklund.github.io/hockey-animerade-ovningar/
 - **Beskrivning:** varje scenario kan ha en text om syfte och upplägg. I helskärm visas namnet uppe till vänster, och beskrivningen fälls ut med ⓘ.
 - **Uppspelning:** spela, pausa, spola och ändra hastighet. Pass, skott, räddningar och mål markeras på tidslinjen, och spåren visar hur spelarna har åkt.
 - **Trimma slutet:** dra den röda markeringen ⟧ i slutet av tidslinjen åt vänster för att korta scenen, eller förbi slutet åt höger för att förlänga den (ungefär en sekund per 20 pixlar, högst 30 s åt gången). Du kan också pausa och trycka ✂ Sluta här. Scenen stannar vid slutet och startar om från början när du trycker play igen.
+- **3D-läge:** knappen **3D** uppe till höger visar övningen i en hockeyarena med spelare i lagens tröjfärger. Tidslinjen, play och spolning fungerar som i 2D. Tre vyer: *Översikt* (snett uppifrån, dra för att vrida och scrolla för att zooma), *Skytten* (från puckföraren mot målet) och *Målvakten* (från målvaktens mask, med en liten bild av hur skytten ser målet). I målet lyser det grönt där pucken får plats förbi målvakten, och en mätare visar hur många procent av målet skytten ser. Flyttar man målvakten ändras siffran direkt, och en coach säger om han står för djupt eller bra, uppmuntrar honom att gå ut och säger om han står mitt i vinkeln. Med *Frys före skott* pausar uppspelningen precis före varje skott. Trycker man sedan S väljer skytten själv: skjuter direkt mot ett stort hål, åker runt en målvakt som står långt ute eller chansar. Utfallet beror på var målvakten står och om han hinner tillbaka. Räddningar och mål räknas, och det finns ljud som går att stänga av. Saknar övningen målvakt läggs en tillfällig in när man flyttar målvakten.
 - **Spara och dela:** spara i webbläsaren eller exportera och importera som JSON.
 - **Träningspass och helskärm:** sätt ihop dagens övningar i en lista och visa dem i helskärm för spelarna. I helskärm fyller planen hela skärmen, och play/paus, börja om och tidslinjen ligger i en smal genomskinlig list ovanpå. Under uppspelning tonas kontrollerna bort efter ett par sekunder, och på en telefon i liggande läge redan en halv sekund efter play. Ett tryck var som helst tar tillbaka dem utan att pausa. Syns kontrollerna pausar ett tryck på planen. På telefon (smal eller låg skärm) döljs verktygen. Kvar blir en smal list med val av pass, val av övning och knappen ⛶ Helskärm. Läget är anpassat för telefon i liggande läge och tar hänsyn till notch och webbläsarlister. På iPhone tillåter iOS inte webbsidor att gå in i helskärm, i någon webbläsare. Det fungerar bara för video och på iPad. Lägg i stället till sidan på hemskärmen (Dela → Lägg till på hemskärmen) och öppna den därifrån. Då körs den som en webbapp utan adressfält. Appen har ett manifest och en ikon för detta. Saknar webbläsaren stöd för helskärm visas ett tips om detta i helskärmsläget, och tipset går att stänga. Bläddra mellan övningarna med väljaren uppe till höger eller med piltangenterna. Ett helt pass kan exporteras och importeras som JSON.
 - **Inbyggda träningspass:** i panelen Träningspass väljer man mellan sitt eget pass och inbyggda pass, till exempel gruppernas pass från BU2-kursen. Ett inbyggt pass kan visas i helskärm direkt eller kopieras till det egna passet för att ändras. Övningarna och de inskannade förlagorna finns i [`hockey-BU2-ovningar`](hockey-BU2-ovningar/README.md). Egna inbyggda pass ligger som JSON-filer i [`traningspass`](traningspass/README.md) och visas under *Egna pass*.
@@ -70,6 +71,18 @@ I helskärmsläget:
 | → / PageDown | Nästa övning i passet |
 | ← / PageUp | Föregående övning i passet |
 | Esc | Lämna helskärm |
+
+I 3D-läget:
+
+| Tangent | Funktion |
+|---|---|
+| A / D | Föregående / nästa vy (Översikt, Skytten, Målvakten) |
+| 1 / 2 / 3 | Översikt / Skytten / Målvakten |
+| ↑ / ↓ | Målvakten går närmare pucken / bakåt mot målet |
+| ← / → | Målvakten tar ett steg åt vänster / höger (han tittar alltid mot pucken) |
+| S | Skytten skjuter (eller åker runt) |
+| Mellanslag | Starta / pausa, eller skjut när uppspelningen har frusit före ett skott |
+| 0 | Målvakten tillbaka till sin plats i övningen |
 
 ## Lokal utvecklingsmiljö
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { CONFIG } from './config'
 import { Board } from './components/Board'
 import { Library } from './components/Library'
@@ -9,6 +9,9 @@ import { Timeline } from './components/Timeline'
 import { simulate } from './engine/simulate'
 import { TEAM_COLORS, teamColorOf } from './model/rink'
 import { placementAllowed, useEditor, type Tool } from './editor/store'
+import { useView3d } from './view3d/store'
+
+const Rink3D = lazy(() => import('./view3d/Rink3D'))
 
 const IDLE_MS = 2500
 const IDLE_AFTER_PLAY_SMALL_MS = 500
@@ -24,6 +27,7 @@ export default function App() {
   const presenting = useEditor((s) => s.presenting)
   const playing = useEditor((s) => s.playing)
   const sim = useMemo(() => simulate(scenario), [scenario])
+  const on3d = useView3d((s) => s.on)
   const home = TEAM_COLORS[teamColorOf(scenario.settings, 'home')]
   const away = TEAM_COLORS[teamColorOf(scenario.settings, 'away')]
   const teamVars = { '--home': home.fill, '--home-ink': home.ink, '--away': away.fill, '--away-ink': away.ink } as CSSProperties
@@ -130,7 +134,13 @@ export default function App() {
     return (
       <div className={`app presenting ${idle && playing ? 'idle' : ''}`} style={teamVars}>
         <main className="stage">
-          <Board sim={sim} corner={<StageCorner />} />
+          {on3d ? (
+            <Suspense fallback={<div className="board-wrap r3d-loading">Laddar 3D…</div>}>
+              <Rink3D sim={sim} corner={<StageCorner />} />
+            </Suspense>
+          ) : (
+            <Board sim={sim} corner={<StageCorner />} />
+          )}
           <Timeline sim={sim} compact />
         </main>
       </div>
@@ -157,7 +167,13 @@ export default function App() {
       <MobileBar />
       <Sidebar />
       <main className="stage">
-        <Board sim={sim} corner={<StageCorner />} />
+        {on3d ? (
+          <Suspense fallback={<div className="board-wrap r3d-loading">Laddar 3D…</div>}>
+            <Rink3D sim={sim} corner={<StageCorner />} />
+          </Suspense>
+        ) : (
+          <Board sim={sim} corner={<StageCorner />} />
+        )}
         <Timeline sim={sim} />
       </main>
     </div>

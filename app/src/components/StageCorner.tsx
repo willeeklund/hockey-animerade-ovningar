@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { presentCurrentPass } from '../editor/router'
 import { useEditor } from '../editor/store'
 import { ShareButton } from './ShareButton'
+import { useView3d } from '../view3d/store'
 
 function FullscreenIcon({ exit }: { exit: boolean }) {
   return (
@@ -49,6 +50,16 @@ function HomeScreenHint() {
   )
 }
 
+function ViewToggle() {
+  const on = useView3d((s) => s.on)
+  const setOn = useView3d((s) => s.setOn)
+  return (
+    <button className={`corner-btn view-toggle ${on ? 'on' : ''}`} onClick={() => setOn(!on)} title={on ? 'Tillbaka till 2D' : 'Visa övningen i 3D'}>
+      {on ? '2D' : '3D'}
+    </button>
+  )
+}
+
 export function StageCorner() {
   const { presenting, deck, scenario, exitPresentation, present } = useEditor()
   const [showNotes, setShowNotes] = useState(false)
@@ -56,6 +67,7 @@ export function StageCorner() {
   if (!presenting) {
     return (
       <div className="stage-corner">
+        <ViewToggle />
         <button className="corner-btn" onClick={presentCurrentPass} title="Helskärm: visa bara planen">
           <FullscreenIcon exit={false} />
         </button>
@@ -94,6 +106,7 @@ export function StageCorner() {
             </button>
           </div>
         )}
+        <ViewToggle />
         <ShareButton corner />
         <button className="corner-btn" onClick={exitPresentation} title="Lämna helskärm (Esc)">
           <FullscreenIcon exit />

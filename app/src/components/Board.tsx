@@ -6,7 +6,8 @@ import { layoutDividers } from '../editor/dividers'
 import type { SimResult } from '../engine/simulate'
 import { GOALIE_CORE, GOALIE_REACH } from '../engine/world'
 import { goalieSpot } from '../engine/ai'
-import { dist, wrapAngle } from '../engine/vec'
+import { dist } from '../engine/vec'
+import { frameAt } from '../engine/frames'
 import { clampToField, defendSide, DIVIDER, fieldOf, goalAcross, goalNormal, goalPoint, goalsOf, goalSide, nearestGoal, RINK } from '../model/rink'
 import type { Action, Frame, Goal, Player, Vec } from '../model/types'
 import { editContext, initialCarrierMap, openingActions, roundAt, type EditContext } from '../editor/staticPlan'
@@ -25,28 +26,6 @@ type Drag =
   | { kind: 'divider'; from: Vec; to: Vec }
   | { kind: 'aim'; playerId: string; goalId: string; start: Vec; aim: number; moved: boolean }
   | null
-
-function frameAt(sim: SimResult, t: number): Frame {
-  const i = t / sim.dt
-  const i0 = Math.max(0, Math.min(sim.frames.length - 1, Math.floor(i)))
-  const i1 = Math.min(sim.frames.length - 1, i0 + 1)
-  const a = sim.frames[i0]
-  const b = sim.frames[i1]
-  const k = Math.max(0, Math.min(1, i - i0))
-  const players: Frame['players'] = {}
-  for (const id in a.players) {
-    const pa = a.players[id]
-    const pb = b.players[id] ?? pa
-    players[id] = { x: pa.x + (pb.x - pa.x) * k, y: pa.y + (pb.y - pa.y) * k, h: pa.h + wrapAngle(pb.h - pa.h) * k, q: pa.q }
-  }
-  const pucks: Frame['pucks'] = {}
-  for (const id in a.pucks) {
-    const ka = a.pucks[id]
-    const kb = b.pucks[id] ?? ka
-    pucks[id] = { x: ka.x + (kb.x - ka.x) * k, y: ka.y + (kb.y - ka.y) * k, c: ka.c, s: ka.s }
-  }
-  return { t, players, pucks }
-}
 
 const pts2 = (pts: Vec[]) => pts.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ')
 
