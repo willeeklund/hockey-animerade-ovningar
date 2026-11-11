@@ -23,10 +23,23 @@ export const GOALIE_BOXES: Box[] = [
   { name: 'blade', c: [0.32, -0.02, 0.05], h: [0.03, 0.24, 0.05] },
 ]
 
+export const FLOORBALL_GOALIE_BOXES: Box[] = [
+  { name: 'shinL', c: [-0.08, 0.34, 0.06], h: [0.16, 0.2, 0.06] },
+  { name: 'shinR', c: [-0.08, -0.34, 0.06], h: [0.16, 0.2, 0.06] },
+  { name: 'thighs', c: [0.02, 0, 0.24], h: [0.1, 0.24, 0.18] },
+  { name: 'body', c: [0, 0, 0.6], h: [0.12, 0.18, 0.2] },
+  { name: 'head', c: [0.03, 0, 0.9], h: [0.11, 0.1, 0.12] },
+  { name: 'armL', c: [0.04, 0.3, 0.6], h: [0.07, 0.13, 0.08] },
+  { name: 'armR', c: [0.04, -0.3, 0.6], h: [0.07, 0.13, 0.08] },
+  { name: 'handL', c: [0.1, 0.46, 0.58], h: [0.05, 0.06, 0.09] },
+  { name: 'handR', c: [0.1, -0.46, 0.58], h: [0.05, 0.06, 0.09] },
+]
+
 export interface GoaliePose {
   pos: Vec
   heading: number
   scale: number
+  boxes?: Box[]
 }
 
 export type Ray3 = { o: [number, number, number]; d: [number, number, number] }
@@ -86,7 +99,7 @@ export function netView(goal: Goal, puck: Vec, goalie: GoaliePose | undefined): 
     for (let i = 0; i < NET_COLS; i++) {
       const t = cellTarget(goal, i, j)
       ray.d = [t.x - puck.x, t.y - puck.y, t.z - SHOT_HEIGHT]
-      const blocked = goalie ? GOALIE_BOXES.some((b) => hitsBox(ray, goalie, b)) : false
+      const blocked = goalie ? (goalie.boxes ?? GOALIE_BOXES).some((b) => hitsBox(ray, goalie, b)) : false
       cells[j * NET_COLS + i] = blocked ? CELL_BLOCKED : CELL_OPEN
     }
   }

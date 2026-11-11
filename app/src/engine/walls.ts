@@ -1,5 +1,5 @@
-import { DIVIDER } from '../model/rink'
-import type { Divider, Vec } from '../model/types'
+import { DIVIDER, goalAcross, goalNormal, RINK } from '../model/rink'
+import type { Divider, Goal, Vec } from '../model/types'
 import { add, clamp, dist, dot, fromAngle, len, mul, norm, sub } from './vec'
 
 export interface Wall {
@@ -137,4 +137,31 @@ export function bounceOffWalls(prev: Vec, next: Vec, vel: Vec, ws: WallSet, rest
 
 export function wallBlocks(a: Vec, b: Vec, ws: WallSet) {
   return ws.walls.some((w) => segmentDistance(a, b, w.a, w.b) < 0.3)
+}
+
+export function goalWalls(goals: Goal[]): WallSet {
+  const walls: Wall[] = []
+  const chains: Chain[] = []
+  for (const g of goals) {
+    const a = goalAcross(g)
+    const back = mul(goalNormal(g), -RINK.goalDepth)
+    const postL = add(g.pos, mul(a, RINK.goalHalfWidth))
+    const postR = add(g.pos, mul(a, -RINK.goalHalfWidth))
+    const backL = add(postL, back)
+    const backR = add(postR, back)
+    const chain = chains.length
+    chains.push({ start: postL, end: postR, center: g.pos })
+    for (const [p, q] of [
+      [postL, postR],
+      [postL, backL],
+      [backL, backR],
+      [backR, postR],
+    ])
+      walls.push({ a: p, b: q, chain })
+  }
+  return { walls, chains }
+}
+
+export function mergeWalls(a: WallSet, b: WallSet): WallSet {
+  return { walls: [...a.walls, ...b.walls.map((w) => ({ ...w, chain: w.chain + a.chains.length }))], chains: [...a.chains, ...b.chains] }
 }

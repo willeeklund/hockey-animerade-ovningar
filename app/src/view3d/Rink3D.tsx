@@ -14,6 +14,7 @@ import {
   MIN_SHOT_DEPTH,
   NET_COLS,
   NET_ROWS,
+  FLOORBALL_GOALIE_BOXES,
   netView,
   SHOT_HEIGHT,
   placeGoalie,
@@ -26,14 +27,16 @@ import { fieldOf, goalAcross, goalNormal, goalsOf, RINK, TEAM_COLORS, teamColorO
 import type { Goal, Player, Scenario, Team, Vec } from '../model/types'
 import { useEditor } from '../editor/store'
 import { buildArena, buildDivider, buildGoal, buildLights, to3 } from './arena'
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { buildCone, buildGoalie, buildPuck, buildSkater, type Figure, type Kit } from './figures'
+import { buildBall, buildKidGoalie, buildKidPlayer, rollTo } from './kids'
+import { buildFloorballGoal, buildHall, HALL, type Hall } from './hall'
 import { useView3d, type Cam } from './store'
 import { playGoal, playPost, playSave, playShot } from './sound'
 import { bezier, decide, dekeRoute, goalieRecovery, holeTarget, roomAt, saveChance, SHOOTER_SPEED, type DekeRoute, type Move } from '../engine/duelPlay'
 
 const NEUTRAL = '#9ca3af'
 const COACH = '#334155'
-const SHOOTER_EYE = 0.75
 const FREEZE_LEAD = 0.3
 const WINDUP = 0.35
 const POKE_RANGE = 1.8
@@ -53,7 +56,17 @@ interface Level {
   pucks: Map<string, THREE.Object3D>
   virtualGoalie: Map<Team, Figure>
   goals: Goal[]
+  sun: THREE.DirectionalLight
+  fb: boolean
+  hall: Hall | null
+  shotPuck: THREE.Object3D
 }
+
+const SPORT = {
+  hockey: { shooterEye: 0.75, goalieEye: 1.3, stickOffset: 0.72, boxes: undefined, puck: 'pucken', poke: 'Målvakten går rakt på skytten och petar efter pucken!', pokeBanner: 'PETADE BORT DEN! 🏒', deke: 'Målvakten står långt ute – skytten åker runt honom!' },
+  floorball: { shooterEye: 1.0, goalieEye: 0.9, stickOffset: 0.6, boxes: FLOORBALL_GOALIE_BOXES, puck: 'bollen', poke: 'Målvakten kastar sig mot skytten och tar bollen!', pokeBanner: 'MÅLVAKTEN TOG DEN! 🧤', deke: 'Målvakten står långt ute – skytten springer runt!' },
+}
+const sportOf = (L: Level | null | undefined) => (L?.fb ? SPORT.floorball : SPORT.hockey)
 
 type ShotResult = 'goal' | 'save' | 'post' | 'miss'
 
@@ -75,8 +88,6 @@ interface PlayOut {
   poke: boolean
   skipTo: number | null
 }
-
-const STICK_OFFSET = 0.72
 
 function playState(p: PlayOut, now: number) {
   const e = (now - p.start) / 1000
@@ -102,8 +113,8 @@ interface Engine {
   scene: THREE.Scene
   cam: THREE.PerspectiveCamera
   pip: THREE.PerspectiveCamera
-  sun: THREE.DirectionalLight
   level: Level | null
+  env: THREE.Texture | null
   tiles: THREE.Mesh
   tileTex: THREE.DataTexture
   tri: THREE.Mesh
@@ -123,7 +134,6 @@ interface Engine {
   autoShoot: boolean
   simReact: boolean
   gkPrev: Vec | null
-  shotPuck: THREE.Object3D
   puckScale: number
   w: number
   h: number
@@ -151,11 +161,21 @@ const kitOf = (s: Scenario, p: Pick<Player, 'team' | 'neutral' | 'role'>): Kit =
 
 function buildLevel(s: Scenario, maxAniso: number): Level {
   const field = fieldOf(s.settings)
+  const fb = field.layout === 'floorball'
   const group = new THREE.Group()
   const colors = (['home', 'away'] as Team[]).map((t) => TEAM_COLORS[teamColorOf(s.settings, t)].fill)
-  group.add(buildArena(field, colors, maxAniso))
+  let hall: Hall | null = null
+  let sun: THREE.DirectionalLight
+  if (fb) {
+    hall = buildHall(field, colors, maxAniso)
+    group.add(hall.group)
+    sun = hall.sun
+  } else {
+    group.add(buildArena(field, colors, maxAniso))
+    sun = buildLights(group, field)
+  }
   const goals = goalsOf(s)
-  for (const g of goals) group.add(buildGoal(g, field.layout !== 'floorball'))
+  for (const g of goals) group.add(fb ? buildFloorballGoal(g) : buildGoal(g, true))
   for (const d of s.dividers ?? []) group.add(buildDivider(d))
   for (const c of s.cones ?? []) {
     const m = buildCone()
@@ -165,25 +185,35 @@ function buildLevel(s: Scenario, maxAniso: number): Level {
   const figs = new Map<string, Figure>()
   for (const p of s.players) {
     const kit = kitOf(s, p)
-    const f = p.role === 'G' ? buildGoalie(p.label, kit) : buildSkater(p.label, kit, { coach: p.role === 'C' })
+    const seed = `${s.name}|${p.id}|${p.label}`
+    const f = fb
+      ? p.role === 'G'
+        ? buildKidGoalie(seed, p.label, kit)
+        : buildKidPlayer(seed, p.label, kit, { coach: p.role === 'C' })
+      : p.role === 'G'
+        ? buildGoalie(p.label, kit)
+        : buildSkater(p.label, kit, { coach: p.role === 'C' })
     f.root.traverse((o) => (o.castShadow = o instanceof THREE.Mesh && o.castShadow))
     figs.set(p.id, f)
     group.add(f.root)
   }
   const virtualGoalie = new Map<Team, Figure>()
   for (const t of ['home', 'away'] as Team[]) {
-    const f = buildGoalie('', kitOf(s, { team: t, role: 'G' }))
+    const f = fb ? buildKidGoalie(`${s.name}|virtual|${t}`, '1', kitOf(s, { team: t, role: 'G' })) : buildGoalie('', kitOf(s, { team: t, role: 'G' }))
     f.root.visible = false
     virtualGoalie.set(t, f)
     group.add(f.root)
   }
   const pucks = new Map<string, THREE.Object3D>()
   for (const k of s.pucks) {
-    const m = buildPuck()
+    const m = fb ? buildBall() : buildPuck()
     pucks.set(k.id, m)
     group.add(m)
   }
-  return { group, figs, pucks, virtualGoalie, goals }
+  const shotPuck = fb ? buildBall() : buildPuck()
+  shotPuck.visible = false
+  group.add(shotPuck)
+  return { group, figs, pucks, virtualGoalie, goals, sun, fb, hall, shotPuck }
 }
 
 function disposeTree(o: THREE.Object3D) {
@@ -264,12 +294,8 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.05
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#0b1220')
-    scene.fog = new THREE.Fog('#0b1220', 60, 140)
     const cam = new THREE.PerspectiveCamera(50, 1, 0.05, 400)
     const pip = new THREE.PerspectiveCamera(55, 1.6, 0.05, 400)
-    const field = fieldOf(useEditor.getState().scenario.settings)
-    const sun = buildLights(scene, field)
 
     const tileData = new Uint8Array(NET_COLS * NET_ROWS * 4)
     const tileTex = new THREE.DataTexture(tileData, NET_COLS, NET_ROWS, THREE.RGBAFormat)
@@ -288,17 +314,14 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
     const tri = new THREE.Mesh(triGeom, new THREE.MeshBasicMaterial({ color: '#fde047', transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide }))
     tri.renderOrder = 1
     scene.add(tri)
-    const shotPuck = buildPuck()
-    shotPuck.visible = false
-    scene.add(shotPuck)
 
     engineRef.current = {
       renderer,
       scene,
       cam,
       pip,
-      sun,
       level: null,
+      env: null,
       tiles,
       tileTex,
       tri,
@@ -318,7 +341,6 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
       autoShoot: false,
       simReact: false,
       gkPrev: null,
-      shotPuck,
       puckScale: 1,
       w: 1,
       h: 1,
@@ -357,9 +379,28 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
     E.frozenAt = -1
     const f = fieldOf(scenario.settings)
     const s = Math.max(f.halfLength, f.halfWidth) + 2
-    Object.assign(E.sun.shadow.camera, { left: -s, right: s, top: s, bottom: -s })
-    E.sun.shadow.camera.updateProjectionMatrix()
-    E.orbit.dist = f.layout === 'full' ? 30 : 22
+    Object.assign(E.level.sun.shadow.camera, { left: -s, right: s, top: s, bottom: -s })
+    E.level.sun.shadow.camera.updateProjectionMatrix()
+    if (E.level.fb) {
+      if (!E.env) {
+        const pm = new THREE.PMREMGenerator(E.renderer)
+        E.env = pm.fromScene(new RoomEnvironment(), 0.04).texture
+        E.env.userData.shared = true
+        pm.dispose()
+      }
+      E.scene.environment = E.env
+      E.scene.environmentIntensity = 0.3
+      E.scene.background = new THREE.Color('#c9ced6')
+      E.scene.fog = null
+      E.renderer.toneMappingExposure = 1.0
+    } else {
+      E.scene.environment = null
+      E.scene.background = new THREE.Color('#0b1220')
+      E.scene.fog = new THREE.Fog('#0b1220', 60, 140)
+      E.renderer.toneMappingExposure = 1.05
+    }
+    E.orbit.dist = f.layout === 'full' ? 30 : f.layout === 'floorball' ? 19 : 22
+    E.orbit.el = f.layout === 'floorball' ? 0.42 : 0.62
     useView3d.getState().setAdjust(null)
   }, [scenario])
 
@@ -405,6 +446,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
           }
           if ((ev.kind === 'goal' || ev.kind === 'save') && !v.adjust) {
             setBanner({ kind: ev.kind, id: now })
+            L.hall?.cheer(ev.kind)
             if (ev.kind === 'goal') playGoal()
             else playSave()
           }
@@ -454,6 +496,21 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         goalieFig?.react?.('butterfly')
       }
       const carriers = new Set(Object.values(frame.pucks).map((k) => k.c))
+      const sport = sportOf(L)
+      const firstPuck = Object.values(frame.pucks)[0]
+      const focus = play ? new THREE.Vector3(play.puck.x, 0.04, play.puck.y) : firstPuck ? new THREE.Vector3(firstPuck.x, 0.04, firstPuck.y) : null
+      if (E.shot && play && !play.skating) focus?.copy(E.shot.from).lerp(E.shot.to, play.fk)
+      const swingOf = (id: string) => {
+        if (!L.fb) return {}
+        for (const ev of sim.events) {
+          if (ev.playerId !== id || (ev.kind !== 'shot' && ev.kind !== 'pass')) continue
+          const lead = ev.kind === 'shot' ? 0.35 : 0.22
+          const span = ev.kind === 'shot' ? 0.5 : 0.4
+          const k = (t - ev.t + lead) / span
+          if (k >= 0 && k <= 1) return ev.kind === 'shot' ? { shot: k } : { pass: k }
+        }
+        return {}
+      }
       for (const p of s.players) {
         const fig = L.figs.get(p.id)!
         const fp = frame.players[p.id]
@@ -473,19 +530,21 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         const acting = play && E.shot?.shooterId === p.id
         if (acting) {
           h = play.heading
-          x = play.puck.x - Math.cos(h) * STICK_OFFSET
-          y = play.puck.y - Math.sin(h) * STICK_OFFSET
+          x = play.puck.x - Math.cos(h) * sport.stickOffset
+          y = play.puck.y - Math.sin(h) * sport.stickOffset
         }
         fig.root.position.set(x, 0, y)
         fig.root.rotation.y = -h
         const bp = before.players[p.id]
+        const vel = bp ? { x: (fp.x - bp.x) / 0.1, y: (fp.y - bp.y) / 0.1 } : { x: 0, y: 0 }
         if (p.role === 'G') {
-          fig.update(realGk && p.id === realGk.id ? gkSpeed : bp ? Math.hypot(fp.x - bp.x, fp.y - bp.y) / 0.1 : 0, dt)
+          fig.update(realGk && p.id === realGk.id ? gkSpeed : bp ? Math.hypot(fp.x - bp.x, fp.y - bp.y) / 0.1 : 0, dt, { focus: focus ?? undefined, live: dt })
         } else if (acting && E.shot) {
           const k = (play.e - (E.shot.skateDur - WINDUP)) / (WINDUP / 0.7)
-          fig.update(play.skating && E.shot.route ? SHOOTER_SPEED : 0, dt, { puck: true, shot: k >= 0 && k <= 1 ? k : undefined })
+          const sp = play.skating && E.shot.route ? SHOOTER_SPEED : 0
+          fig.update(sp, dt, { puck: true, shot: k >= 0 && k <= 1 ? k : undefined, vel: { x: Math.cos(h) * sp, y: Math.sin(h) * sp }, focus: focus ?? undefined, live: dt })
         } else {
-          fig.update(bp ? Math.hypot(fp.x - bp.x, fp.y - bp.y) / 0.1 : 0, animDt, { puck: carriers.has(p.id) })
+          fig.update(bp ? Math.hypot(fp.x - bp.x, fp.y - bp.y) / 0.1 : 0, animDt, { puck: carriers.has(p.id), vel, focus: focus ?? undefined, live: dt, ...swingOf(p.id) })
         }
         fig.setHighlight(!!duel?.carrying && p.id === duel.shooterId)
         fig.setFirstPerson?.(false)
@@ -496,7 +555,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         if (on) {
           fig.root.position.set(E.gkShown!.pos.x, 0, E.gkShown!.pos.y)
           fig.root.rotation.y = -E.gkShown!.heading
-          fig.update(gkSpeed, dt)
+          fig.update(gkSpeed, dt, { focus: focus ?? undefined, live: dt })
         }
       }
       for (const k of s.pucks) {
@@ -507,16 +566,25 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
           continue
         }
         m.visible = !(E.shot && fk.c === E.shot.shooterId)
-        m.position.set(fk.x, 0, fk.y)
-        m.scale.setScalar((fk.s ? 0.8 : 1) * E.puckScale)
+        m.scale.setScalar((fk.s && !L.fb ? 0.8 : 1) * E.puckScale)
+        const held = L.fb && fk.c ? L.figs.get(fk.c)?.ballAt?.() : null
+        if (L.fb) rollTo(m, held?.x ?? fk.x, held ? held.y - 0.048 * E.puckScale : 0, held?.z ?? fk.y)
+        else m.position.set(fk.x, 0, fk.y)
       }
 
       if (E.shot && play) {
         const sh = E.shot
-        E.shotPuck.visible = true
-        if (play.skating) E.shotPuck.position.set(play.puck.x, 0, play.puck.y)
-        else E.shotPuck.position.lerpVectors(sh.from, sh.to, play.fk)
-        if (!play.skating) E.shotPuck.rotation.x += dt * 20
+        const sp = L.shotPuck
+        sp.visible = true
+        const held = L.fb && play.skating ? L.figs.get(sh.shooterId)?.ballAt?.() : null
+        const at = held ? held.clone().setY(held.y - 0.048) : play.skating ? new THREE.Vector3(play.puck.x, 0, play.puck.y) : new THREE.Vector3().lerpVectors(sh.from, sh.to, play.fk)
+        if (L.fb) {
+          if (!play.skating && !held) at.y = Math.max(0, at.y - 0.048)
+          rollTo(sp, at.x, at.y, at.z)
+        } else {
+          sp.position.copy(at)
+          if (!play.skating) sp.rotation.x += dt * 20
+        }
         if (!play.skating && !sh.released) {
           sh.released = true
           if (!sh.poke) playShot()
@@ -530,6 +598,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         if (play.fk >= 1 && !sh.landed) {
           sh.landed = true
           setBanner({ kind: sh.poke ? 'poke' : sh.result, id: now })
+          if (sh.result === 'goal' || sh.result === 'save') L.hall?.cheer(sh.result)
           if (sh.result === 'goal') playGoal()
           else if (sh.result === 'save') playSave()
           else playPost()
@@ -541,14 +610,14 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
             E.lastT = sh.skipTo
           }
           E.shot = null
-          E.shotPuck.visible = false
-          E.shotPuck.rotation.set(0, 0, 0)
+          L.shotPuck.visible = false
+          L.shotPuck.rotation.set(0, 0, 0)
         }
       }
 
       const canShoot = !!duel && duel.carrying && depthFromGoal(duel.goal, duel.puck) > MIN_SHOT_DEPTH
       if (canShoot && duel) {
-        const pose = E.gkShown ? { pos: E.gkShown.pos, heading: E.gkShown.heading, scale: 1 } : undefined
+        const pose = E.gkShown ? { pos: E.gkShown.pos, heading: E.gkShown.heading, scale: 1, boxes: sport.boxes } : undefined
         const key = `${duel.goal.id}|${duel.puck.x.toFixed(2)},${duel.puck.y.toFixed(2)}|${pose ? `${pose.pos.x.toFixed(3)},${pose.pos.y.toFixed(3)},${pose.heading.toFixed(3)}` : '-'}`
         if (key !== E.nvKey) {
           E.nvKey = key
@@ -594,14 +663,14 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         const fx = dx / d
         const fy = dy / d
         const back = 0.8
-        eye.set(duel.puck.x - fx * back, SHOOTER_EYE, duel.puck.y - fy * back)
+        eye.set(duel.puck.x - fx * back, sport.shooterEye, duel.puck.y - fy * back)
         look.set(duel.goal.pos.x, 0.5, duel.goal.pos.y)
         return THREE.MathUtils.clamp((2 * Math.atan(2.6 / (d + back)) * 180) / Math.PI, 24, 62)
       }
       const goalieCam = (eye: THREE.Vector3, look: THREE.Vector3) => {
         if (!duel || !E.gkShown) return false
         const g = E.gkShown
-        eye.set(g.pos.x + Math.cos(g.heading) * 0.06, 1.3, g.pos.y + Math.sin(g.heading) * 0.06)
+        eye.set(g.pos.x + Math.cos(g.heading) * 0.06, sport.goalieEye, g.pos.y + Math.sin(g.heading) * 0.06)
         look.set(duel.puck.x, 0.45, duel.puck.y)
         return true
       }
@@ -617,12 +686,18 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         const o = E.orbit
         wantLook.copy(E.ovTarget)
         wantEye.set(E.ovTarget.x + Math.sin(o.az) * Math.cos(o.el) * o.dist, Math.sin(o.el) * o.dist, E.ovTarget.z + Math.cos(o.az) * Math.cos(o.el) * o.dist)
+        if (L.fb) {
+          wantEye.x = THREE.MathUtils.clamp(wantEye.x, HALL.x0 + 0.8, HALL.x1 - 0.8)
+          wantEye.z = THREE.MathUtils.clamp(wantEye.z, HALL.z0 + 0.8, HALL.z1 - 0.8)
+          wantEye.y = Math.min(wantEye.y, HALL.h - 2.8)
+        }
       }
       const k = damp(mode === 'overview' ? 7 : 5, dt)
       E.eye.lerp(wantEye, k)
       E.look.lerp(wantLook, k)
-      E.puckScale = mode === 'overview' ? THREE.MathUtils.clamp(E.eye.distanceTo(E.look) / 14, 1, 2.2) : 1
-      E.shotPuck.scale.setScalar(E.puckScale)
+      E.puckScale = mode === 'overview' ? THREE.MathUtils.clamp(E.eye.distanceTo(E.look) / (L.fb ? 18 : 14), 1, L.fb ? 1.7 : 2.2) : 1
+      L.shotPuck.scale.setScalar(E.puckScale)
+      L.hall?.update(dt, focus, t)
       E.cam.position.copy(E.eye)
       E.cam.lookAt(E.look)
       const wantFov = mode === 'goalie' ? 68 : mode === 'shooter' ? shooterFov : 50
@@ -712,7 +787,8 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
     const st = useEditor.getState()
     if (st.playing) st.setPlaying(false)
     showChallenge(false)
-    const gk0: GoaliePose | null = E.gkShown ? { pos: { ...E.gkShown.pos }, heading: E.gkShown.heading, scale: 1 } : null
+    const boxes = sportOf(E.level).boxes
+    const gk0: GoaliePose | null = E.gkShown ? { pos: { ...E.gkShown.pos }, heading: E.gkShown.heading, scale: 1, boxes } : null
     const move = decide(duel.goal, duel.puck, gk0 ?? undefined)
     const route = move.kind === 'deke' && gk0 ? dekeRoute(duel.goal, duel.puck, gk0, move.side) : null
     const gap0 = gk0 ? Math.hypot(gk0.pos.x - duel.puck.x, gk0.pos.y - duel.puck.y) : Infinity
@@ -720,7 +796,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
     const skateDur = poke ? 0.45 : route ? route.length / SHOOTER_SPEED : move.kind === 'shoot' ? 0.45 : 0.6
     const shotFrom = route ? route.to : duel.puck
     const gkAt = gk0 ? (route ? goalieRecovery(duel.goal, gk0, route.to, skateDur) : gk0.pos) : null
-    const nv = netView(duel.goal, shotFrom, gkAt ? { pos: gkAt, heading: Math.atan2(shotFrom.y - gkAt.y, shotFrom.x - gkAt.x), scale: 1 } : undefined)
+    const nv = netView(duel.goal, shotFrom, gkAt ? { pos: gkAt, heading: Math.atan2(shotFrom.y - gkAt.y, shotFrom.x - gkAt.x), scale: 1, boxes } : undefined)
     const base = holeTarget(duel.goal, nv)
     const spread = AIM_JITTER * (move.kind === 'chance' ? 1.6 : 1)
     const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) * spread * 1.6
@@ -776,7 +852,8 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
       poke,
       skipTo,
     }
-    setCallout({ text: poke ? 'Målvakten går rakt på skytten och petar efter pucken!' : CALLOUTS[move.kind], id: performance.now() })
+    const sp = sportOf(E.level)
+    setCallout({ text: poke ? sp.poke : move.kind === 'deke' ? sp.deke : CALLOUTS[move.kind], id: performance.now() })
   }
 
   useEffect(() => {
@@ -870,6 +947,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
   const resetScore = useView3d((s) => s.resetScore)
   const setAdjust = useView3d((s) => s.setAdjust)
   const pip = pipRect(size.w, size.h)
+  const words = fieldOf(scenario.settings).layout === 'floorball' ? SPORT.floorball : SPORT.hockey
   const v = hud.pct !== null ? verdict(hud.pct) : null
   const holdRef = useRef(0)
   const hold = (dd: number, dl: number) => ({
@@ -949,7 +1027,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         </div>
       )}
       {hud.pct === null && hud.cam !== 'overview' && (
-        <div className="r3d-meter muted">{hud.duel ? 'Ingen skottchans just nu – spela upp eller spola till när någon har pucken.' : 'Ingen har pucken just nu.'}</div>
+        <div className="r3d-meter muted">{hud.duel ? `Ingen skottchans just nu – spela upp eller spola till när någon har ${words.puck}.` : `Ingen har ${words.puck} just nu.`}</div>
       )}
 
       {hud.cam === 'goalie' && (
@@ -975,7 +1053,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
             ))}
           {hud.cam === 'goalie' && (
             <div className="r3d-pad">
-              <button {...hold(STEP_DEPTH, 0)} title="Närmare pucken (↑)">
+              <button {...hold(STEP_DEPTH, 0)} title={`Närmare ${words.puck} (↑)`}>
                 ▲ Ut
               </button>
               <div>
@@ -1005,7 +1083,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
         </div>
       )}
 
-      {banner && <div className={`r3d-banner ${banner.kind}`}>{BANNERS[banner.kind]}</div>}
+      {banner && <div className={`r3d-banner ${banner.kind}`}>{banner.kind === 'poke' ? words.pokeBanner : BANNERS[banner.kind]}</div>}
     </div>
   )
 }

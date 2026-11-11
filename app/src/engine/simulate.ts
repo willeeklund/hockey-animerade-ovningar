@@ -2,7 +2,7 @@ import { clampToField, fieldOf, goalNormal, goalsOf, nearestGoal, RINK } from '.
 import type { Action, Frame, Round, Scenario, SimEvent, Vec } from '../model/types'
 import { attackGoalRef, botDecision, markIntent, focusPuck, goalieIntent, guardGoal, keepAway, type BotAct, type GoalRef } from './ai'
 import { detectOffside, keepOnside } from './offside'
-import { avoidWalls, bounceOffWalls, buildWalls } from './walls'
+import { avoidWalls, bounceOffWalls, buildWalls, goalWalls, mergeWalls } from './walls'
 import { avoidCones, separate, stepPlayer } from './kinematics'
 import { pathInfo, pointAt, project } from './path'
 import { add, dist, distToSegment, dot, fromAngle, len, mul, mulberry32, norm, sub } from './vec'
@@ -32,6 +32,7 @@ export interface SimResult {
   actionEnds: Record<string, number>
 }
 
+const GOAL_LINGER = 1
 const PUCK_FRICTION = 0.9
 const PUCK_RESTITUTION = 0.6
 const PUCK_TIDY_SEC = 4
@@ -127,7 +128,10 @@ export function createWorld(s: Scenario): World {
       freeSince: null,
     }
   })
-  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls: buildWalls(s.dividers ?? []), goals: goalsOf(s), rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings), tidy: s.pucks.some((k) => k.spare), actionEnds: {} }
+  const walls = buildWalls(s.dividers ?? [])
+  const goals = goalsOf(s)
+  const cages = goalWalls(goals)
+  return { t: 0, players, roster: players, pucks, pool: pucks, cones: (s.cones ?? []).map((c) => ({ ...c.pos })), walls, goalWalls: cages, bodyWalls: mergeWalls(walls, cages), goals, rng: mulberry32(s.settings.seed), events: [], scenario: s, field: fieldOf(s.settings), tidy: s.pucks.some((k) => k.spare), actionEnds: {} }
 }
 
 function doPass(w: World, p: PlayerRt, puck: PuckRt, to: PlayerRt, scripted = false) {
@@ -530,8 +534,10 @@ export function step(w: World) {
   all.forEach((p, i) => {
     const it = intents[i]
     const spaced = it.speed > 0 ? separate(p, w.players, it.target, it.scripted) : it.target
-    const target = it.speed > 0 ? avoidWalls(p.pos, avoidCones(p, spaced, w.cones), w.walls) : spaced
-    stepPlayer(p, { ...it, target }, DT, w.field, w.cones, w.walls)
+    const goalie = p.role === 'G'
+    const avoided = it.speed > 0 ? avoidWalls(p.pos, avoidCones(p, spaced, w.cones), w.walls) : spaced
+    const target = it.speed > 0 && !goalie ? avoidWalls(p.pos, avoided, w.goalWalls) : avoided
+    stepPlayer(p, { ...it, target }, DT, w.field, w.cones, goalie ? w.walls : w.bodyWalls)
   })
   w.players = all.filter((p) => !benched(p))
   for (const k of w.pucks) stepPuck(w, k)
@@ -570,11 +576,13 @@ export function simulate(s: Scenario): SimResult {
   const frames: Frame[] = [snapshot(w)]
   const rounds = s.rounds ?? []
   const lastStart = rounds.length ? rounds[rounds.length - 1].startT : 0
-  const n = frameIndex(lastStart + s.settings.durationSec)
+  let n = frameIndex(lastStart + s.settings.durationSec)
   for (let i = 0; i < n; i++) {
     for (const r of rounds) if (frameIndex(r.startT) === i) startRound(w, r)
+    const seen = w.events.length
     step(w)
     frames.push(snapshot(w))
+    if (!w.tidy && w.t >= lastStart && w.events.slice(seen).some((e) => e.kind === 'goal')) n = Math.min(n, i + 1 + frameIndex(GOAL_LINGER))
   }
   return { frames, events: w.events, dt: DT, duration: n * DT, actionEnds: w.actionEnds }
 }

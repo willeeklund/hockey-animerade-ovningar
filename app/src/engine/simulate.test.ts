@@ -3,8 +3,8 @@ import type { Scenario } from '../model/types'
 import { createWorld, simulate, step } from './simulate'
 import { stepPlayer } from './kinematics'
 import { dist, wrapAngle } from './vec'
-import { template } from '../editor/templates'
-import { clampToField, FIELDS } from '../model/rink'
+import { template, TEMPLATE_NAMES } from '../editor/templates'
+import { clampToField, FIELDS, goalsOf, RINK } from '../model/rink'
 import { applyMarks } from '../editor/marks'
 import { closestOnSegment, dividerEnds } from './walls'
 
@@ -578,3 +578,36 @@ describe('simulate', () => {
   })
 })
 
+
+describe('goal cages and goals', () => {
+  const insideCage = (p: { x: number; y: number }, g: { pos: { x: number; y: number }; angle: number }) => {
+    const n = { x: Math.cos(g.angle), y: Math.sin(g.angle) }
+    const along = -((p.x - g.pos.x) * n.x + (p.y - g.pos.y) * n.y)
+    const across = Math.abs(-(p.x - g.pos.x) * n.y + (p.y - g.pos.y) * n.x)
+    return along > -0.1 && along < RINK.goalDepth && across < RINK.goalHalfWidth
+  }
+
+  it('keeps skaters out of the goal cage', () => {
+    for (const key of ['fbSneak', 'fbGiveGo', 'fb3v2', 'breakaway', '2v1'] as const) {
+      const s = template(key)
+      const r = simulate(s)
+      const goals = goalsOf(s)
+      for (const f of r.frames)
+        for (const p of s.players.filter((q) => q.role !== 'G')) {
+          const fp = f.players[p.id]
+          if (fp) expect(goals.some((g) => insideCage(fp, g)), `${key} ${p.id} at ${f.t}`).toBe(false)
+        }
+    }
+  })
+
+  it('ends the scene one second after a goal', () => {
+    for (const key of Object.keys(TEMPLATE_NAMES) as (keyof typeof TEMPLATE_NAMES)[]) {
+      const s = template(key)
+      const r = simulate(s)
+      const goal = r.events.find((e) => e.kind === 'goal')
+      if (!goal || s.pucks.some((k) => k.spare) || (s.rounds ?? []).some((rd) => rd.startT > goal.t)) continue
+      expect(r.duration, key).toBeLessThanOrEqual(goal.t + 1.05)
+      expect(r.duration, key).toBeGreaterThanOrEqual(Math.min(goal.t + 0.95, s.settings.durationSec - 0.05))
+    }
+  })
+})

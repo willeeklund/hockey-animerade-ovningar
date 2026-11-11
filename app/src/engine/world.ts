@@ -61,6 +61,8 @@ export interface World {
   pool: PuckRt[]
   cones: Vec[]
   walls: WallSet
+  goalWalls: WallSet
+  bodyWalls: WallSet
   goals: Goal[]
   rng: () => number
   events: SimEvent[]

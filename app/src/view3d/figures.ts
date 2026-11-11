@@ -66,6 +66,10 @@ function placeLimb(mesh: THREE.Object3D, a: THREE.Vector3, b: THREE.Vector3) {
 export interface Motion {
   puck?: boolean
   shot?: number
+  pass?: number
+  focus?: THREE.Vector3
+  vel?: { x: number; y: number }
+  live?: number
 }
 
 export type Reaction = 'butterfly' | 'glove' | 'blocker'
@@ -76,6 +80,7 @@ export interface Figure {
   react?: (kind: Reaction) => void
   setFirstPerson?: (on: boolean) => void
   setHighlight: (on: boolean) => void
+  ballAt?: () => THREE.Vector3 | null
 }
 
 function highlightRing(radius: number) {

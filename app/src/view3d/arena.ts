@@ -178,7 +178,7 @@ export function buildArena(field: Field, teamColors: string[], maxAniso: number)
   return g
 }
 
-export function buildLights(scene: THREE.Scene, field: Field) {
+export function buildLights(scene: THREE.Object3D, field: Field) {
   scene.add(new THREE.HemisphereLight('#eef4ff', '#2b3446', 1.6))
   const sun = new THREE.DirectionalLight('#ffffff', 2.0)
   sun.position.set(8, 30, 14)
