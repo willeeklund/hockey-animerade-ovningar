@@ -23,7 +23,7 @@ import {
   type GoaliePose,
   type NetView,
 } from '../engine/netView'
-import { fieldOf, goalAcross, goalNormal, goalsOf, RINK, TEAM_COLORS, teamColorOf } from '../model/rink'
+import { clampToField, fieldOf, goalAcross, goalNormal, goalsOf, RINK, TEAM_COLORS, teamColorOf, type Field } from '../model/rink'
 import type { Goal, Player, Scenario, Team, Vec } from '../model/types'
 import { useEditor } from '../editor/store'
 import { buildArena, buildDivider, buildGoal, buildLights, to3 } from './arena'
@@ -63,10 +63,25 @@ interface Level {
 }
 
 const SPORT = {
-  hockey: { shooterEye: 0.75, goalieEye: 1.3, stickOffset: 0.72, boxes: undefined, puck: 'pucken', poke: 'Målvakten går rakt på skytten och petar efter pucken!', pokeBanner: 'PETADE BORT DEN! 🏒', deke: 'Målvakten står långt ute – skytten åker runt honom!' },
-  floorball: { shooterEye: 1.0, goalieEye: 0.9, stickOffset: 0.6, boxes: FLOORBALL_GOALIE_BOXES, puck: 'bollen', poke: 'Målvakten kastar sig mot skytten och tar bollen!', pokeBanner: 'MÅLVAKTEN TOG DEN! 🧤', deke: 'Målvakten står långt ute – skytten springer runt!' },
+  hockey: { shooterEye: 0.75, goalieEye: 1.3, stickOffset: 0.72, reach: 0.9, boxes: undefined, puck: 'pucken', poke: 'Målvakten går rakt på skytten och petar efter pucken!', pokeBanner: 'PETADE BORT DEN! 🏒', deke: 'Målvakten står långt ute – skytten åker runt honom!' },
+  floorball: { shooterEye: 1.0, goalieEye: 0.9, stickOffset: 0.6, reach: 0.78, boxes: FLOORBALL_GOALIE_BOXES, puck: 'bollen', poke: 'Målvakten kastar sig mot skytten och tar bollen!', pokeBanner: 'MÅLVAKTEN TOG DEN! 🧤', deke: 'Målvakten står långt ute – skytten springer runt!' },
 }
 const sportOf = (L: Level | null | undefined) => (L?.fb ? SPORT.floorball : SPORT.hockey)
+
+const BODY_CLEARANCE = 0.3
+const BLADE_CLEARANCE = 0.06
+
+function insideBoards(field: Field, x: number, y: number, h: number, reach: number) {
+  let pos = clampToField(field, { x, y }, BODY_CLEARANCE).pos
+  for (let i = 0; i < 3 && reach > 0; i++) {
+    for (const a of [-0.35, 0, 0.35]) {
+      const tip = { x: pos.x + Math.cos(h + a) * reach, y: pos.y + Math.sin(h + a) * reach }
+      const c = clampToField(field, tip, BLADE_CLEARANCE).pos
+      pos = { x: pos.x + c.x - tip.x, y: pos.y + c.y - tip.y }
+    }
+  }
+  return clampToField(field, pos, BODY_CLEARANCE).pos
+}
 
 type ShotResult = 'goal' | 'save' | 'post' | 'miss'
 
@@ -422,6 +437,7 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
       const L = E.level
       const t = Math.min(st.time, sim.duration)
       const frame = frameAt(sim, t)
+      const field = fieldOf(s.settings)
       const before = frameAt(sim, Math.max(0, t - 0.1))
       const animDt = st.playing ? dt * st.rate : 0
 
@@ -533,6 +549,9 @@ export default function Rink3D({ sim, corner }: { sim: SimResult; corner?: React
           x = play.puck.x - Math.cos(h) * sport.stickOffset
           y = play.puck.y - Math.sin(h) * sport.stickOffset
         }
+        const inside = insideBoards(field, x, y, h, p.role === 'G' ? 0 : sport.reach)
+        x = inside.x
+        y = inside.y
         fig.root.position.set(x, 0, y)
         fig.root.rotation.y = -h
         const bp = before.players[p.id]

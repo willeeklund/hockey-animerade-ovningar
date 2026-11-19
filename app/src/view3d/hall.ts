@@ -40,10 +40,10 @@ function floorRough() {
     256,
     256,
     (g) => {
-      g.fillStyle = '#5a5a5a'
+      g.fillStyle = '#e6e6e6'
       g.fillRect(0, 0, 256, 256)
       for (let i = 0; i < 900; i++) {
-        g.fillStyle = r() < 0.5 ? 'rgba(120,120,120,0.25)' : 'rgba(40,40,40,0.25)'
+        g.fillStyle = r() < 0.5 ? 'rgba(255,255,255,0.25)' : 'rgba(170,170,170,0.25)'
         g.fillRect(r() * 256, r() * 256, 2 + r() * 30, 1 + r() * 2)
       }
     },
@@ -230,9 +230,9 @@ const M = (x: number, y: number, z: number, sx = 1, sy = 1, sz = 1, ry = 0, rz =
 
 function lines(field: Field) {
   const g = new THREE.Group()
-  const red = new THREE.MeshStandardMaterial({ color: LINE, roughness: 0.4, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })
-  const blue = new THREE.MeshStandardMaterial({ color: '#facc15', roughness: 0.45, transparent: true, opacity: 0.35, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
-  const black = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.45, transparent: true, opacity: 0.25, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
+  const red = new THREE.MeshStandardMaterial({ color: LINE, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })
+  const blue = new THREE.MeshStandardMaterial({ color: '#facc15', roughness: 0.85, transparent: true, opacity: 0.35, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
+  const black = new THREE.MeshStandardMaterial({ color: '#e2e8f0', roughness: 0.85, transparent: true, opacity: 0.25, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })
   const flat = (geo: THREE.BufferGeometry, m: THREE.Material, x: number, z: number, rot = 0, y = 0.001) => {
     const mm = new THREE.Mesh(geo, m)
     mm.rotation.x = -Math.PI / 2
@@ -341,9 +341,9 @@ function sarg(field: Field) {
 function netTexture() {
   const t = tex(64, 64, (g) => {
     g.clearRect(0, 0, 64, 64)
-    g.strokeStyle = 'rgba(255,255,255,0.95)'
-    g.lineWidth = 4
-    g.strokeRect(0, 0, 64, 64)
+    g.fillStyle = '#ffffff'
+    g.fillRect(0, 28, 64, 8)
+    g.fillRect(28, 0, 8, 64)
   })
   t.wrapS = t.wrapT = THREE.RepeatWrapping
   return t
@@ -377,8 +377,8 @@ export function buildFloorballGoal(goal: Goal) {
   bar(v(-D, r, -HALF), v(-D, r, HALF), r * 0.8)
   bar(v(-0.12, H, -HALF), v(-0.12, H, HALF), r * 0.6)
   const nt = netTexture()
-  const net = new THREE.MeshStandardMaterial({ map: nt, transparent: true, alphaTest: 0.35, side: THREE.DoubleSide, roughness: 0.9 })
-  const cell = 0.045
+  const net = new THREE.MeshStandardMaterial({ map: nt, transparent: true, alphaTest: 0.04, depthWrite: false, side: THREE.DoubleSide, roughness: 0.9 })
+  const cell = 0.06
   const quad = (pts: THREE.Vector3[]) => {
     const geo = new THREE.BufferGeometry()
     const pos: number[] = []
@@ -656,7 +656,7 @@ export function buildHall(field: Field, teamColors: string[], maxAniso: number):
   const inner = vinyl('#2f6fc0')
   inner.wrapS = inner.wrapT = THREE.RepeatWrapping
   inner.anisotropy = maxAniso
-  const court = new THREE.Mesh(courtGeo, new THREE.MeshStandardMaterial({ map: inner, roughness: 0.78, roughnessMap: rough, metalness: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }))
+  const court = new THREE.Mesh(courtGeo, new THREE.MeshStandardMaterial({ map: inner, roughness: 0.9, roughnessMap: rough, metalness: 0, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }))
   court.rotation.x = -Math.PI / 2
   court.position.y = 0.0005
   court.receiveShadow = true
